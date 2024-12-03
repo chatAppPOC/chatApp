@@ -36,9 +36,11 @@ public class ChatController {
     }
     
     @GetMapping("/chat/question/{questionId}")
-    public List<ChatWorkFlow> getAllQuestionAndAnswers(@PathVariable Integer questionId, @RequestParam String userId) throws Exception {
+    public List<ChatWorkFlow> getAllQuestionAndAnswers(@PathVariable Integer questionId, @RequestParam String userId,
+    		@RequestParam(required = false) String description) throws Exception {
+    	
     	try {
-    	List<ChatWorkFlow> chatWorkFlow = service.getAllQuestionAndAnswers(questionId, userId);
+    	List<ChatWorkFlow> chatWorkFlow = service.getAllQuestionAndAnswers(questionId, userId, description);
     	LOG.info("Api.getAllQuestionAndAnswers({}) => {}", questionId, chatWorkFlow);
     	return chatWorkFlow;
     	}catch (Exception e) {

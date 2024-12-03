@@ -10,5 +10,5 @@ public interface ChatService {
 
    public ChatWorkFlow insertChatData (ChatWorkFlow request);
    
-   public List<ChatWorkFlow> getAllQuestionAndAnswers(Integer questionId, String userId) throws Exception;
+   public List<ChatWorkFlow> getAllQuestionAndAnswers(Integer questionId, String userId, String description) throws Exception;
 }

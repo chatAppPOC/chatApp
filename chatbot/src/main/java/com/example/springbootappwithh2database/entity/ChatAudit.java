@@ -1,7 +1,6 @@
 package com.example.springbootappwithh2database.entity;
 
 import java.time.Instant;
-import java.util.HashSet;
 import java.util.Set;
 
 import jakarta.persistence.Entity;
@@ -92,21 +91,6 @@ public class ChatAudit {
 	public void setUpdatedOn(Instant updatedOn) {
 		this.updatedOn = updatedOn;
 	}
-	
-	public void addQuestions(Set<Integer> questionIds) {
-	    if (this.questions == null) {
-	        this.questions = new HashSet<>();
-	    }
-	    this.questions.addAll(questionIds);
-	}
-
-	public void addAnswers(Set<Integer> answerIds) {
-	    if (this.answers == null) {
-	        this.answers = new HashSet<>();
-	    }
-	    this.answers.addAll(answerIds);
-	}
-
 
 	@Override
 	public String toString() {
