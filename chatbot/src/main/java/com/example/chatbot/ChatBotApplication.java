@@ -1,13 +1,13 @@
-package com.example.springbootappwithh2database;
+package com.example.chatbot;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class SpringBootAppWithH2DatabaseApplication {
+public class ChatBotApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(SpringBootAppWithH2DatabaseApplication.class, args);
+        SpringApplication.run(ChatBotApplication.class, args);
     }
 
 }

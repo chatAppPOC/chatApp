@@ -1,10 +1,10 @@
-package com.example.springbootappwithh2database;
+package com.example.chatbot;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class SpringBootAppWithH2DatabaseApplicationTests {
+class ChatBotApplicationTests {
 
     @Test
     void contextLoads() {

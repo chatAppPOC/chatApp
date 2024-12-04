@@ -1,6 +1,7 @@
-package com.example.springbootappwithh2database.entity;
+package com.example.chatbot.entity;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Set;
 
 import jakarta.persistence.Entity;
@@ -17,17 +18,19 @@ public class ChatAudit {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
 	private String userId;
-	private Set<Integer> questions;
-	private Set<Integer> answers;
+	private List<Integer> questions;
+	private List<Integer> answers;
 	private String description;
+	private String status;
 	private Instant createdOn;
 	private Instant updatedOn;
 	
-	public ChatAudit(String userId, Set<Integer> questions, Set<Integer> answers, String description, Instant createdOn, Instant updatedOn) {
+	public ChatAudit(String userId, List<Integer> questions, List<Integer> answers, String description, String status, Instant createdOn, Instant updatedOn) {
 	    this.userId = userId;
 	    this.questions = questions;
 	    this.answers = answers;
 	    this.description = description;
+	    this.status = status;
 	    this.createdOn = createdOn;
 	    this.updatedOn = updatedOn;
 	}
@@ -52,19 +55,20 @@ public class ChatAudit {
 		this.userId = userId;
 	}
 
-	public Set<Integer> getQuestions() {
+
+	public List<Integer> getQuestions() {
 		return questions;
 	}
 
-	public void setQuestions(Set<Integer> questions) {
+	public void setQuestions(List<Integer> questions) {
 		this.questions = questions;
 	}
 
-	public Set<Integer> getAnswers() {
+	public List<Integer> getAnswers() {
 		return answers;
 	}
 
-	public void setAnswers(Set<Integer> answers) {
+	public void setAnswers(List<Integer> answers) {
 		this.answers = answers;
 	}
 
@@ -92,11 +96,18 @@ public class ChatAudit {
 		this.updatedOn = updatedOn;
 	}
 
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
 	@Override
 	public String toString() {
 		return "ChatAudit [id=" + id + ", userId=" + userId + ", questions=" + questions + ", answers=" + answers
-				+ ", description=" + description + ", createdOn=" + createdOn + ", updatedOn=" + updatedOn + "]";
+				+ ", description=" + description + ", status=" + status + ", createdOn=" + createdOn + ", updatedOn="
+				+ updatedOn + "]";
 	}
-	
-	
 }
