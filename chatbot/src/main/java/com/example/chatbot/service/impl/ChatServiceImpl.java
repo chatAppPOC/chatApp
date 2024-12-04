@@ -11,8 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.chatbot.dto.ChatInput;
-import com.example.chatbot.entity.ChatAudit;
-import com.example.chatbot.entity.ChatWorkFlow;
+import com.example.chatbot.entity.Chat;
+import com.example.chatbot.entity.ChatContent;
 import com.example.chatbot.repo.ChatAuditRepo;
 import com.example.chatbot.repo.ChatRepo;
 import com.example.chatbot.service.ChatService;
@@ -31,22 +31,22 @@ public class ChatServiceImpl implements ChatService {
     ChatAuditRepo auditRepo;
     
     @Override
-    public ChatAudit getChatDetailsByUserId(String userId) {
+    public Chat getChatDetailsByUserId(String userId) {
     	return auditRepo.findByUserId(userId);
     }
 
     @Override
-    public ChatWorkFlow insertChatData(ChatWorkFlow request) {
+    public ChatContent insertChatData(ChatContent request) {
         return repo.save(request);
     }
     
 	@Override
 	@Transactional
-	public List<ChatWorkFlow> getAllQuestionAndAnswers(ChatInput input) throws Exception {
+	public List<ChatContent> getAllQuestionAndAnswers(ChatInput input) throws Exception {
 		try {
-			List<ChatWorkFlow> chatWorkFlows = input.getIsChatBegin() ? 
+			List<ChatContent> chatWorkFlows = input.getIsChatBegin() ? 
 					repo.getAllQuestionAndAnswers(FIRST_CHAT_ID) :  repo.getAllQuestionAndAnswers(input.getAnswerId());			
-			ChatAudit audit = auditRepo.findByUserId(input.getUserId());
+			Chat audit = auditRepo.findByUserId(input.getUserId());
 			if (audit != null && audit.getId() != null) {
 				if(input.getQuestionId() != null)
 					audit.getQuestions().add(input.getQuestionId());
@@ -61,7 +61,7 @@ public class ChatServiceImpl implements ChatService {
 				}	
 			} 
 			else {
-				audit = new ChatAudit(input.getUserId(), new ArrayList<Integer>(), new ArrayList<Integer>(),
+				audit = new Chat(input.getUserId(), new ArrayList<Integer>(), new ArrayList<Integer>(),
 						null, "IN_PROGRESS", Instant.now(), Instant.now());
 			}
 			if(chatWorkFlows.isEmpty() && input.getDescription() == null || chatWorkFlows.isEmpty() && input.getQuestionId() == null) {

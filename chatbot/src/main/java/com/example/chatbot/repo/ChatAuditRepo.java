@@ -3,12 +3,13 @@ package com.example.chatbot.repo;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.example.chatbot.entity.ChatAudit;
+import com.example.chatbot.entity.Chat;
+import com.example.chatbot.entity.Chat;
 
 @Repository
-public interface ChatAuditRepo extends JpaRepository<ChatAudit, Integer>{
+public interface ChatAuditRepo extends JpaRepository<Chat, Integer>{
 	
-	ChatAudit findByUserId(String userId);
+	Chat findByUserId(String userId);
 
 
 }

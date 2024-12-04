@@ -6,12 +6,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.example.chatbot.entity.ChatWorkFlow;
+import com.example.chatbot.entity.ChatContent;
 
-public interface ChatRepo extends JpaRepository<ChatWorkFlow, Integer> {
+public interface ChatRepo extends JpaRepository<ChatContent, Integer> {
 
 	@Query("""
 			SELECT c FROM ChatWorkFlow c WHERE c.parentId = :id
 					""")
-	List<ChatWorkFlow> getAllQuestionAndAnswers(@Param("id") Integer id);
+	List<ChatContent> getAllQuestionAndAnswers(@Param("id") Integer id);
 }

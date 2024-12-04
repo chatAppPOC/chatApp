@@ -6,8 +6,7 @@ public class ChatInput {
 	private Integer answerId;
 	private String description;
 	private Boolean isChatBegin;
-	
-	
+		
 	public String getUserId() {
 		return userId;
 	}

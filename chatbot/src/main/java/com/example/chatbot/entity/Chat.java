@@ -12,7 +12,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "chat")
-public class ChatAudit {
+public class Chat {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,7 +25,7 @@ public class ChatAudit {
 	private Instant createdOn;
 	private Instant updatedOn;
 	
-	public ChatAudit(String userId, List<Integer> questions, List<Integer> answers, String description, String status, Instant createdOn, Instant updatedOn) {
+	public Chat(String userId, List<Integer> questions, List<Integer> answers, String description, String status, Instant createdOn, Instant updatedOn) {
 	    this.userId = userId;
 	    this.questions = questions;
 	    this.answers = answers;
@@ -35,7 +35,7 @@ public class ChatAudit {
 	    this.updatedOn = updatedOn;
 	}
 	
-	public ChatAudit() {
+	public Chat() {
 		
 	}
 

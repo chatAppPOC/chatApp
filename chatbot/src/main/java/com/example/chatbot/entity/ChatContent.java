@@ -7,8 +7,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name ="questionaire")
-public class ChatWorkFlow
+@Table(name ="chat_content")
+public class ChatContent
 {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

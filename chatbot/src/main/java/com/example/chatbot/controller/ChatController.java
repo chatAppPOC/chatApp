@@ -14,8 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.chatbot.dto.ChatInput;
-import com.example.chatbot.entity.ChatAudit;
-import com.example.chatbot.entity.ChatWorkFlow;
+import com.example.chatbot.entity.Chat;
+import com.example.chatbot.entity.ChatContent;
 import com.example.chatbot.service.ChatService;
 
 @RestController
@@ -29,20 +29,20 @@ public class ChatController {
     private ChatService service;
     
     @GetMapping("/chat/history/{userId}")
-    public ChatAudit getChatDetailsById(@PathVariable String userId){
+    public Chat getChatDetailsById(@PathVariable String userId){
       return  service.getChatDetailsByUserId(userId);
 
     }
 
     @PostMapping("/content")
-    public ChatWorkFlow insertContent(@RequestBody ChatWorkFlow content) {
+    public ChatContent insertContent(@RequestBody ChatContent content) {
         return   service.insertChatData(content);
     }
     
     @PostMapping("/chat")
-    public List<ChatWorkFlow> getAllQuestionAndAnswers(@RequestBody ChatInput input) throws Exception {
+    public List<ChatContent> getAllQuestionAndAnswers(@RequestBody ChatInput input) throws Exception {
     	try {
-    	List<ChatWorkFlow> chatWorkFlow = service.getAllQuestionAndAnswers(input);
+    	List<ChatContent> chatWorkFlow = service.getAllQuestionAndAnswers(input);
     	LOG.info("Api.getAllQuestionAndAnswers({}) => {}", input.getAnswerId(), chatWorkFlow);
     	return chatWorkFlow;
     	}catch (Exception e) {
