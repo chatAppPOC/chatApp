@@ -1,15 +1,15 @@
 package com.example.chatbot.dto;
 
 public class ChatInput {
-	private String userId;
+	private Long userId;
 	private Integer questionId;
 	private Integer answerId;
 	private String description;
 		
-	public String getUserId() {
+	public Long getUserId() {
 		return userId;
 	}
-	public void setUserId(String userId) {
+	public void setUserId(Long userId) {
 		this.userId = userId;
 	}
 	public Integer getQuestionId() {

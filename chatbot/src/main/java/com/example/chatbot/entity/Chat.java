@@ -16,8 +16,8 @@ public class Chat {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer id;
-	private String userId;
+	private Long id;
+	private Long userId;
 	private List<Integer> questions;
 	private List<Integer> answers;
 	private String description;
@@ -25,7 +25,7 @@ public class Chat {
 	private Instant createdOn;
 	private Instant updatedOn;
 	
-	public Chat(String userId, List<Integer> questions, List<Integer> answers, String description, String status, Instant createdOn, Instant updatedOn) {
+	public Chat(Long userId, List<Integer> questions, List<Integer> answers, String description, String status, Instant createdOn, Instant updatedOn) {
 	    this.userId = userId;
 	    this.questions = questions;
 	    this.answers = answers;
@@ -39,19 +39,19 @@ public class Chat {
 		
 	}
 
-	public Integer getId() {
+	public Long getId() {
 		return id;
 	}
 
-	public void setId(Integer id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 
-	public String getUserId() {
+	public Long getUserId() {
 		return userId;
 	}
 
-	public void setUserId(String userId) {
+	public void setUserId(Long userId) {
 		this.userId = userId;
 	}
 
