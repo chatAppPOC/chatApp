@@ -5,7 +5,6 @@ public class ChatInput {
 	private Integer questionId;
 	private Integer answerId;
 	private String description;
-	private Boolean isChatBegin;
 		
 	public String getUserId() {
 		return userId;
@@ -30,13 +29,5 @@ public class ChatInput {
 	}
 	public void setDescription(String description) {
 		this.description = description;
-	}
-	public Boolean getIsChatBegin() {
-		return isChatBegin;
-	}
-	public void setIsChatBegin(Boolean isChatBegin) {
-		this.isChatBegin = isChatBegin;
-	}
-	
-	
+	}	
 }

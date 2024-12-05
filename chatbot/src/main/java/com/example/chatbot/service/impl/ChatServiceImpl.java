@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.chatbot.dto.ChatInput;
 import com.example.chatbot.entity.Chat;
 import com.example.chatbot.entity.ChatContent;
-import com.example.chatbot.repo.ChatAuditRepo;
+import com.example.chatbot.repo.ChatContentRepo;
 import com.example.chatbot.repo.ChatRepo;
 import com.example.chatbot.service.ChatService;
 
@@ -22,57 +22,64 @@ import com.example.chatbot.service.ChatService;
 public class ChatServiceImpl implements ChatService {
 
 	private static final Logger  LOG = LoggerFactory.getLogger(ChatServiceImpl.class);
-	private Integer FIRST_CHAT_ID = 0;
+	private Integer FIRST_SET_ID = 0;
 	
     @Autowired
-    private ChatRepo repo;
+    private ChatContentRepo chatContentRepo;
     
     @Autowired 
-    ChatAuditRepo auditRepo;
+    private ChatRepo chatRepo;
     
-    @Override
-    public Chat getChatDetailsByUserId(String userId) {
-    	return auditRepo.findByUserId(userId);
-    }
-
+   
     @Override
     public ChatContent insertChatData(ChatContent request) {
-        return repo.save(request);
+        return chatContentRepo.save(request);
     }
     
 	@Override
 	@Transactional
 	public List<ChatContent> getAllQuestionAndAnswers(ChatInput input) throws Exception {
 		try {
-			List<ChatContent> chatWorkFlows = input.getIsChatBegin() ? 
-					repo.getAllQuestionAndAnswers(FIRST_CHAT_ID) :  repo.getAllQuestionAndAnswers(input.getAnswerId());			
-			Chat audit = auditRepo.findByUserId(input.getUserId());
-			if (audit != null && audit.getId() != null) {
+			List<ChatContent> chatMessages = input.getQuestionId() == null ? 
+					chatContentRepo.getQuestionAndAnswers(FIRST_SET_ID) : chatContentRepo.getQuestionAndAnswers(input.getAnswerId());	
+			
+			Chat chat = chatRepo.getExistingChat(input.getUserId());
+			
+ 		    if (chat != null && chat.getId() != null) {
 				if(input.getQuestionId() != null)
-					audit.getQuestions().add(input.getQuestionId());
-				audit.setUpdatedOn(Instant.now());
+					chat.getQuestions().add(input.getQuestionId());
+				chat.setUpdatedOn(Instant.now());
+				
 				if(input.getDescription() == null) {
-		            audit.getAnswers().add(input.getAnswerId());
-					audit.setUpdatedOn(Instant.now());
+		            chat.getAnswers().add(input.getAnswerId());
+					chat.setUpdatedOn(Instant.now());
 				}
 				else {
-					audit.setDescription(input.getDescription());
-					audit.setStatus("CASE_CREATED");
+					chat.setDescription(input.getDescription());
+					chat.setStatus("CASE_CREATED");
 				}	
 			} 
 			else {
-				audit = new Chat(input.getUserId(), new ArrayList<Integer>(), new ArrayList<Integer>(),
+				chat = new Chat(input.getUserId(), new ArrayList<Integer>(), new ArrayList<Integer>(),
 						null, "IN_PROGRESS", Instant.now(), Instant.now());
 			}
-			if(chatWorkFlows.isEmpty() && input.getDescription() == null || chatWorkFlows.isEmpty() && input.getQuestionId() == null) {
-				audit.setStatus("COMPLETE");
+			
+			if(chatMessages != null && chatMessages.isEmpty() && input.getDescription() == null) {
+				chat.setStatus("COMPLETE");
 			}
-			auditRepo.save(audit);
-			LOG.debug("ChatService.getAllQuestionAndAnswers({}) => {}", input.getAnswerId(), chatWorkFlows);
-			return chatWorkFlows;
+			
+			if(chatMessages != null && chatMessages.size() == 1 && chatMessages.get(0).getContentType().equals("Question")){
+				chat.getQuestions().add(chatMessages.get(0).getId());
+				chat.setStatus("COMPLETE");	
+			}
+			chatRepo.save(chat);
+			LOG.debug("ChatService.getAllQuestionAndAnswers({}) => {}", input.getAnswerId(), chatMessages);
+			return chatMessages;
 		} catch (Exception e) {
 			LOG.error("ChatService.getAllQuestionAndAnswers({}) => error!!!", input.getAnswerId(), e);
 			throw e;
 		}
 	}
+
+	
 }

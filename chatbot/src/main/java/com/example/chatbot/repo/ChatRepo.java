@@ -1,17 +1,16 @@
 package com.example.chatbot.repo;
 
-import java.util.List;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
-import com.example.chatbot.entity.ChatContent;
+import com.example.chatbot.entity.Chat;
 
-public interface ChatRepo extends JpaRepository<ChatContent, Integer> {
-
+@Repository
+public interface ChatRepo extends JpaRepository<Chat, Integer>{
 	@Query("""
-			SELECT c FROM ChatWorkFlow c WHERE c.parentId = :id
+			SELECT c FROM Chat c WHERE c.userId = :userId AND c.status = 'IN_PROGRESS'
 					""")
-	List<ChatContent> getAllQuestionAndAnswers(@Param("id") Integer id);
+	Chat getExistingChat(String userId);
+
 }
