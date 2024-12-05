@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.chatbot.dto.ChatInput;
+import com.example.chatbot.dto.ChatOutput;
 import com.example.chatbot.entity.Case;
 import com.example.chatbot.entity.ChatContent;
 import com.example.chatbot.service.ChatService;
@@ -34,11 +35,11 @@ public class ChatController {
     }
     
     @PostMapping("/chat")
-    public List<ChatContent> getAllQuestionAndAnswers(@RequestBody ChatInput input) throws Exception {
+    public List<ChatOutput> getAllQuestionAndAnswers(@RequestBody ChatInput input) throws Exception {
     	try {
-    	List<ChatContent> chatWorkFlow = chatService.getAllQuestionAndAnswers(input);
-    	LOG.info("Api.getAllQuestionAndAnswers({}) => {}", input.getAnswerId(), chatWorkFlow);
-    	return chatWorkFlow;
+    	List<ChatOutput> chatMessages = chatService.getAllQuestionAndAnswers(input);
+    	LOG.info("Api.getAllQuestionAndAnswers({}) => {}", input.getAnswerId(), chatMessages);
+    	return chatMessages;
     	}catch (Exception e) {
     		LOG.error("Api.getAllQuestionAndAnswers({}) => error!!!", input.getAnswerId(), e);
 			throw e;

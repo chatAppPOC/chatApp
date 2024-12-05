@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.example.chatbot.dto.ChatInput;
+import com.example.chatbot.dto.ChatOutput;
 import com.example.chatbot.entity.Case;
 import com.example.chatbot.entity.Chat;
 import com.example.chatbot.entity.ChatContent;
@@ -46,41 +47,40 @@ public class ChatService {
     }
     
 	@Transactional
-	public List<ChatContent> getAllQuestionAndAnswers(ChatInput input) throws Exception {
+	public List<ChatOutput> getAllQuestionAndAnswers(ChatInput input) throws Exception {
 		try {
-			List<ChatContent> chatMessages = input.getQuestionId() == null ? 
+			List<ChatContent> chatContent = input.getQuestionId() == null ? 
 					chatContentRepo.getQuestionAndAnswers(FIRST_SET_ID) : chatContentRepo.getQuestionAndAnswers(input.getAnswerId());	
 			
-			Chat chat = chatRepo.getExistingChat(input.getUserId());
+			Chat chat = chatRepo.getExistingChat(input.getPlayerId());
 			
  		    if (chat != null && chat.getId() != null) {
 				if(input.getQuestionId() != null)
 					chat.getQuestions().add(input.getQuestionId());
-				chat.setUpdatedOn(Instant.now());
-				
-				if(input.getDescription() == null) {
-		            chat.getAnswers().add(input.getAnswerId());
-					chat.setUpdatedOn(Instant.now());
-				}
-				else {
+				if(input.getDescription() != null) {
 					chat.setDescription(input.getDescription());
 					chat.setStatus("CASE_CREATED");
-				}	
-			} 
+				}
+				else if(input.getAnswerId() != null) {
+					chat.getAnswers().add(input.getAnswerId());
+				}
+				chat.setUpdatedOn(Instant.now());
+ 		    } 
 			else {
-				chat = new Chat(input.getUserId(), new ArrayList<Integer>(), new ArrayList<Integer>(),
-						null, "IN_PROGRESS", Instant.now(), Instant.now());
+				chat = new Chat(input.getPlayerId(), "IN_PROGRESS");
 			}
 			
-			if(chatMessages != null && chatMessages.isEmpty() && input.getDescription() == null) {
+			if(chatContent != null && chatContent.isEmpty() && input.getDescription() == null) {
 				chat.setStatus("COMPLETE");
 			}
 			
-			if(chatMessages != null && chatMessages.size() == 1 && chatMessages.get(0).getContentType().equals("Question")){
-				chat.getQuestions().add(chatMessages.get(0).getId());
-				chat.setStatus("COMPLETE");	
+			Chat savedChat = chatRepo.save(chat);
+			
+			List<ChatOutput> chatMessages = new ArrayList<>();
+			for(ChatContent content : chatContent) {
+				chatMessages.add(mapChatContentToOutput(savedChat, content));
 			}
-			chatRepo.save(chat);
+			
 			LOG.debug("ChatService.getAllQuestionAndAnswers({}) => {}", input.getAnswerId(), chatMessages);
 			return chatMessages;
 		} catch (Exception e) {
@@ -107,5 +107,14 @@ public class ChatService {
 			LOG.error("ChatService.createSupportCaseByChatId({}, {}) => error!!!", chatId, userId, e);
 			throw e;
 		}
+	}
+	
+	private ChatOutput mapChatContentToOutput(Chat chat, ChatContent chatContent) {
+		ChatOutput output = new ChatOutput();
+		output.setChatId(chat.getId());
+		output.setContent(chatContent.getContent());
+		output.setContentType(chatContent.getContentType());
+		output.setId(chatContent.getId());
+		return output;
 	}
 }

@@ -43,9 +43,10 @@ public class ChatContent
 	public void setParentId(Integer parentId) {
 		this.parentId = parentId;
 	}
+	
 	@Override
 	public String toString() {
-		return "ChatWorkFlow [id=" + id + ", content=" + content + ", contentType=" + contentType + ", parentId="
+		return "ChatContent [id=" + id + ", content=" + content + ", contentType=" + contentType + ", parentId="
 				+ parentId + "]";
 	}
 }

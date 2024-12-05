@@ -1,8 +1,8 @@
 package com.example.chatbot.entity;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -17,7 +17,7 @@ public class Chat {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	private Long userId;
+	private Integer playerId;
 	private List<Integer> questions;
 	private List<Integer> answers;
 	private String description;
@@ -25,14 +25,12 @@ public class Chat {
 	private Instant createdOn;
 	private Instant updatedOn;
 	
-	public Chat(Long userId, List<Integer> questions, List<Integer> answers, String description, String status, Instant createdOn, Instant updatedOn) {
-	    this.userId = userId;
-	    this.questions = questions;
-	    this.answers = answers;
-	    this.description = description;
+	public Chat(Integer playerId, String status) {
+	    this.playerId = playerId;
+	    this.questions = new ArrayList<>();
+	    this.answers = new ArrayList<>();
 	    this.status = status;
-	    this.createdOn = createdOn;
-	    this.updatedOn = updatedOn;
+	    this.createdOn = Instant.now();
 	}
 	
 	public Chat() {
@@ -47,14 +45,14 @@ public class Chat {
 		this.id = id;
 	}
 
-	public Long getUserId() {
-		return userId;
+
+	public Integer getPlayerId() {
+		return playerId;
 	}
 
-	public void setUserId(Long userId) {
-		this.userId = userId;
+	public void setPlayerId(Integer playerId) {
+		this.playerId = playerId;
 	}
-
 
 	public List<Integer> getQuestions() {
 		return questions;
@@ -104,10 +102,11 @@ public class Chat {
 		this.status = status;
 	}
 
+
 	@Override
 	public String toString() {
-		return "ChatAudit [id=" + id + ", userId=" + userId + ", questions=" + questions + ", answers=" + answers
+		return "Chat [id=" + id + ", playerId=" + playerId + ", questions=" + questions + ", answers=" + answers
 				+ ", description=" + description + ", status=" + status + ", createdOn=" + createdOn + ", updatedOn="
 				+ updatedOn + "]";
-	}
+	}	
 }

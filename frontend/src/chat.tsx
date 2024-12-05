@@ -14,6 +14,7 @@ const ChatPage: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isFirstMessage, setIsFirstMessage] = useState(true);
   const [isText, setIsText] = useState();
+  const [chatId, setIsChatId] = useState();
   const handleSendMessage = async (
     message: string,
     questionId: any,
@@ -34,7 +35,7 @@ const ChatPage: React.FC = () => {
     setMessages((prevMessages) => [...prevMessages, newMessage]);
 
     const request = {
-      userId: "test6",
+      playerId: 445566,
       isChatBegin: isBegin ? false : isFirstMessage,
       questionId: isText ? isText : questionId,
       answerId,
@@ -44,9 +45,11 @@ const ChatPage: React.FC = () => {
     if (isFirstMessage) {
       setIsFirstMessage(false);
     }
-
+    
     getResponse(request);
   };
+  
+ 
 
   const filterMessages = (data: any, types: string[]) => {
     return data.filter((item: any) => types.includes(item.contentType));
@@ -95,17 +98,20 @@ const ChatPage: React.FC = () => {
       const data = await response.json();
 
       const text = filterMessages(data, ["Text"]);
-      if (text.length > 0) setIsText(text[0].id);
-      const message = filterMessages(data, ["Message"]);
-      let content: any;
-      if (message.length > 0) {
-        content = message[0].content;
-      } else {
-        content = [renderQuestion(data), renderOptions(data)];
+      if (text.length > 0){
+        setIsText(text[0].id);
+        setIsChatId(text[0].chatId);
       }
+      let content: any;
+      content = [renderQuestion(data), renderOptions(data)];
 
       if (data.length === 0) {
-        content = "Thank you for contacting us. We will get back to you soon.";
+        content = "Thank you for contacting us. Have a nice day!";
+        setIsFirstMessage(true);
+      }
+
+      if (isText) {
+        content = "A case has been created with ID : "+chatId+". We will get back to you soon !";
         setIsFirstMessage(true);
       }
 
