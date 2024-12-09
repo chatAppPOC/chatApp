@@ -11,9 +11,9 @@ import com.example.chatbot.entity.Chat;
 @Repository
 public interface ChatRepo extends JpaRepository<Chat, Long>{
 	@Query("""
-			SELECT c FROM Chat c WHERE c.playerId = :playerId AND c.status = 'IN_PROGRESS'
+			SELECT c FROM Chat c WHERE c.playerId = :playerId AND c.id = :id
 					""")
-	Chat getExistingChat(Integer playerId);
+	Chat getExistingChat(Integer playerId, Long id);
 
 	Optional<Chat> findById(Long Id);
 }

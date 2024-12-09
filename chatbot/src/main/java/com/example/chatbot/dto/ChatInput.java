@@ -5,8 +5,15 @@ public class ChatInput {
 	private Integer questionId;
 	private Integer answerId;
 	private String description;
+	private Long chatId;
 		
 	
+	public Long getChatId() {
+		return chatId;
+	}
+	public void setChatId(Long chatId) {
+		this.chatId = chatId;
+	}
 	public Integer getPlayerId() {
 		return playerId;
 	}

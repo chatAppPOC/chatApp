@@ -49,25 +49,28 @@ public class ChatService {
 	@Transactional
 	public List<ChatOutput> getAllQuestionAndAnswers(ChatInput input) throws Exception {
 		try {
-			List<ChatContent> chatContent = input.getQuestionId() == null ? 
+			
+			List<ChatContent> chatContent = input.getChatId() == null ? 
 					chatContentRepo.getQuestionAndAnswers(FIRST_SET_ID) : chatContentRepo.getQuestionAndAnswers(input.getAnswerId());	
 			
-			Chat chat = chatRepo.getExistingChat(input.getPlayerId());
-			
- 		    if (chat != null && chat.getId() != null) {
-				if(input.getQuestionId() != null)
-					chat.getQuestions().add(input.getQuestionId());
-				if(input.getDescription() != null) {
-					chat.setDescription(input.getDescription());
-					chat.setStatus("CASE_CREATED");
-				}
-				else if(input.getAnswerId() != null) {
-					chat.getAnswers().add(input.getAnswerId());
-				}
-				chat.setUpdatedOn(Instant.now());
- 		    } 
-			else {
+			Chat chat = null;
+			if(input.getChatId() == null) {
 				chat = new Chat(input.getPlayerId(), "IN_PROGRESS");
+			}
+			else{
+				chat = chatRepo.getExistingChat(input.getPlayerId(), input.getChatId());
+				if (chat != null && chat.getId() != null) {
+					if(input.getQuestionId() != null)
+						chat.getQuestions().add(input.getQuestionId());
+					if(input.getDescription() != null) {
+						chat.setDescription(input.getDescription());
+						chat.setStatus("CASE_CREATED");
+					}
+					else if(input.getAnswerId() != null) {
+						chat.getAnswers().add(input.getAnswerId());
+					}
+					chat.setUpdatedOn(Instant.now());
+	 		    } 
 			}
 			
 			if(chatContent != null && chatContent.isEmpty() && input.getDescription() == null) {
