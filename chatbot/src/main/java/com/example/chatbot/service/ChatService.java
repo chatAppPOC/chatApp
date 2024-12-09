@@ -47,7 +47,7 @@ public class ChatService {
     }
     
 	@Transactional
-	public List<ChatOutput> getAllQuestionAndAnswers(ChatInput input) throws Exception {
+	public ChatOutput getAllQuestionAndAnswers(ChatInput input) throws Exception {
 		try {
 			
 			List<ChatContent> chatContent = input.getChatId() == null ? 
@@ -79,10 +79,9 @@ public class ChatService {
 			
 			Chat savedChat = chatRepo.save(chat);
 			
-			List<ChatOutput> chatMessages = new ArrayList<>();
-			for(ChatContent content : chatContent) {
-				chatMessages.add(mapChatContentToOutput(savedChat, content));
-			}
+			ChatOutput chatMessages = new ChatOutput();
+			chatMessages.setChatId(savedChat.getId());
+			chatMessages.setOptions(chatContent);
 			
 			LOG.debug("ChatService.getAllQuestionAndAnswers({}) => {}", input.getAnswerId(), chatMessages);
 			return chatMessages;
@@ -110,14 +109,5 @@ public class ChatService {
 			LOG.error("ChatService.createSupportCaseByChatId({}, {}) => error!!!", chatId, userId, e);
 			throw e;
 		}
-	}
-	
-	private ChatOutput mapChatContentToOutput(Chat chat, ChatContent chatContent) {
-		ChatOutput output = new ChatOutput();
-		output.setChatId(chat.getId());
-		output.setContent(chatContent.getContent());
-		output.setContentType(chatContent.getContentType());
-		output.setId(chatContent.getId());
-		return output;
 	}
 }

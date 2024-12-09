@@ -35,9 +35,9 @@ public class ChatController {
     }
     
     @PostMapping("/chat")
-    public List<ChatOutput> getAllQuestionAndAnswers(@RequestBody ChatInput input) throws Exception {
+    public ChatOutput getAllQuestionAndAnswers(@RequestBody ChatInput input) throws Exception {
     	try {
-    	List<ChatOutput> chatMessages = chatService.getAllQuestionAndAnswers(input);
+    	ChatOutput chatMessages = chatService.getAllQuestionAndAnswers(input);
     	LOG.info("Api.getAllQuestionAndAnswers({}) => {}", input.getAnswerId(), chatMessages);
     	return chatMessages;
     	}catch (Exception e) {

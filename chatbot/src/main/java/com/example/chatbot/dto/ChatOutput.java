@@ -1,48 +1,25 @@
 package com.example.chatbot.dto;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.example.chatbot.entity.ChatContent;
 
 public class ChatOutput {
-	private Integer id;
-	private String content;
-	private String contentType;
 	private Long chatId;
+	private List<ChatContent> options = new ArrayList<>();
 	
-	
-	public Integer getId() {
-		return id;
-	}
-
-	public void setId(Integer id) {
-		this.id = id;
-	}
-
-	public String getContent() {
-		return content;
-	}
-
-	public void setContent(String content) {
-		this.content = content;
-	}
-
-	public String getContentType() {
-		return contentType;
-	}
-
-	public void setContentType(String contentType) {
-		this.contentType = contentType;
-	}
 
 	public Long getChatId() {
 		return chatId;
 	}
-
 	public void setChatId(Long chatId) {
 		this.chatId = chatId;
 	}
-
-	@Override
-	public String toString() {
-		return "ChatOutput [id=" + id + ", content=" + content + ", contentType=" + contentType + ", chatId=" + chatId
-				+ "]";
+	public List<ChatContent> getOptions() {
+		return options;
 	}
-
+	public void setOptions(List<ChatContent> options) {
+		this.options = options;
+	}
+	
 }
