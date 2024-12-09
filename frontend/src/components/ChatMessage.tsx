@@ -5,6 +5,7 @@ interface ChatMessageProps {
   sender: string;
   timestamp: string;
   isOwn: boolean;
+  disabled?: boolean;
 }
 
 const ChatMessage: React.FC<ChatMessageProps> = ({
@@ -12,10 +13,15 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
   sender,
   timestamp,
   isOwn,
+  disabled = true,
 }) => {
   return (
     <div
-      className={`flex ${isOwn ? "justify-end" : "justify-start"} mb-4 px-4`}
+      className={`flex ${isOwn ? "justify-end" : "justify-start"} mb-4 px-4 ${
+        !isOwn &&
+        disabled &&
+        "pointer-events-none cursor-not-allowed opacity-75"
+      }`}
     >
       {!isOwn && (
         <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center overflow-hidden mr-2 flex-shrink-0 shadow-md  ">
@@ -46,7 +52,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
             {content}
           </p>
         ) : (
-          <div className="flex flex-col gap-2">{content}</div>
+          <div className={`flex flex-col gap-2 `}>{content}</div>
         )}
       </div>
     </div>
