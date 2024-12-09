@@ -1,8 +1,8 @@
 package com.example.chatbot.entity;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -16,8 +16,8 @@ public class Chat {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer id;
-	private String userId;
+	private Long id;
+	private Integer playerId;
 	private List<Integer> questions;
 	private List<Integer> answers;
 	private String description;
@@ -25,36 +25,34 @@ public class Chat {
 	private Instant createdOn;
 	private Instant updatedOn;
 	
-	public Chat(String userId, List<Integer> questions, List<Integer> answers, String description, String status, Instant createdOn, Instant updatedOn) {
-	    this.userId = userId;
-	    this.questions = questions;
-	    this.answers = answers;
-	    this.description = description;
+	public Chat(Integer playerId, String status) {
+	    this.playerId = playerId;
+	    this.questions = new ArrayList<>();
+	    this.answers = new ArrayList<>();
 	    this.status = status;
-	    this.createdOn = createdOn;
-	    this.updatedOn = updatedOn;
+	    this.createdOn = Instant.now();
 	}
 	
 	public Chat() {
 		
 	}
 
-	public Integer getId() {
+	public Long getId() {
 		return id;
 	}
 
-	public void setId(Integer id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 
-	public String getUserId() {
-		return userId;
+
+	public Integer getPlayerId() {
+		return playerId;
 	}
 
-	public void setUserId(String userId) {
-		this.userId = userId;
+	public void setPlayerId(Integer playerId) {
+		this.playerId = playerId;
 	}
-
 
 	public List<Integer> getQuestions() {
 		return questions;
@@ -104,10 +102,11 @@ public class Chat {
 		this.status = status;
 	}
 
+
 	@Override
 	public String toString() {
-		return "ChatAudit [id=" + id + ", userId=" + userId + ", questions=" + questions + ", answers=" + answers
+		return "Chat [id=" + id + ", playerId=" + playerId + ", questions=" + questions + ", answers=" + answers
 				+ ", description=" + description + ", status=" + status + ", createdOn=" + createdOn + ", updatedOn="
 				+ updatedOn + "]";
-	}
+	}	
 }

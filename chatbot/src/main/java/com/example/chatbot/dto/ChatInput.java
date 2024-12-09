@@ -1,17 +1,24 @@
 package com.example.chatbot.dto;
 
 public class ChatInput {
-	private String userId;
+	private Integer playerId;
 	private Integer questionId;
 	private Integer answerId;
 	private String description;
-	private Boolean isChatBegin;
+	private Long chatId;
 		
-	public String getUserId() {
-		return userId;
+	
+	public Long getChatId() {
+		return chatId;
 	}
-	public void setUserId(String userId) {
-		this.userId = userId;
+	public void setChatId(Long chatId) {
+		this.chatId = chatId;
+	}
+	public Integer getPlayerId() {
+		return playerId;
+	}
+	public void setPlayerId(Integer playerId) {
+		this.playerId = playerId;
 	}
 	public Integer getQuestionId() {
 		return questionId;
@@ -30,13 +37,5 @@ public class ChatInput {
 	}
 	public void setDescription(String description) {
 		this.description = description;
-	}
-	public Boolean getIsChatBegin() {
-		return isChatBegin;
-	}
-	public void setIsChatBegin(Boolean isChatBegin) {
-		this.isChatBegin = isChatBegin;
-	}
-	
-	
+	}	
 }
