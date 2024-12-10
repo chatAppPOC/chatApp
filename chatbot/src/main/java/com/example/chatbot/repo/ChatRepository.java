@@ -9,11 +9,11 @@ import org.springframework.stereotype.Repository;
 import com.example.chatbot.entity.Chat;
 
 @Repository
-public interface ChatRepo extends JpaRepository<Chat, Long>{
+public interface ChatRepository extends JpaRepository<Chat, Long>{
 	@Query("""
 			SELECT c FROM Chat c WHERE c.playerId = :playerId AND c.id = :id
 					""")
-	Chat getExistingChat(Integer playerId, Long id);
+	Chat getExistingChat(Long playerId, Long id);
 
 	Optional<Chat> findById(Long Id);
 }

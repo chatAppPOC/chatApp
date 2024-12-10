@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.example.chatbot.entity.ChatContent;
 
-public class ChatOutput {
+public class ChatResponse {
 	private Long chatId;
 	private List<ChatContent> options = new ArrayList<>();
 	

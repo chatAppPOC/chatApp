@@ -15,6 +15,7 @@ const ChatPage: React.FC = () => {
   const [isFirstMessage, setIsFirstMessage] = useState(true);
   const [isText, setIsText] = useState(null);
   const chatId = useRef<string | null>(null);
+  const [caseId, setCaseId] = useState(null);
 
   const handleSendMessage = async (
     message: string,
@@ -38,6 +39,7 @@ const ChatPage: React.FC = () => {
     const request = {
       playerId: 445566,
       chatId: chatId.current,
+      languageId : 1,
       questionId: isText ? isText : questionId,
       answerId,
       description: isText ? message : null,
@@ -54,7 +56,7 @@ const ChatPage: React.FC = () => {
   };
 
   const renderQuestion = (data: any) => {
-    const messages = filterMessages(data, ["Question", "Text"]);
+    const messages = filterMessages(data, ["Question"]);
     return messages.map((message: any) => (
       <p key={message.id}>{message.content}</p>
     ));
@@ -97,30 +99,36 @@ const ChatPage: React.FC = () => {
 
       if (data?.chatId) {
         chatId.current = data.chatId;
+        setCaseId(data.chatId);
       }
+      console.log(chatId.current);
 
-      const text = filterMessages(data, ["Text"]);
-      if (text.length > 0) {
+      const text = data.options.length === 1 ? filterMessages(data, ["Question"]) : [];
+      console.log(text);
+      if(text.length > 0){
         setIsText(text[0].id);
       }
+      
       let content: any;
       content = [renderQuestion(data), renderOptions(data)];
-
+      console.log(chatId.current);
       if (data.options.length === 0) {
         content = "Thank you for contacting us. Have a nice day!";
-        setIsFirstMessage(true);
         chatId.current = null;
+        setIsFirstMessage(true);
       }
 
       if (isText) {
+        console.log(isText);
+        console.log(chatId.current);
         content =
           "A case has been created with ID : " +
-          chatId.current +
+          caseId +
           ". We will get back to you soon !";
         setIsFirstMessage(true);
         chatId.current = null;
       }
-
+      
       const newMessage: Message = {
         id: Date.now().toString(),
         content,

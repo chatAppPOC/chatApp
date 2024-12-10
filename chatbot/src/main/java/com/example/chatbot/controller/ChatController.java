@@ -1,6 +1,5 @@
 package com.example.chatbot.controller;
 
-import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,10 +12,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.chatbot.dto.ChatInput;
-import com.example.chatbot.dto.ChatOutput;
+import com.example.chatbot.dto.ChatRequest;
+import com.example.chatbot.dto.ChatResponse;
 import com.example.chatbot.entity.Case;
-import com.example.chatbot.entity.ChatContent;
 import com.example.chatbot.service.ChatService;
 
 @RestController
@@ -28,16 +26,11 @@ public class ChatController {
 
     @Autowired
     private ChatService chatService;
-    
-    @PostMapping("/content")
-    public ChatContent insertContent(@RequestBody ChatContent content) {
-        return  chatService.insertChatData(content);
-    }
-    
+      
     @PostMapping("/chat")
-    public ChatOutput getAllQuestionAndAnswers(@RequestBody ChatInput input) throws Exception {
+    public ChatResponse getAllQuestionAndAnswers(@RequestBody ChatRequest input) throws Exception {
     	try {
-    	ChatOutput chatMessages = chatService.getAllQuestionAndAnswers(input);
+    	ChatResponse chatMessages = chatService.getAllQuestionAndAnswers(input);
     	LOG.info("Api.getAllQuestionAndAnswers({}) => {}", input.getAnswerId(), chatMessages);
     	return chatMessages;
     	}catch (Exception e) {
