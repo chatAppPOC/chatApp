@@ -12,16 +12,16 @@ public class ChatContent
 {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id ;
+    private Long id;
     private String content;
 	private String contentType;
-	private Integer parentId;
+	private Long parentId;
+	private Long languageId;
 	
-	
-	public Integer getId() {
+	public Long getId() {
 		return id;
 	}
-	public void setId(Integer id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 	public String getContent() {
@@ -36,17 +36,24 @@ public class ChatContent
 	public void setContentType(String contentType) {
 		this.contentType = contentType;
 	}
-
-	public Integer getParentId() {
+	public Long getParentId() {
 		return parentId;
 	}
-	public void setParentId(Integer parentId) {
+	public void setParentId(Long parentId) {
 		this.parentId = parentId;
 	}
-	
+	public Long getLanguageId() {
+		return languageId;
+	}
+	public void setLanguageId(Long languageId) {
+		this.languageId = languageId;
+	}
 	@Override
 	public String toString() {
 		return "ChatContent [id=" + id + ", content=" + content + ", contentType=" + contentType + ", parentId="
-				+ parentId + "]";
+				+ parentId + ", languageId=" + languageId + "]";
 	}
+	
+	
+	
 }

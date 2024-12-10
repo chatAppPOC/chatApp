@@ -17,15 +17,15 @@ public class Chat {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	private Integer playerId;
-	private List<Integer> questions;
-	private List<Integer> answers;
+	private Long playerId;
+	private List<Long> questions;
+	private List<Long> answers;
 	private String description;
 	private String status;
 	private Instant createdOn;
 	private Instant updatedOn;
 	
-	public Chat(Integer playerId, String status) {
+	public Chat(Long playerId, String status) {
 	    this.playerId = playerId;
 	    this.questions = new ArrayList<>();
 	    this.answers = new ArrayList<>();
@@ -46,27 +46,27 @@ public class Chat {
 	}
 
 
-	public Integer getPlayerId() {
+	public Long getPlayerId() {
 		return playerId;
 	}
 
-	public void setPlayerId(Integer playerId) {
+	public void setPlayerId(Long playerId) {
 		this.playerId = playerId;
 	}
 
-	public List<Integer> getQuestions() {
+	public List<Long> getQuestions() {
 		return questions;
 	}
 
-	public void setQuestions(List<Integer> questions) {
+	public void setQuestions(List<Long> questions) {
 		this.questions = questions;
 	}
 
-	public List<Integer> getAnswers() {
+	public List<Long> getAnswers() {
 		return answers;
 	}
 
-	public void setAnswers(List<Integer> answers) {
+	public void setAnswers(List<Long> answers) {
 		this.answers = answers;
 	}
 

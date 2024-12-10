@@ -40,6 +40,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages }) => {
           }}
         >
           <ChatMessage
+            disabled={messages.length - 1 !== index}
             content={message.content}
             sender={message.sender}
             timestamp={message.timestamp}

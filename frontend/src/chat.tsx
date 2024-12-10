@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import ChatWindow from "./components/ChatWindow";
 import ChatInput from "./components/ChatInput";
 
@@ -13,13 +13,14 @@ interface Message {
 const ChatPage: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isFirstMessage, setIsFirstMessage] = useState(true);
-  const [isText, setIsText] = useState();
-  const [chatId, setIsChatId] = useState();
+  const [isText, setIsText] = useState(null);
+  const chatId = useRef<string | null>(null);
+  const [caseId, setCaseId] = useState(null);
+
   const handleSendMessage = async (
     message: string,
     questionId: any,
-    answerId: any,
-    isBegin: string
+    answerId: any
   ) => {
     const newMessage: Message = {
       id: Date.now().toString(),
@@ -34,9 +35,11 @@ const ChatPage: React.FC = () => {
 
     setMessages((prevMessages) => [...prevMessages, newMessage]);
 
+    // Create request with current chatId
     const request = {
       playerId: 445566,
-      isChatBegin: isBegin ? false : isFirstMessage,
+      chatId: chatId.current,
+      languageId : 1,
       questionId: isText ? isText : questionId,
       answerId,
       description: isText ? message : null,
@@ -45,18 +48,15 @@ const ChatPage: React.FC = () => {
     if (isFirstMessage) {
       setIsFirstMessage(false);
     }
-    
     getResponse(request);
   };
-  
- 
 
   const filterMessages = (data: any, types: string[]) => {
-    return data.filter((item: any) => types.includes(item.contentType));
+    return data.options.filter((item: any) => types.includes(item.contentType));
   };
 
   const renderQuestion = (data: any) => {
-    const messages = filterMessages(data, ["Question", "Text"]);
+    const messages = filterMessages(data, ["Question"]);
     return messages.map((message: any) => (
       <p key={message.id}>{message.content}</p>
     ));
@@ -75,7 +75,7 @@ const ChatPage: React.FC = () => {
             key={option.id}
             className="text-blue-600 border border-blue-200 p-3 rounded-lg bg-white shadow-sm hover:shadow-md hover:bg-blue-50 transition-all duration-300 cursor-pointer text-sm font-medium"
             onClick={() =>
-              handleSendMessage(option.content, ques.id, option.id, "false")
+              handleSendMessage(option.content, ques.id, option.id)
             }
           >
             {option.content}
@@ -97,24 +97,38 @@ const ChatPage: React.FC = () => {
       });
       const data = await response.json();
 
-      const text = filterMessages(data, ["Text"]);
-      if (text.length > 0){
-        setIsText(text[0].id);
-        setIsChatId(text[0].chatId);
+      if (data?.chatId) {
+        chatId.current = data.chatId;
+        setCaseId(data.chatId);
       }
+      console.log(chatId.current);
+
+      const text = data.options.length === 1 ? filterMessages(data, ["Question"]) : [];
+      console.log(text);
+      if(text.length > 0){
+        setIsText(text[0].id);
+      }
+      
       let content: any;
       content = [renderQuestion(data), renderOptions(data)];
-
-      if (data.length === 0) {
+      console.log(chatId.current);
+      if (data.options.length === 0) {
         content = "Thank you for contacting us. Have a nice day!";
+        chatId.current = null;
         setIsFirstMessage(true);
       }
 
       if (isText) {
-        content = "A case has been created with ID : "+chatId+". We will get back to you soon !";
+        console.log(isText);
+        console.log(chatId.current);
+        content =
+          "A case has been created with ID : " +
+          caseId +
+          ". We will get back to you soon !";
         setIsFirstMessage(true);
+        chatId.current = null;
       }
-
+      
       const newMessage: Message = {
         id: Date.now().toString(),
         content,
@@ -127,6 +141,7 @@ const ChatPage: React.FC = () => {
       };
 
       setMessages((prevMessages) => [...prevMessages, newMessage]);
+      return data;
     } catch (error) {
       console.error("Error fetching messages:", error);
     }
@@ -164,7 +179,7 @@ const ChatPage: React.FC = () => {
         <div className="flex-1 flex flex-col overflow-hidden">
           <ChatWindow messages={messages} />
           <ChatInput
-            onSendMessage={handleSendMessage}
+            onSendMessage={handleSendMessage as any}
             disabled={!isFirstMessage && !isText}
           />
         </div>
