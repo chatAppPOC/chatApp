@@ -50,4 +50,16 @@ public class ChatController {
 			throw e;
 		}
 	}
+    
+    @PostMapping("/chat/{caseId}/assign")
+	public Case reAssignTicketToAgent(@PathVariable Long caseId, @RequestParam Long userId) {
+		try {
+			Case updatedTicket = chatService.reAssignTicketToAgent(caseId, userId);
+			LOG.info("Api.assignTicket({}, {}) => {}", caseId, userId, updatedTicket);
+			return updatedTicket;
+		} catch (Exception e) {
+			LOG.error("Api.assignTicket({}, {}) => error!!!", caseId, userId, e);
+			throw e;
+		}
+	}
 }

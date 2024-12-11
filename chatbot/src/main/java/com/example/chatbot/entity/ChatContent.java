@@ -53,7 +53,4 @@ public class ChatContent
 		return "ChatContent [id=" + id + ", content=" + content + ", contentType=" + contentType + ", parentId="
 				+ parentId + ", languageId=" + languageId + "]";
 	}
-	
-	
-	
 }

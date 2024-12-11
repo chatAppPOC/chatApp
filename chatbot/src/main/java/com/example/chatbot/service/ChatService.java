@@ -109,4 +109,20 @@ public class ChatService {
 			throw e;
 		}
 	}
+
+	public Case reAssignTicketToAgent(Long caseId, Long userId) {
+		try {
+			Case caseResponse = caseRepository.findById(caseId)
+					.orElseThrow(() -> new RuntimeException("Case is not found"));
+			if(userId !=null) {
+				caseResponse.setUserId(userId);
+			}
+			Case response = caseRepository.save(caseResponse);
+			LOG.debug("ChatService.assignTicketToAgent({}, {}) => {}", caseId, userId, response);
+			return response;
+		} catch (Exception e) {
+			LOG.error("ChatService.assignTicketToAgent({}, {}) => error!!!", caseId, userId, e);
+			throw e;
+		}
+	}
 }
