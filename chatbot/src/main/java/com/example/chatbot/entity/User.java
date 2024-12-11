@@ -18,6 +18,8 @@ public class User {
 	private String firstName;
 	private String lastName;
 	private List<Long> preferredLanguage;
+	private List<Long> platform;
+	private List<Long> title;
 
 	public User() {
 	}
@@ -52,6 +54,22 @@ public class User {
 
 	public void setPreferredLanguage(List<Long> preferredLanguage) {
 		this.preferredLanguage = preferredLanguage;
+	}
+
+	public List<Long> getPlatform() {
+		return platform;
+	}
+
+	public void setPlatform(List<Long> platform) {
+		this.platform = platform;
+	}
+
+	public List<Long> getTitle() {
+		return title;
+	}
+
+	public void setTitle(List<Long> title) {
+		this.title = title;
 	}
 
 	@Override

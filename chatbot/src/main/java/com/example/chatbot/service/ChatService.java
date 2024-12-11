@@ -17,10 +17,12 @@ import com.example.chatbot.dto.ChatResponse;
 import com.example.chatbot.entity.Case;
 import com.example.chatbot.entity.Chat;
 import com.example.chatbot.entity.ChatContent;
+import com.example.chatbot.entity.Player;
 import com.example.chatbot.entity.User;
 import com.example.chatbot.repo.CaseRepository;
 import com.example.chatbot.repo.ChatContentRepository;
 import com.example.chatbot.repo.ChatRepository;
+import com.example.chatbot.repo.PlayerRepo;
 import com.example.chatbot.repo.UserRepository;
 
 @Service
@@ -39,6 +41,9 @@ public class ChatService {
     
     @Autowired
     UserRepository userRepository;
+    
+    @Autowired
+    PlayerRepo playerRepo;
     
     public ChatContent insertChatData(ChatContent request) {
         return chatContentRepository.save(request);
@@ -91,37 +96,42 @@ public class ChatService {
 	}
 
 	@Transactional
-	public Case createSupportCaseByChatId(Long chatId, Long userId) throws Exception {
+	public Case createSupportCaseByChatId(Long chatId) throws Exception {
 		try {
 			Optional<Chat> chat = chatRepository.findById(chatId);
-			Optional<User> user = userRepository.findById(userId);
 			Case newCase = null;
-			if (chat.isPresent() && user.isPresent()) {
-					newCase = new Case(user.get().getId(), chat.get().getId());
+			if(chat.isPresent()) {
+				Chat chatRes = chat.get();
+				Optional<Player> player = playerRepo.findById(chatRes.getPlayerId());
+				Player playerRes = player.get();
+				User assignedUser = userRepository.fetchUser(playerRes.getPreferredLanguage(), 
+						playerRes.getPlatform(), playerRes.getTitle());
+				if(assignedUser != null) {
+					newCase = new Case(assignedUser.getId(), chat.get().getId());
+				}
 			} else {
-				throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Either chatId or userId is invalid");
+				LOG.warn("ChatService.createSupportCaseByChatId({}) => ChatId does not exist", chatId);
 			}
 			Case response = caseRepository.save(newCase);
-			LOG.debug("ChatService.createSupportCaseByChatId({}, {}) => {}", chatId, userId, response);
+			LOG.debug("ChatService.createSupportCaseByChatId({}) => {}", chatId,  response);
 			return response;
 		} catch (Exception e) {
-			LOG.error("ChatService.createSupportCaseByChatId({}, {}) => error!!!", chatId, userId, e);
+			LOG.error("ChatService.createSupportCaseByChatId({}) => error!!!", chatId, e);
 			throw e;
 		}
 	}
 
-	public Case reAssignTicketToAgent(Long caseId, Long userId) {
+	@Transactional
+	public Case reAssignTicketToAgent(Long userId, Case caseResponse) {
 		try {
-			Case caseResponse = caseRepository.findById(caseId)
-					.orElseThrow(() -> new RuntimeException("Case is not found"));
 			if(userId !=null) {
 				caseResponse.setUserId(userId);
 			}
 			Case response = caseRepository.save(caseResponse);
-			LOG.debug("ChatService.assignTicketToAgent({}, {}) => {}", caseId, userId, response);
+			LOG.debug("ChatService.assignTicketToAgent({}, {}) => {}", userId, response);
 			return response;
 		} catch (Exception e) {
-			LOG.error("ChatService.assignTicketToAgent({}, {}) => error!!!", caseId, userId, e);
+			LOG.error("ChatService.assignTicketToAgent({}, {}) => error!!!",  userId, e);
 			throw e;
 		}
 	}
