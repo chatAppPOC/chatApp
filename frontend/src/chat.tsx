@@ -1,6 +1,9 @@
 import React, { useState, useRef } from "react";
+import { useTranslation } from "react-i18next";
+import i18n from "./i18n";
 import ChatWindow from "./components/ChatWindow";
 import ChatInput from "./components/ChatInput";
+import { LANGUAGES } from "./constants/LANGUAGES";
 
 interface Message {
   id: string;
@@ -11,17 +14,29 @@ interface Message {
 }
 
 const ChatPage: React.FC = () => {
+  const { t, i18n } = useTranslation();
+  const [currentLanguage, setCurrentLanguage] = useState(i18n.language);
+  const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
+
+  const changeLanguage = (languageCode: string) => {
+    i18n.changeLanguage(languageCode);
+    setCurrentLanguage(languageCode);
+    setIsLanguageDropdownOpen(false);
+  };
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [isFirstMessage, setIsFirstMessage] = useState(true);
   const [isText, setIsText] = useState(null);
   const chatId = useRef<string | null>(null);
   const [caseId, setCaseId] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSendMessage = async (
     message: string,
     questionId: any,
     answerId: any
   ) => {
+    setIsLoading(true);
     const newMessage: Message = {
       id: Date.now().toString(),
       content: message,
@@ -35,11 +50,10 @@ const ChatPage: React.FC = () => {
 
     setMessages((prevMessages) => [...prevMessages, newMessage]);
 
-    // Create request with current chatId
     const request = {
       playerId: 445566,
       chatId: chatId.current,
-      languageId : 1,
+      languageId: 1,
       questionId: isText ? isText : questionId,
       answerId,
       description: isText ? message : null,
@@ -101,34 +115,27 @@ const ChatPage: React.FC = () => {
         chatId.current = data.chatId;
         setCaseId(data.chatId);
       }
-      console.log(chatId.current);
 
-      const text = data.options.length === 1 ? filterMessages(data, ["Question"]) : [];
-      console.log(text);
-      if(text.length > 0){
+      const text =
+        data.options.length === 1 ? filterMessages(data, ["Question"]) : [];
+      if (text.length > 0) {
         setIsText(text[0].id);
       }
-      
+
       let content: any;
       content = [renderQuestion(data), renderOptions(data)];
-      console.log(chatId.current);
       if (data.options.length === 0) {
-        content = "Thank you for contacting us. Have a nice day!";
+        content = t("thankYou");
         chatId.current = null;
         setIsFirstMessage(true);
       }
 
       if (isText) {
-        console.log(isText);
-        console.log(chatId.current);
-        content =
-          "A case has been created with ID : " +
-          caseId +
-          ". We will get back to you soon !";
+        content = t("caseCreated", { caseId: caseId });
         setIsFirstMessage(true);
         chatId.current = null;
       }
-      
+
       const newMessage: Message = {
         id: Date.now().toString(),
         content,
@@ -141,47 +148,90 @@ const ChatPage: React.FC = () => {
       };
 
       setMessages((prevMessages) => [...prevMessages, newMessage]);
+      setIsLoading(false);
       return data;
     } catch (error) {
       console.error("Error fetching messages:", error);
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="w-full max-w-4xl h-[80vh] bg-white rounded-lg shadow-xl flex flex-col">
-        <div className="bg-blue-500 text-white p-4 rounded-t-lg">
-          <div className="flex items-center">
-            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center mr-3">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6 text-blue-500"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-100 via-blue-50 to-blue-200">
+      <div className="w-full max-w-7xl h-[96vh] bg-white rounded-2xl shadow-2xl flex overflow-hidden relative">
+        {/* Sidebar with Bot Info */}
+        <div className="hidden w-1/3 bg-gradient-to-br from-blue-500 to-blue-700 text-white p-8 md:flex flex-col justify-center items-center">
+          <div className="">
+            <img
+              src="/atvilogo-wht.png"
+              alt="Activision Logo"
+              className="h-30 w-auto opacity-80"
+            />
+          </div>
+          <p className="text-center text-blue-100 ">{t("welcome")}</p>
+        </div>
+
+        {/* Chat Area */}
+        <div className="w-full flex flex-col">
+          {/* Chat Header with Language Selector */}
+          <div className="bg-gray-100 p-4 border-b border-gray-200 flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 rounded-full overflow-hidden">
+                <img
+                  src="https://img.freepik.com/free-vector/cartoon-style-robot-vectorart_78370-4103.jpg"
+                  alt="Bot Avatar"
+                  className="w-full h-full object-cover"
                 />
-              </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold">{t("chatHeader")}</h3>
+                <p className="text-sm text-gray-500">{t("online")}</p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-xl font-semibold">Support Chat</h2>
-              <p className="text-sm text-blue-100">
-                We typically reply within minutes
-              </p>
+
+            {/* Language Selector Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() =>
+                  setIsLanguageDropdownOpen(!isLanguageDropdownOpen)
+                }
+                className="flex items-center space-x-2 bg-white px-3 py-2 rounded-md shadow-sm hover:bg-gray-50 transition"
+              >
+                <span className="pr-3">
+                  {
+                    LANGUAGES.find((lang) => lang.code === currentLanguage)
+                      ?.flag
+                  }
+                </span>
+                {LANGUAGES.find((lang) => lang.code === currentLanguage)?.name}
+              </button>
+
+              {isLanguageDropdownOpen && (
+                <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-md shadow-lg z-10">
+                  {LANGUAGES.map((language) => (
+                    <button
+                      key={language.code}
+                      onClick={() => changeLanguage(language.code)}
+                      className={`w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center space-x-2 ${
+                        currentLanguage === language.code ? "bg-gray-100" : ""
+                      }`}
+                    >
+                      <span>{language.flag}</span>
+                      <span>{language.name}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
-        </div>
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <ChatWindow messages={messages} />
-          <ChatInput
-            onSendMessage={handleSendMessage as any}
-            disabled={!isFirstMessage && !isText}
-          />
+
+          {/* Existing Chat Components */}
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <ChatWindow messages={messages} />
+          </div>
+          <div className="border-t border-gray-200">
+            <ChatInput onSendMessage={handleSendMessage} disabled={isLoading} />
+          </div>
         </div>
       </div>
     </div>
