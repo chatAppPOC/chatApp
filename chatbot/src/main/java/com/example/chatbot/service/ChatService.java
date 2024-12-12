@@ -68,6 +68,7 @@ public class ChatService {
 						chat.getQuestions().add(input.getQuestionId());
 					if(input.getDescription() != null) {
 						chat.setDescription(input.getDescription());
+						createSupportCaseByChatId(input.getChatId());
 						chat.setStatus("CASE_CREATED");
 					}
 					else if(input.getAnswerId() != null) {
@@ -101,11 +102,9 @@ public class ChatService {
 			Optional<Chat> chat = chatRepository.findById(chatId);
 			Case newCase = null;
 			if(chat.isPresent()) {
-				Chat chatRes = chat.get();
-				Optional<Player> player = playerRepo.findById(chatRes.getPlayerId());
-				Player playerRes = player.get();
-				User assignedUser = userRepository.fetchUser(playerRes.getPreferredLanguage(), 
-						playerRes.getPlatform(), playerRes.getTitle());
+				Optional<Player> player = playerRepo.findById(chat.get().getPlayerId());
+				User assignedUser = userRepository.fetchUserByLanguageAndPlatformAndTitle(player.get().getPreferredLanguage(), 
+						player.get().getPlatform(), player.get().getTitle());
 				if(assignedUser != null) {
 					newCase = new Case(assignedUser.getId(), chat.get().getId());
 				}
@@ -117,21 +116,6 @@ public class ChatService {
 			return response;
 		} catch (Exception e) {
 			LOG.error("ChatService.createSupportCaseByChatId({}) => error!!!", chatId, e);
-			throw e;
-		}
-	}
-
-	@Transactional
-	public Case reAssignTicketToAgent(Long userId, Case caseResponse) {
-		try {
-			if(userId !=null) {
-				caseResponse.setUserId(userId);
-			}
-			Case response = caseRepository.save(caseResponse);
-			LOG.debug("ChatService.assignTicketToAgent({}, {}) => {}", userId, response);
-			return response;
-		} catch (Exception e) {
-			LOG.error("ChatService.assignTicketToAgent({}, {}) => error!!!",  userId, e);
 			throw e;
 		}
 	}

@@ -8,10 +8,6 @@ import com.example.chatbot.entity.User;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 
-	@Query("""
-			    SELECT u from User u WHERE 	u.preferredLanguage = :language AND u.platform = :platform AND u.title = :title ORDER BY preferredLanguage ASC LIMIT 1
-			""")
-	User fetchUser(@Param("language") Long language,
-			@Param("platform") Long platform, @Param("title") Long title);
-
+	@Query(value = "SELECT * FROM users u WHERE ARRAY_CONTAINS(u.preferred_language, ?) AND ARRAY_CONTAINS(u.platform, ?) AND ARRAY_CONTAINS(u.title, ?) LIMIT 1", nativeQuery = true)
+	User fetchUserByLanguageAndPlatformAndTitle(@Param("language") Long language, @Param("platform") Long platform, @Param("title") Long title);
 }
