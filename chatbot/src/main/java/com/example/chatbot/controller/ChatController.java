@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -66,9 +67,8 @@ public class ChatController {
 		}
 	}
     
-    @PostMapping("/chat/{caseId}/re-assign")
-    @Transactional
-	public Case reAssignTicketToAgent(@PathVariable Long caseId, @RequestParam Long userId) {
+    @PutMapping("/case/{caseId}/re-assign/{userId}")
+	public Case reAssignTicketToAgent(@PathVariable Long caseId, @PathVariable Long userId) {
 		try {
 			Optional<Case> caseResp = caseRepository.findById(caseId);	
 			Optional<User> userResp = userRepository.findById(userId);
