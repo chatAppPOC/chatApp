@@ -36,4 +36,6 @@ public interface ChatContentRepository extends JpaRepository<ChatContent, Intege
 	List<ChatContent> nextSetOfContent(@Param("id") Long id, @Param("languageId") Long languageId);
 	
 	Optional<ChatContent> findById(Long id);
+	
+	List<ChatContent> findByIdIn(List<Long> ids);
 }

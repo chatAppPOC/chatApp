@@ -51,7 +51,7 @@ const ChatPage: React.FC = () => {
     setMessages((prevMessages) => [...prevMessages, newMessage]);
 
     const request = {
-      playerId: 445566,
+      playerId: 2233344,
       chatId: chatId.current,
       languageId: 1,
       questionId: isText ? isText : questionId,
