@@ -1,6 +1,5 @@
 package com.example.chatbot.repo;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,7 +16,4 @@ public interface ChatRepository extends JpaRepository<Chat, Long>{
 	Chat getExistingChat(Long playerId, Long id);
 
 	Optional<Chat> findById(Long Id);
-	
-	List<Chat> findByPlayerId(Long playerId);
-
 }
