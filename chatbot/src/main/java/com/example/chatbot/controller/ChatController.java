@@ -19,10 +19,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.example.chatbot.dto.ChatMessageRequest;
 import com.example.chatbot.dto.ChatRequest;
 import com.example.chatbot.dto.ChatResponse;
 import com.example.chatbot.entity.Case;
 import com.example.chatbot.entity.Chat;
+import com.example.chatbot.entity.ChatMessage;
 import com.example.chatbot.entity.User;
 import com.example.chatbot.repo.CaseRepository;
 import com.example.chatbot.repo.UserRepository;
@@ -86,4 +88,28 @@ public class ChatController {
 			throw e;
 		}
 	}
+	
+	  @PostMapping("chat/conversation/{chatId}")
+		public ChatMessage addChatMessage(@PathVariable Long chatId, @RequestBody ChatMessageRequest message) {
+			try {
+				ChatMessage response = chatService.addChatMessage(chatId, message);
+				LOG.info("Api.addChatMessage({}, {}) => {}", message, response);
+				return response;
+			} catch (Exception e) {
+				LOG.error("Api.addChatMessage({}, {}) => error!!!", message, e);
+				throw e;
+			}
+		}
+
+		@GetMapping("chat/conversation/{chatId}")
+		public List<ChatMessage> getChatMessages(@PathVariable Long chatId) {
+			try {
+				List<ChatMessage> response = chatService.getChatMessages(chatId);
+				LOG.info("Api.addChatMessage({}, {}) => {}", chatId, response);
+				return response;
+			} catch (Exception e) {
+				LOG.error("Api.addChatMessage({}, {}) => error!!!", chatId, e);
+				throw e;
+			}
+		}
 }
