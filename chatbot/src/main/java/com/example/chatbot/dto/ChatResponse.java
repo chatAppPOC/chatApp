@@ -6,9 +6,16 @@ import com.example.chatbot.entity.ChatContent;
 
 public class ChatResponse {
 	private Long chatId;
+	private Long caseId;
 	private List<ChatContent> options = new ArrayList<>();
 	
-
+    
+	public Long getCaseId() {
+		return caseId;
+	}
+	public void setCaseId(Long caseId) {
+		this.caseId = caseId;
+	}
 	public Long getChatId() {
 		return chatId;
 	}
@@ -21,5 +28,12 @@ public class ChatResponse {
 	public void setOptions(List<ChatContent> options) {
 		this.options = options;
 	}
+	
+	@Override
+	public String toString() {
+		return "ChatResponse [chatId=" + chatId + ", options=" + options + ", getChatId()=" + getChatId()
+				+ ", getOptions()=" + getOptions() + "]";
+	}
+	
 	
 }

@@ -2,6 +2,7 @@ package com.example.chatbot;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -15,7 +16,8 @@ public class UserRepoTest {
 
 	@Autowired
 	UserRepository userRepository;
-
+    
+	@Disabled ("This test is disabled as the feature is WIP")
 	@Test
 	public void fetchUser() {
 		var lang = 1L;

@@ -1,46 +1,44 @@
 package com.example.chatbot.dto;
 
+import java.util.List;
+
+import com.example.chatbot.model.Message;
+
 public class ChatRequest {
 	private Long playerId;
-	private Long languageId;
-	private Long questionId;
-	private Long answerId;
-	private String description;
+	private Long modelId;
 	private Long chatId;
+	private List<Message> messages;
+	
 	public Long getPlayerId() {
 		return playerId;
 	}
 	public void setPlayerId(Long playerId) {
 		this.playerId = playerId;
 	}
-	public Long getLanguageId() {
-		return languageId;
+	public Long getModelId() {
+		return modelId;
 	}
-	public void setLanguageId(Long languageId) {
-		this.languageId = languageId;
+	public void setModelId(Long modelId) {
+		this.modelId = modelId;
 	}
-	public Long getQuestionId() {
-		return questionId;
+	
+	public List<Message> getMessages() {
+		return messages;
 	}
-	public void setQuestionId(Long questionId) {
-		this.questionId = questionId;
+	public void setMessages(List<Message> messages) {
+		this.messages = messages;
 	}
-	public Long getAnswerId() {
-		return answerId;
-	}
-	public void setAnswerId(Long answerId) {
-		this.answerId = answerId;
-	}
-	public String getDescription() {
-		return description;
-	}
-	public void setDescription(String description) {
-		this.description = description;
-	}
+	
 	public Long getChatId() {
 		return chatId;
 	}
 	public void setChatId(Long chatId) {
 		this.chatId = chatId;
+	}
+	@Override
+	public String toString() {
+		return "ChatRequest [playerId=" + playerId + ", modelId=" + modelId + ", messages="
+				+ messages + ", chatId=" + chatId + "]";
 	}
 }

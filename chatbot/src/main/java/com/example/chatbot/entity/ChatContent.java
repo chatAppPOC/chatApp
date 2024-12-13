@@ -16,7 +16,7 @@ public class ChatContent
     private String content;
 	private String contentType;
 	private Long parentId;
-	private Long languageId;
+	private Long modelId;
 	
 	public Long getId() {
 		return id;
@@ -42,15 +42,15 @@ public class ChatContent
 	public void setParentId(Long parentId) {
 		this.parentId = parentId;
 	}
-	public Long getLanguageId() {
-		return languageId;
+	public Long getModelId() {
+		return modelId;
 	}
-	public void setLanguageId(Long languageId) {
-		this.languageId = languageId;
+	public void setModelId(Long modelId) {
+		this.modelId = modelId;
 	}
 	@Override
 	public String toString() {
 		return "ChatContent [id=" + id + ", content=" + content + ", contentType=" + contentType + ", parentId="
-				+ parentId + ", languageId=" + languageId + "]";
-	}
+				+ parentId + ", modelId=" + modelId + "]";
+	}	
 }

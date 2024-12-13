@@ -1,16 +1,18 @@
 package com.example.chatbot.service;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.example.chatbot.dto.ChatRequest;
 import com.example.chatbot.dto.ChatResponse;
@@ -19,10 +21,11 @@ import com.example.chatbot.entity.Chat;
 import com.example.chatbot.entity.ChatContent;
 import com.example.chatbot.entity.Player;
 import com.example.chatbot.entity.User;
+import com.example.chatbot.model.Message;
 import com.example.chatbot.repo.CaseRepository;
 import com.example.chatbot.repo.ChatContentRepository;
 import com.example.chatbot.repo.ChatRepository;
-import com.example.chatbot.repo.PlayerRepo;
+import com.example.chatbot.repo.PlayerRepository;
 import com.example.chatbot.repo.UserRepository;
 
 @Service
@@ -43,57 +46,78 @@ public class ChatService {
     UserRepository userRepository;
     
     @Autowired
-    PlayerRepo playerRepo;
+    PlayerRepository playerRepository;
     
-    public ChatContent insertChatData(ChatContent request) {
-        return chatContentRepository.save(request);
-    }
-    
+   
+   
 	@Transactional
-	public ChatResponse getAllQuestionAndAnswers(ChatRequest input) throws Exception {
+	public ChatResponse performChat(ChatRequest request) throws Exception{
 		try {
 			
-			List<ChatContent> chatContent = input.getChatId() == null ? 
-					chatContentRepository.firstSetOfContent(input.getLanguageId())
-					: chatContentRepository.nextSetOfContent(input.getAnswerId(), input.getLanguageId());	
+			Long optionId = 0L;
+			String description = "";
+			List<ChatContent> chatContent = new ArrayList<>();
+			Optional<Message> answer = request.getMessages().stream()
+					             .filter(msg -> msg.getSource().equals("PLAYER"))
+					             .findFirst();
+			if(answer.isPresent()) {
+				optionId = answer.get().getContentId();
+				description = answer.get().getContent();
+				chatContent = request.getChatId() == null ? 
+						chatContentRepository.firstSetOfContent(request.getModelId())
+						: chatContentRepository.nextSetOfContent(optionId, request.getModelId());	
+			}
 			
 			Chat chat = null;
-			if(input.getChatId() == null) {
-				chat = new Chat(input.getPlayerId(), "IN_PROGRESS");
+			Case newCase = null;
+			ChatResponse chatMessages = new ChatResponse();
+
+			if(request.getChatId() == null) {
+				chat = new Chat(request.getPlayerId(), "IN_PROGRESS");
+				chat.getMessages().addAll(request.getMessages());
 			}
-			else{
-				chat = chatRepository.getExistingChat(input.getPlayerId(), input.getChatId());
+			else if(request.getMessages().size() > 1){
+				chat = chatRepository.getExistingChatInProgress(request.getPlayerId(), request.getChatId());
 				if (chat != null && chat.getId() != null) {
-					if(input.getQuestionId() != null)
-						chat.getQuestions().add(input.getQuestionId());
-					if(input.getDescription() != null) {
-						chat.setDescription(input.getDescription());
-						createSupportCaseByChatId(input.getChatId());
+					chat.getMessages().addAll(request.getMessages());
+					if(optionId == null && !description.isEmpty()) {
+						chat.setDescription(description);
+						chatMessages.setCaseId(1L);
+						newCase = createSupportCaseByChatId(request.getChatId());
+//						if(newCase != null) {
+//						chatMessages.setCaseId(newCase.getId());
+//					}
 						chat.setStatus("CASE_CREATED");
-					}
-					else if(input.getAnswerId() != null) {
-						chat.getAnswers().add(input.getAnswerId());
 					}
 					chat.setUpdatedOn(Instant.now());
 	 		    } 
 			}
-			
-			if(chatContent != null && chatContent.isEmpty() && input.getDescription() == null) {
-				chat.setStatus("COMPLETE");
+			else{
+				chat = chatRepository.getExistingChat(request.getPlayerId(), request.getChatId());
+				if (chat != null && chat.getId() != null) {
+					chat.getMessages().addAll(request.getMessages());
+					if(chat.getStatus().equals("IN_PROGRESS")) {
+						chat.setStatus("COMPLETE");
+					}		
+				}	
 			}
-			
+						
 			Chat savedChat = chatRepository.save(chat);
-			
-			ChatResponse chatMessages = new ChatResponse();
 			chatMessages.setChatId(savedChat.getId());
 			chatMessages.setOptions(chatContent);
 			
-			LOG.debug("ChatService.getAllQuestionAndAnswers({}) => {}", input.getAnswerId(), chatMessages);
+			LOG.debug("ChatService.getAllQuestionAndAnswers({}) => {}", optionId, chatMessages);
 			return chatMessages;
 		} catch (Exception e) {
-			LOG.error("ChatService.getAllQuestionAndAnswers({}) => error!!!", input.getAnswerId(), e);
+			LOG.error("ChatService.getAllQuestionAndAnswers({}) => error!!!", e);
 			throw e;
 		}
+	}
+	
+	@Transactional
+	public Page<Chat> getChatHistory(Long playerId, int page, int size) {		
+		 Pageable pageable = PageRequest.of(page, size);
+	     return chatRepository.findAllByPlayerId(playerId, pageable);
 	}
 
 	@Transactional
@@ -102,7 +126,7 @@ public class ChatService {
 			Optional<Chat> chat = chatRepository.findById(chatId);
 			Case newCase = null;
 			if(chat.isPresent()) {
-				Optional<Player> player = playerRepo.findById(chat.get().getPlayerId());
+				Optional<Player> player = playerRepository.findById(chat.get().getPlayerId());
 				User assignedUser = userRepository.fetchUserByLanguageAndPlatformAndTitle(player.get().getPreferredLanguage(), 
 						player.get().getPlatform(), player.get().getTitle());
 				if(assignedUser != null) {
