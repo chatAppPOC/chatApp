@@ -1,7 +1,6 @@
 package com.example.chatbot.service;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -9,24 +8,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.example.chatbot.dto.ChatMessageRequest;
 import com.example.chatbot.dto.ChatRequest;
 import com.example.chatbot.dto.ChatResponse;
 import com.example.chatbot.entity.Case;
 import com.example.chatbot.entity.Chat;
 import com.example.chatbot.entity.ChatContent;
-import com.example.chatbot.entity.ChatMessage;
-import com.example.chatbot.entity.ChatMessage.Message;
 import com.example.chatbot.entity.Player;
 import com.example.chatbot.entity.User;
 import com.example.chatbot.repo.CaseRepository;
 import com.example.chatbot.repo.ChatContentRepository;
-import com.example.chatbot.repo.ChatMessageRepository;
 import com.example.chatbot.repo.ChatRepository;
 import com.example.chatbot.repo.PlayerRepo;
 import com.example.chatbot.repo.UserRepository;
@@ -50,9 +44,6 @@ public class ChatService {
     
     @Autowired
     PlayerRepo playerRepo;
-    
-    @Autowired
-    ChatMessageRepository chatMessageRepository;
     
     public ChatContent insertChatData(ChatContent request) {
         return chatContentRepository.save(request);
@@ -125,53 +116,6 @@ public class ChatService {
 			return response;
 		} catch (Exception e) {
 			LOG.error("ChatService.createSupportCaseByChatId({}) => error!!!", chatId, e);
-			throw e;
-		}
-	}
-	
-	public ChatMessage addChatMessage(Long chatId, ChatMessageRequest messageRequest) {
-		try {
-			Optional<Chat> chat = chatRepository.findById(chatId);
-			Optional<ChatMessage> mayBeChatMessages = chatMessageRepository.findById(chatId);
-			if (chat.isPresent()) {
-				ChatMessage chatMessages = new ChatMessage();
-				chatMessages.setChatId(chatId);
-				Message message = new Message();
-				message.setContent(messageRequest.content);
-				message.setSource(messageRequest.source);
-				message.setTimestamp(Instant.now());
-				message.setContentType(MediaType.TEXT_PLAIN.toString());
-				List<Message> messageList = null;
-				if (!mayBeChatMessages.isPresent()) {
-					messageList = new ArrayList<Message>();
-				} else {
-					messageList = mayBeChatMessages.get().getMessages();
-				}
-				messageList.add(message);
-				chatMessages.setMessages(messageList);
-				ChatMessage addedMessage = chatMessageRepository.save(chatMessages);
-				LOG.debug("ChatService.addChatMessage({}) => {}", chatId,  addedMessage);
-			} else {
-				throw new ResponseStatusException(HttpStatus.NOT_FOUND, "chatId is invalid");
-			}
-		} catch (Exception e) {
-			LOG.error("ChatService.addChatMessage({}) => error!!!", messageRequest, e);
-			throw e;
-		}
-		return null;
-	}
-
-	public List<ChatMessage> getChatMessages(Long chatId) {
-		try {
-			Optional<Chat> chat = chatRepository.findById(chatId);
-			if (chat.isPresent()) {
-				List<ChatMessage> messages = chatMessageRepository.findByChatId(chatId);
-				return messages;
-			} else {
-				throw new ResponseStatusException(HttpStatus.NOT_FOUND, "chatId is invalid");
-			}
-		} catch (Exception e) {
-			LOG.error("ChatService.getChatMessages({}) => error!!!", chatId, e);
 			throw e;
 		}
 	}
