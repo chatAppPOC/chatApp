@@ -20,6 +20,7 @@ public class User {
 	private List<Long> preferredLanguage;
 	private List<Long> platform;
 	private List<Long> title;
+	private Long groupId;
 
 	public User() {
 	}
