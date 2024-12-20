@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.example.chatbot.dto.CaseFeedbackRequest;
 import com.example.chatbot.dto.ChatMessageRequest;
 import com.example.chatbot.dto.ChatRequest;
 import com.example.chatbot.dto.ChatResponse;
@@ -24,6 +25,7 @@ import com.example.chatbot.entity.Case;
 import com.example.chatbot.entity.Chat;
 import com.example.chatbot.entity.ChatContent;
 import com.example.chatbot.entity.ChatMessage;
+import com.example.chatbot.entity.Feedback;
 import com.example.chatbot.entity.Player;
 import com.example.chatbot.entity.User;
 import com.example.chatbot.model.Message;
@@ -31,6 +33,7 @@ import com.example.chatbot.repo.CaseRepository;
 import com.example.chatbot.repo.ChatContentRepository;
 import com.example.chatbot.repo.ChatMessageRepository;
 import com.example.chatbot.repo.ChatRepository;
+import com.example.chatbot.repo.FeedbackRepository;
 import com.example.chatbot.repo.PlayerRepository;
 import com.example.chatbot.repo.UserRepository;
 
@@ -57,6 +60,8 @@ public class ChatService {
     @Autowired
     ChatMessageRepository chatMessageRepository;
    
+    @Autowired
+    FeedbackRepository feedbackRepo;
    
 	@Transactional
 	public ChatResponse performChat(ChatRequest request) throws Exception{
@@ -195,6 +200,23 @@ public class ChatService {
 			}
 		} catch (Exception e) {
 			LOG.error("ChatService.getChatMessages({}) => error!!!", chatId, e);
+			throw e;
+		}
+	}
+	
+	public Feedback providePostResolutionFeedback(CaseFeedbackRequest request, Case caseResp) {
+		try {
+			Optional<Chat> chat = chatRepository.findById(caseResp.getChatId());
+			Feedback feedback = null;
+			if (chat.isPresent()) {
+				feedback = new Feedback(caseResp.getChatId(), caseResp.getId(), request.getPlayerFeedbackComments(), request.getIssueResolved(),
+						request.getSatisfiedWithSupport(), request.getPlayerRating());
+			}
+			Feedback response = feedbackRepo.save(feedback);
+			LOG.debug("ChatService.providePostResolutionFeedback({}) => {}", request, response);
+			return response;
+		} catch (Exception e) {
+			LOG.error("ChatService.providePostResolutionFeedback({}) => error!!!", request, e);
 			throw e;
 		}
 	}

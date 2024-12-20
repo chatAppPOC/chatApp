@@ -19,12 +19,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.example.chatbot.dto.CaseFeedbackRequest;
 import com.example.chatbot.dto.ChatMessageRequest;
 import com.example.chatbot.dto.ChatRequest;
 import com.example.chatbot.dto.ChatResponse;
 import com.example.chatbot.entity.Case;
 import com.example.chatbot.entity.Chat;
 import com.example.chatbot.entity.ChatMessage;
+import com.example.chatbot.entity.Feedback;
 import com.example.chatbot.entity.User;
 import com.example.chatbot.repo.CaseRepository;
 import com.example.chatbot.repo.UserRepository;
@@ -89,27 +91,43 @@ public class ChatController {
 		}
 	}
 	
-	  @PostMapping("chat/conversation/{chatId}")
-		public ChatMessage addChatMessage(@PathVariable Long chatId, @RequestBody ChatMessageRequest message) {
-			try {
-				ChatMessage response = chatService.addChatMessage(chatId, message);
-				LOG.info("Api.addChatMessage({}, {}) => {}", message, response);
-				return response;
-			} catch (Exception e) {
-				LOG.error("Api.addChatMessage({}, {}) => error!!!", message, e);
-				throw e;
-			}
+	@PostMapping("chat/conversation/{chatId}")
+	public ChatMessage addChatMessage(@PathVariable Long chatId, @RequestBody ChatMessageRequest message) {
+		try {
+			ChatMessage response = chatService.addChatMessage(chatId, message);
+			LOG.info("Api.addChatMessage({}, {}) => {}", message, response);
+			return response;
+		} catch (Exception e) {
+			LOG.error("Api.addChatMessage({}, {}) => error!!!", message, e);
+			throw e;
 		}
+	}
 
-		@GetMapping("chat/conversation/{chatId}")
-		public List<ChatMessage> getChatMessages(@PathVariable Long chatId) {
-			try {
-				List<ChatMessage> response = chatService.getChatMessages(chatId);
-				LOG.info("Api.addChatMessage({}, {}) => {}", chatId, response);
-				return response;
-			} catch (Exception e) {
-				LOG.error("Api.addChatMessage({}, {}) => error!!!", chatId, e);
-				throw e;
-			}
+	@GetMapping("chat/conversation/{chatId}")
+	public List<ChatMessage> getChatMessages(@PathVariable Long chatId) {
+		try {
+			List<ChatMessage> response = chatService.getChatMessages(chatId);
+			LOG.info("Api.addChatMessage({}, {}) => {}", chatId, response);
+			return response;
+		} catch (Exception e) {
+			LOG.error("Api.addChatMessage({}, {}) => error!!!", chatId, e);
+			throw e;
 		}
+	}
+
+	@PostMapping("/feedback/{caseId}")
+	public Feedback saveFeedback(@PathVariable Long caseId, @RequestBody CaseFeedbackRequest request) {
+		try {
+			Optional<Case> caseResp = caseRepository.findById(caseId);
+			Feedback response = null;
+			if (caseResp.isPresent()) {
+				response = chatService.providePostResolutionFeedback(request, caseResp.get());
+			}
+			LOG.info("Api.saveFeedback({}, {}) => {}", caseId, request, response);
+			return response;
+		} catch (Exception e) {
+			LOG.error("Api.saveFeedback({}, {}) => error!!!", caseId, request, e);
+			throw e;
+		}
+	}
 }

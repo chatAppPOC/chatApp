@@ -25,7 +25,7 @@ public class Case {
 	private CaseStatus status;
 
 	public enum CaseStatus {
-		OPEN, CLOSED
+		OPEN, RESOLVED, IN_PROGRESS
 	}
 
 	public Case(Long userId, Long chatId) {
