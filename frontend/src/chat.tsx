@@ -1,8 +1,8 @@
 import React, { useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import i18n from "./i18n";
-import ChatWindow from "./components/ChatWindow";
-import ChatInput from "./components/ChatInput";
+import ChatWindow from "./components/ChatPage/ChatWindow";
+import ChatInput from "./components/ChatPage/ChatInput";
 import { LANGUAGES } from "./constants/LANGUAGES";
 
 interface Message {
@@ -156,11 +156,15 @@ const ChatPage: React.FC = () => {
     }
   };
 
+  const navigateToQAContentGrid = () => {
+    window.location.href = "/qa-content-grid"; // or use React Router
+  };
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-100 via-blue-50 to-blue-200">
       <div className="w-full max-w-7xl h-[96vh] bg-white rounded-2xl shadow-2xl flex overflow-hidden relative">
         {/* Sidebar with Bot Info */}
-        <div className="hidden w-1/3 bg-gradient-to-br from-blue-500 to-blue-700 text-white p-8 md:flex flex-col justify-center items-center">
+        {/* <div className="hidden w-1/3 bg-gradient-to-br from-blue-500 to-blue-700 text-white p-8 md:flex flex-col justify-center items-center">
           <div className="">
             <img
               src="/atvilogo-wht.png"
@@ -169,7 +173,13 @@ const ChatPage: React.FC = () => {
             />
           </div>
           <p className="text-center text-blue-100 ">{t("welcome")}</p>
-        </div>
+          <button
+            className="mt-8 bg-white text-blue-700 px-4 py-2 rounded-lg hover:bg-gray-100 transition"
+            onClick={() => navigateToQAContentGrid()}
+          >
+            Q/A Content Grid
+          </button>
+        </div> */}
 
         {/* Chat Area */}
         <div className="w-full flex flex-col">
@@ -212,9 +222,8 @@ const ChatPage: React.FC = () => {
                     <button
                       key={language.code}
                       onClick={() => changeLanguage(language.code)}
-                      className={`w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center space-x-2 ${
-                        currentLanguage === language.code ? "bg-gray-100" : ""
-                      }`}
+                      className={`w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center space-x-2 ${currentLanguage === language.code ? "bg-gray-100" : ""
+                        }`}
                     >
                       <span>{language.flag}</span>
                       <span>{language.name}</span>
@@ -230,7 +239,7 @@ const ChatPage: React.FC = () => {
             <ChatWindow messages={messages} />
           </div>
           <div className="border-t border-gray-200">
-            <ChatInput onSendMessage={handleSendMessage} disabled={isLoading} />
+            <ChatInput onSendMessage={(message: string) => handleSendMessage(message, null, null)} disabled={isLoading} />
           </div>
         </div>
       </div>
