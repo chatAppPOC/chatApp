@@ -4,11 +4,18 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
+import com.example.chatbot.model.Message;
+
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+
 
 @Entity
 @Table(name = "chat")
@@ -18,18 +25,21 @@ public class Chat {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	private Long playerId;
-	private List<Long> questions;
-	private List<Long> answers;
+	
+	@JdbcTypeCode(SqlTypes.JSON)
+	@Column(columnDefinition = "jsonb") 
+    private List<Message> messages;
+    @Column(columnDefinition = "text")
 	private String description;
+    
 	private String status;
 	private Instant createdOn;
 	private Instant updatedOn;
 	
 	public Chat(Long playerId, String status) {
 	    this.playerId = playerId;
-	    this.questions = new ArrayList<>();
-	    this.answers = new ArrayList<>();
 	    this.status = status;
+	    this.messages = new ArrayList<>();
 	    this.createdOn = Instant.now();
 	}
 	
@@ -45,7 +55,6 @@ public class Chat {
 		this.id = id;
 	}
 
-
 	public Long getPlayerId() {
 		return playerId;
 	}
@@ -54,20 +63,13 @@ public class Chat {
 		this.playerId = playerId;
 	}
 
-	public List<Long> getQuestions() {
-		return questions;
+	
+	public List<Message> getMessages() {
+		return messages;
 	}
 
-	public void setQuestions(List<Long> questions) {
-		this.questions = questions;
-	}
-
-	public List<Long> getAnswers() {
-		return answers;
-	}
-
-	public void setAnswers(List<Long> answers) {
-		this.answers = answers;
+	public void setMessages(List<Message> messages) {
+		this.messages = messages;
 	}
 
 	public String getDescription() {
@@ -76,6 +78,14 @@ public class Chat {
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
 	}
 
 	public Instant getCreatedOn() {
@@ -94,19 +104,12 @@ public class Chat {
 		this.updatedOn = updatedOn;
 	}
 
-	public String getStatus() {
-		return status;
-	}
-
-	public void setStatus(String status) {
-		this.status = status;
-	}
-
-
 	@Override
 	public String toString() {
-		return "Chat [id=" + id + ", playerId=" + playerId + ", questions=" + questions + ", answers=" + answers
-				+ ", description=" + description + ", status=" + status + ", createdOn=" + createdOn + ", updatedOn="
-				+ updatedOn + "]";
-	}	
+		return "Chat [id=" + id + ", playerId=" + playerId + ", messages=" + messages + ", description=" + description
+				+ ", status=" + status + ", createdOn=" + createdOn + ", updatedOn=" + updatedOn + "]";
+	}
+
+    
+	
 }

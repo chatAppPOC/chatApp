@@ -7,17 +7,15 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name ="chat_content")
-public class ChatContent
-{
-    @Id
+@Table(name ="feedback_content")
+public class FeedbackContent {
+
+	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String content;
-	private String contentType;
-	private Long parentId;
-	private Long modelId;
-	
+    private String contentType;
+    private Long modelId;
 	public Long getId() {
 		return id;
 	}
@@ -36,12 +34,6 @@ public class ChatContent
 	public void setContentType(String contentType) {
 		this.contentType = contentType;
 	}
-	public Long getParentId() {
-		return parentId;
-	}
-	public void setParentId(Long parentId) {
-		this.parentId = parentId;
-	}
 	public Long getModelId() {
 		return modelId;
 	}
@@ -50,7 +42,7 @@ public class ChatContent
 	}
 	@Override
 	public String toString() {
-		return "ChatContent [id=" + id + ", content=" + content + ", contentType=" + contentType + ", parentId="
-				+ parentId + ", modelId=" + modelId + "]";
-	}	
+		return "FeedbackContent [id=" + id + ", content=" + content + ", contentType=" + contentType + ", modelId="
+				+ modelId + "]";
+	} 
 }

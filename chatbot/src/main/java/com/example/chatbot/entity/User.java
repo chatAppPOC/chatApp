@@ -1,5 +1,7 @@
 package com.example.chatbot.entity;
 
+import java.util.List;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -15,10 +17,11 @@ public class User {
 	private Long id;
 	private String firstName;
 	private String lastName;
+	private List<Long> preferredLanguage;
+	private List<Long> platform;
+	private List<Long> title;
 
-	public User(String firstName, String lastName) {
-		this.firstName = firstName;
-		this.lastName = lastName;
+	public User() {
 	}
 
 	public Long getId() {
@@ -45,8 +48,33 @@ public class User {
 		this.lastName = lastName;
 	}
 
+	public List<Long> getPreferredLanguage() {
+		return preferredLanguage;
+	}
+
+	public void setPreferredLanguage(List<Long> preferredLanguage) {
+		this.preferredLanguage = preferredLanguage;
+	}
+
+	public List<Long> getPlatform() {
+		return platform;
+	}
+
+	public void setPlatform(List<Long> platform) {
+		this.platform = platform;
+	}
+
+	public List<Long> getTitle() {
+		return title;
+	}
+
+	public void setTitle(List<Long> title) {
+		this.title = title;
+	}
+
 	@Override
 	public String toString() {
-		return "Users [id=" + id + ", firstName=" + firstName + ", lastName=" + lastName + "]";
+		return "User [id=" + id + ", firstName=" + firstName + ", lastName=" + lastName + ", preferredLanguage="
+				+ preferredLanguage + "]";
 	}
 }

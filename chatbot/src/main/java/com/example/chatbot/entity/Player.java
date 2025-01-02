@@ -16,24 +16,26 @@ public class Player {
 	private String firstName;
 	private String lastName;
 
+	private Long preferredLanguage;
+	private Long platform;
+	private Long title;
+
+	public Player() {
+		
+	}
+	
 	public Player(String firstName, String lastName) {
 		this.firstName = firstName;
 		this.lastName = lastName;
 	}
 
-	
-
 	public Long getId() {
 		return id;
 	}
 
-
-
 	public void setId(Long id) {
 		this.id = id;
 	}
-
-
 
 	public String getFirstName() {
 		return firstName;
@@ -49,6 +51,30 @@ public class Player {
 
 	public void setLastName(String lastName) {
 		this.lastName = lastName;
+	}
+
+	public Long getPreferredLanguage() {
+		return preferredLanguage;
+	}
+
+	public void setPreferredLanguage(Long preferredLanguage) {
+		this.preferredLanguage = preferredLanguage;
+	}
+
+	public Long getPlatform() {
+		return platform;
+	}
+
+	public void setPlatform(Long platform) {
+		this.platform = platform;
+	}
+
+	public Long getTitle() {
+		return title;
+	}
+
+	public void setTitle(Long title) {
+		this.title = title;
 	}
 
 	@Override
