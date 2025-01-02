@@ -130,4 +130,16 @@ public class ChatController {
 			throw e;
 		}
 	}
+	
+	@GetMapping("/case")
+	public Optional<Case> getCaseDetails(@RequestParam(required = false) Long caseId) {
+		try {
+			Optional<Case> response= caseRepository.findById(caseId);
+			LOG.info("Api.getCaseDetails() => {}", response);
+			return response;
+		} catch (Exception e) {
+			LOG.error("Api.getCaseDetails() => error!!!", e);
+			throw e;
+		}
+	}
 }

@@ -27,6 +27,9 @@ public class Case {
 	public enum CaseStatus {
 		OPEN, RESOLVED, IN_PROGRESS
 	}
+	
+	public Case() {
+	}
 
 	public Case(Long userId, Long chatId) {
 		this.userId = userId;
