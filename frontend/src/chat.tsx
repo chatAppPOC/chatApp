@@ -102,7 +102,7 @@ const ChatPage: React.FC = () => {
   const getResponse = async (request: any) => {
     setIsText(null);
     try {
-      const response = await fetch("http://localhost:8080/api/chat", {
+      const response = await fetch("http://localhost:8080/api/v2/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

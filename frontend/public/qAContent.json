@@ -1,32 +1,42 @@
 [
   {
     "id": "1",
+    "language": "English",
     "createdDate": "2024-12-01",
     "updatedDate": "2024-12-10",
-    "updatedBy": "Admin"
+    "updatedBy": "Admin",
+    "action": "Delete"
   },
   {
     "id": "2",
+    "language": "French",
     "createdDate": "2024-12-01",
     "updatedDate": "2024-12-10",
-    "updatedBy": "Admin"
+    "updatedBy": "Admin",
+    "action": "Delete"
   },
   {
     "id": "3",
+    "language": "Spanish",
     "createdDate": "2024-12-01",
     "updatedDate": "2024-12-10",
-    "updatedBy": "Admin"
+    "updatedBy": "Admin",
+    "action": "Delete"
   },
   {
     "id": "4",
+    "language": "German",
     "createdDate": "2024-12-01",
     "updatedDate": "2024-12-10",
-    "updatedBy": "Admin"
+    "updatedBy": "Admin",
+    "action": "Delete"
   },
   {
     "id": "5",
+    "language": "Italian",
     "createdDate": "2024-12-01",
     "updatedDate": "2024-12-10",
-    "updatedBy": "Admin"
+    "updatedBy": "Admin",
+    "action": "Delete"
   }
 ]

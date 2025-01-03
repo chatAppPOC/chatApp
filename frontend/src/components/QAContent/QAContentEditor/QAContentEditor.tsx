@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 
 interface QASection {
   id: string;
@@ -14,6 +15,10 @@ interface Answer {
 }
 
 const QAContentEditor: React.FC = () => {
+  const { id } = useParams<{ id: string }>(); // Extract 'id' from URL
+  console.log("contentId", id);
+
+  const [contentName, setContentName] = useState<string>("")
   const [qaSections, setQASections] = useState<QASection[]>([
     {
       id: "1",
@@ -26,6 +31,7 @@ const QAContentEditor: React.FC = () => {
       ],
     },
   ]);
+
 
   // const [language, setLanguage] = useState<string>("en"); // Default language: English
   // const [languages, setLanguages] = useState<string[]>(["en", "es", "fr"]); // Example languages
@@ -46,9 +52,11 @@ const QAContentEditor: React.FC = () => {
   }, [language]);
 
   //   // Function to fetch content based on selected language
-  const fetchContentByLanguage = async (lang: string) => {
+  const fetchContentByLanguage = async (languageId: string) => {
     try {
-      const response = await fetch(`/api/get-qa?language=${lang}`);
+      const response = await fetch(
+        `http://localhost:8080/api/v2/content?languageId=${languageId}`
+      );
       const data = await response.json();
 
       // Map API response to QASection format
@@ -102,34 +110,95 @@ const QAContentEditor: React.FC = () => {
   //     }
   //   };
 
-  const parseApiResponse = (response: any): QASection[] => {
-    const parseSection = (data: any): QASection => ({
-      id: `${data.id}-${Math.random()}`, // Ensure unique IDs
-      question: data.question,
-      answers: data.answers.map((ans: any) => ({
-        id: `${Math.random()}`, // Ensure unique IDs
-        answer: ans.answer,
-        ...(ans.questions
-          ? { childQuestion: parseSection(ans.questions) }
-          : {}),
-        ...(ans.solution ? { solution: ans.solution } : {}),
-      })),
-    });
+  //   const parseApiResponse = (response: any): QASection[] => {
+  //     const parseSection = (data: any): QASection => ({
+  //       id: `${data.id}-${Math.random()}`, // Ensure unique IDs
+  //       question: data.question,
+  //       answers: data.answers.map((ans: any) => ({
+  //         id: `${Math.random()}`, // Ensure unique IDs
+  //         answer: ans.answer,
+  //         ...(ans.questions
+  //           ? { childQuestion: parseSection(ans.questions) }
+  //           : {}),
+  //         ...(ans.solution ? { solution: ans.solution } : {}),
+  //       })),
+  //     });
 
-    return response.questionare.questions
-      ? [parseSection(response.questionare.questions)]
+  //     return response.questionare.questions
+  //       ? [parseSection(response.questionare.questions)]
+  //       : [];
+  //   };
+
+  // Fetch content when the component loads or when 'id' changes
+  useEffect(() => {
+    if (id) {
+      fetchContentById(id);
+    }
+  }, [id]);
+
+  //   const fetchContentById = async (contentId: string) => {
+  //     try {
+  //       const response = await fetch(
+  //         `http://localhost:8080/api/v2/content?contentId=${contentId}`
+  //       );
+  //       const data = await response.json();
+  //       // Extract and set the name
+  //       if (data?.name) {
+  //         setContentName(data.name);
+  //       }
+  //       const parsedData = parseApiResponse(data);
+  //       setQASections(parsedData);
+  //     } catch (error) {
+  //       console.error("Error fetching Q/A data:", error);
+  //     }
+  //   };
+
+  const fetchContentById = async (contentId: string) => {
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/v2/content?contentId=${contentId}`
+      );
+      const data = await response.json();
+      const parsedData = parseApiResponse(data);
+      setQASections(parsedData);
+
+      // Set the content name
+      setContentName(data?.name || ""); // Use default value if name is not found
+    } catch (error) {
+      console.error("Error fetching Q/A data:", error);
+    }
+  };
+
+  const parseApiResponse = (response: any): QASection[] => {
+    const parseQuestions = (data: any): QASection => {
+      return {
+        id: `${data.id || Date.now()}-${Math.random()}`, // Generate a unique ID
+        question: data.question || "",
+        answers: (data.answers || []).map((answer: any) => ({
+          id: `${Math.random()}`, // Generate a unique ID
+          answer: answer.answer || "",
+          childQuestion: answer.questions
+            ? parseQuestions(answer.questions)
+            : undefined,
+          solution: answer.solution || undefined,
+        })),
+      };
+    };
+
+    return response?.content?.questionare?.questions
+      ? [parseQuestions(response.content.questionare.questions)]
       : [];
   };
 
-  useEffect(() => {
-    fetch("/api/get-qa-data")
-      .then((response) => response.json())
-      .then((data) => {
-        const parsedData = parseApiResponse(data);
-        setQASections(parsedData);
-      })
-      .catch((error) => console.error("Error fetching Q/A data:", error));
-  }, []);
+  //   useEffect(() => {
+  //     fetch(`http://localhost:8080/api/v2/content?contentId=${contentId}`)
+  //       .then((response) => response.json())
+  //       .then((data) => {
+  //         const parsedData = parseApiResponse(data);
+  //         setQASections(parsedData);
+  //       })
+  //       .catch((error) => console.error("Error fetching Q/A data:", error));
+  //   }, [contentId]);
 
   // Function to handle language change
   const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -369,6 +438,103 @@ const QAContentEditor: React.FC = () => {
     }));
   };
 
+  // Function to copy and assign new IDs recursively
+  const deepCopyWithNewIds = (sections: QASection[]): QASection[] => {
+    return sections.map((section) => ({
+      ...section,
+      id: `${section.id}-copy-${Date.now()}`,
+      question: `${section.question} (Copied)`,
+      answers: section.answers.map((answer) => ({
+        ...answer,
+        id: `${answer.id}-copy-${Date.now()}`,
+        childQuestion: answer.childQuestion
+          ? deepCopyWithNewIds([answer.childQuestion])[0]
+          : undefined,
+      })),
+    }));
+  };
+
+  // Handle Copy Button Click
+  //   const handleCopyAll = async () => {
+  //     const copiedSections = deepCopyWithNewIds(qaSections);
+  //     console.log("copiedSections", copiedSections);
+  //     const dataToSubmit = {
+  //       language,
+  //       questionare: { questions: copiedSections },
+  //     };
+  //     console.log("copiedSections dataToSubmit", dataToSubmit);
+  //     try {
+  //       const response = await fetch(
+  //         `http://localhost:8080/api/v2/content/copy?srcContentId=${id}&name=${encodeURIComponent(
+  //           contentName
+  //         )}`,
+  //         {
+  //           method: "POST",
+  //           headers: {
+  //             "Content-Type": "application/json",
+  //           },
+  //           body: JSON.stringify(dataToSubmit),
+  //         }
+  //       );
+
+  //       if (response.ok) {
+  //         alert("Content copied and saved successfully!");
+  //         setQASections(copiedSections);
+  //       } else {
+  //         alert("Failed to copy content.");
+  //       }
+  //     } catch (error) {
+  //       console.error("Error copying content:", error);
+  //       alert("An error occurred while copying content.");
+  //     }
+  //   };
+
+  const handleCopyAll = async () => {
+    if (!contentName) {
+      alert("Content name not available.");
+      return;
+    }
+
+    const copiedSections = deepCopyWithNewIds(qaSections);
+    console.log("copiedSections", copiedSections, contentName);
+
+    const dataToSubmit = {
+      language,
+      questionare: { questions: copiedSections },
+    };
+
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/v2/content/copy?srcContentId=${id}&&name=${encodeURIComponent(
+          contentName
+        )}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(dataToSubmit),
+        }
+      );
+
+      if (response.ok) {
+        alert("Content copied and saved successfully!");
+        setQASections(copiedSections);
+      } else {
+        alert("Failed to copy content.");
+      }
+    } catch (error) {
+      console.error("Error copying content:", error);
+      alert("An error occurred while copying content.");
+    }
+  };
+
+  //   if (!id || !contentName) {
+  //     alert("Invalid content ID or name. Cannot proceed with copy.");
+  //     return;
+  //   }
+
+  //Handle submit button click
   const handleSubmit = () => {
     const dataToSubmit = {
       language,
@@ -489,20 +655,31 @@ const QAContentEditor: React.FC = () => {
           ))}
         </select>
       </div> */}
+       {/* Display Content Name */}
+     <h1 className="text-2xl font-bold mb-4">{contentName}</h1>
 
-      <div className="mb-4">
-        <label className="text-md font-medium mr-2">Language:</label>
-        <select
-          value={language}
-          onChange={handleLanguageChange}
-          className="border p-2 rounded-lg"
+      {/* Copy Button at the Top */}
+      <div className="mb-4 flex justify-between">
+        <div className="mb-4">
+          <label className="text-md font-medium mr-2">Language:</label>
+          <select
+            value={language}
+            onChange={handleLanguageChange}
+            className="border p-2 rounded-lg"
+          >
+            {languages.map((lang) => (
+              <option key={lang.code} value={lang.code}>
+                {lang.code} {lang.label}
+              </option>
+            ))}
+          </select>
+        </div>
+        <button
+          onClick={handleCopyAll}
+          className="bg-blue-500 text-white px-4 py-2 rounded-lg"
         >
-          {languages.map((lang) => (
-            <option key={lang.code} value={lang.code}>
-              {lang.code} {lang.label}
-            </option>
-          ))}
-        </select>
+          Copy All
+        </button>
       </div>
       {qaSections.map(renderSection)}
       <button
