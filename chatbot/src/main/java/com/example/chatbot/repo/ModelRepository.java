@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import com.example.chatbot.entity.Model;
 
 @Repository
-public interface ModelRepository  extends JpaRepository<Model, Long> {
+public interface ModelRepository extends JpaRepository<Model, Long> {
     
 }

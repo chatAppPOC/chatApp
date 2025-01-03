@@ -12,7 +12,7 @@ public interface FeedbackContentRepository extends JpaRepository<FeedbackContent
 
 	@Query(value = """
 			SELECT u.id, u.content, u.content_type, u.model_id, u.parent_id, u.score FROM feedback_content u
-			WHERE ? = ANY(u.parent_id)
+			WHERE ?1 = ANY(u.parent_id)
 			""", nativeQuery = true)
 	List<FeedbackContent> findAnswerByParentId(@Param("parentId") Long parentId);
 

@@ -1,5 +1,6 @@
 package com.example.chatbot.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,8 +21,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.example.chatbot.dto.ChatMessageRequest;
-import com.example.chatbot.dto.ChatRequest;
-import com.example.chatbot.dto.ChatResponse;
+import com.example.chatbot.dto.ChatRequestv2;
+import com.example.chatbot.dto.ChatResponsev2;
 import com.example.chatbot.dto.FeedbackRequest;
 import com.example.chatbot.entity.Case;
 import com.example.chatbot.entity.Chat;
@@ -50,28 +51,32 @@ public class ChatController {
 
 	@Autowired
 	UserRepository userRepository;
-	
-	@Autowired 
-    private ChatRepository chatRepository;
 
-	@PostMapping("/chat")
-	public ChatResponse performChat(@RequestBody ChatRequest input) throws Exception {
+	@Autowired
+	private ChatRepository chatRepository;
+
+	@PostMapping("v2/chat")
+	public ChatResponsev2 performChatv2(@RequestBody ChatRequestv2 request) throws Exception {
 		try {
-			ChatResponse chatMessages = chatService.performChat(input);
-			LOG.info("Api.performChat({}) => {}", input, chatMessages);
+			ChatResponsev2 chatMessages = chatService.performChatv2(request);
+			LOG.info("Api.performChatv2({}) => {}", request, chatMessages);
 			return chatMessages;
 		} catch (Exception e) {
-			LOG.error("Api.performChat({}) => error!!!", input, e);
+			LOG.error("Api.performChatv2({}) => error!!!", request);
 			throw e;
 		}
 	}
 
 	@GetMapping("/chat/history/{playerId}")
-	public List<Chat> getChatHistory(@PathVariable Long playerId, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "5") int size) throws Exception {
+	public List<Chat> getChatHistory(@PathVariable Long playerId, @RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "5") int size) throws Exception {
 		try {
 			Page<Chat> chatMessages = chatService.getChatHistory(playerId, page, size);
-			List<Chat> result = chatMessages.getContent();
-			LOG.info("Api.getChatHistory({}) => {}", playerId, chatMessages);
+			List<Chat> result = new ArrayList<>();
+			if (chatMessages != null) {
+				result = chatMessages.getContent();
+			}
+			LOG.info("Api.getChatHistory({}) => Result size : {}", playerId, result.size());
 			return result;
 		} catch (Exception e) {
 			LOG.error("Api.getChatHistory({}) => error!!!", playerId, e);
@@ -96,7 +101,7 @@ public class ChatController {
 			throw e;
 		}
 	}
-	
+
 	@PostMapping("/chat/conversation/{chatId}")
 	public ChatMessage addChatMessage(@PathVariable Long chatId, @RequestBody ChatMessageRequest message) {
 		try {
@@ -149,7 +154,7 @@ public class ChatController {
 			throw e;
 		}
 	}
-	
+
 	@PostMapping("/case/{contentId}/{description}")
 	public Case createCase(@PathVariable Long contentId, @PathVariable String description) throws Exception {
 		try {
@@ -161,11 +166,11 @@ public class ChatController {
 			throw e;
 		}
 	}
-	
+
 	@GetMapping("/case")
 	public Optional<Case> getCaseDataByCaseId(@RequestParam(required = false) Long caseId) {
 		try {
-			Optional<Case> response= caseRepository.findById(caseId);
+			Optional<Case> response = caseRepository.findById(caseId);
 			LOG.info("Api.getCaseDataByCaseId() => {}", response);
 			return response;
 		} catch (Exception e) {
@@ -173,7 +178,7 @@ public class ChatController {
 			throw e;
 		}
 	}
-	
+
 	@GetMapping("/feedback/questions")
 	public List<FeedbackResp> getFeedbackQuestionsAndAnswers() {
 		try {
@@ -185,7 +190,7 @@ public class ChatController {
 			throw e;
 		}
 	}
-	
+
 	@GetMapping("/allCases")
 	public List<Case> getAllCases() {
 		try {
@@ -197,4 +202,5 @@ public class ChatController {
 			throw e;
 		}
 	}
+
 }
