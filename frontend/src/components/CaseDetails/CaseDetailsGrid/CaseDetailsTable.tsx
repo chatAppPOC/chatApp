@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 
 interface CaseContent {
-  id: string;
-  email: string;
-  descp: string;
+  id: number;
+  userName: string;
+  caseType: string;
   gameName: string;
   status: string;
-  createdDate: string;
+  createdOn: string;
 }
 
 function CaseDetailsTable() {
@@ -18,7 +18,9 @@ function CaseDetailsTable() {
   useEffect(() => {
     const fetchCaseContent = async () => {
       try {
-        const response = await fetch("./caseContent.json");
+        //const response = await fetch("./caseContent.json");
+        const response = await fetch("http://localhost:8080/api/allCases");
+        console.log("check res", response);
         if (!response.ok) {
           throw new Error(`Failed to fetch data: ${response.statusText}`);
         }
@@ -26,7 +28,7 @@ function CaseDetailsTable() {
         if (!contentType || !contentType.includes("application/json")) {
           throw new Error("Received non-JSON response");
         }
-        const data: CaseContent[] = await response.json();
+        const data: CaseContent[] = Object.values(await response.json());
         setCaseContent(data);
       } catch (err: any) {
         setError(err.message);
@@ -38,7 +40,7 @@ function CaseDetailsTable() {
     fetchCaseContent();
   }, []);
 
-  const handleRowClick = (id: string) => {
+  const handleRowClick = (id: number) => {
     window.location.href = `/case-details/${id}`; // or use React Router
   };
 
@@ -58,13 +60,11 @@ function CaseDetailsTable() {
           <thead>
             <tr className="bg-gray-100">
               <th className="border border-gray-300 px-4 py-2">Case Id</th>
-              <th className="border border-gray-300 px-4 py-2">Email</th>
-              <th className="border border-gray-300 px-4 py-2">
-                Case Description
-              </th>
+              <th className="border border-gray-300 px-4 py-2">User Name</th>
+              <th className="border border-gray-300 px-4 py-2">Case Type</th>
               <th className="border border-gray-300 px-4 py-2">Game Name</th>
               <th className="border border-gray-300 px-4 py-2">Status</th>
-              <th className="border border-gray-300 px-4 py-2">Created Date</th>
+              <th className="border border-gray-300 px-4 py-2">Created On</th>
             </tr>
           </thead>
 
@@ -79,10 +79,10 @@ function CaseDetailsTable() {
                   {content.id}
                 </td>
                 <td className="border border-gray-300 px-4 py-2">
-                  {content.email}
+                  {content.userName}
                 </td>
                 <td className="border border-gray-300 px-4 py-2">
-                  {content.descp}
+                  {content.caseType}
                 </td>
                 <td className="border border-gray-300 px-4 py-2">
                   {content.gameName}
@@ -91,7 +91,7 @@ function CaseDetailsTable() {
                   {content.status}
                 </td>
                 <td className="border border-gray-300 px-4 py-2">
-                  {content.createdDate}
+                  {content.createdOn.toLocaleString()}
                 </td>
               </tr>
             ))}
