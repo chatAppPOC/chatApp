@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class CornUtility {
+public class CronUtility {
 
 	public static String cronConvertor(Instant time, ZoneId zoneId, Recurrence recurrence, List<String> days) {
 		String cron = null;

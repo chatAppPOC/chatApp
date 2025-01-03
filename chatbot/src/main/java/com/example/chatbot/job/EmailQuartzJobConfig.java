@@ -15,7 +15,7 @@ import org.springframework.context.annotation.Configuration;
 
 import com.example.chatbot.entity.Notification;
 import com.example.chatbot.service.EmailService;
-import com.example.chatbot.utility.CornUtility;
+import com.example.chatbot.utility.CronUtility;
 
 @Configuration
 public class EmailQuartzJobConfig {
@@ -36,10 +36,10 @@ public class EmailQuartzJobConfig {
     }
 
 	public Trigger createTrigger(Notification notification) {	
-        String cronExpression = CornUtility.cronConvertor(
+        String cronExpression = CronUtility.cronConvertor(
                 Instant.now(),
                 ZoneId.systemDefault(),
-                CornUtility.Recurrence.DAILY,
+                CronUtility.Recurrence.DAILY,
                 List.of()
         );
 

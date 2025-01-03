@@ -20,7 +20,7 @@ public interface ChatRepository extends JpaRepository<Chat, Long>{
 					""")
 	Chat getExistingChat(Long playerId, Long id);
 	@Query("""
-			SELECT c FROM Chat c WHERE c.playerId = :playerId ORDER BY c.updatedOn DESC
+			SELECT c FROM Chat c WHERE c.playerId = :playerId ORDER BY c.updatedOn 
 					""")
     Page<Chat>findAllByPlayerId(Long playerId, Pageable pageable);
 
