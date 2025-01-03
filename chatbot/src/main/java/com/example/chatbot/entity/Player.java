@@ -19,6 +19,7 @@ public class Player {
 	private Long preferredLanguage;
 	private Long platform;
 	private Long title;
+	private String email;
 
 	public Player() {
 
@@ -76,9 +77,20 @@ public class Player {
 	public void setTitle(Long title) {
 		this.title = title;
 	}
+	
+	public String getEmail() {
+		return email;
+	}
+	
+	public void setEmail(String email) {
+		this.email = email;
+	}
 
 	@Override
 	public String toString() {
-		return "Player [id=" + id + ", firstName=" + firstName + ", lastName=" + lastName + "]";
+		return "Player [id=" + id + ", firstName=" + firstName + ", lastName=" + lastName + ", preferredLanguage="
+				+ preferredLanguage + ", platform=" + platform + ", title=" + title + ", email=" + email + "]";
 	}
+
+	
 }
