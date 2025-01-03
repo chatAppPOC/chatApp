@@ -24,12 +24,12 @@ import com.example.chatbot.dto.ChatMessageRequest;
 import com.example.chatbot.dto.ChatRequestv2;
 import com.example.chatbot.dto.ChatResponsev2;
 import com.example.chatbot.dto.FeedbackRequest;
+import com.example.chatbot.dto.FeedbackResp;
 import com.example.chatbot.entity.Case;
 import com.example.chatbot.entity.Chat;
 import com.example.chatbot.entity.ChatMessage;
 import com.example.chatbot.entity.Feedback;
 import com.example.chatbot.entity.Feedback.FeedbackCategory;
-import com.example.chatbot.entity.FeedbackResp;
 import com.example.chatbot.entity.User;
 import com.example.chatbot.repo.CaseRepository;
 import com.example.chatbot.repo.ChatRepository;
@@ -128,7 +128,7 @@ public class ChatController {
 
 	@PostMapping("/{contentType}/feedback/{contentId}")
 	public Feedback saveFeedback(@PathVariable Long contentId, @PathVariable String contentType,
-			@RequestBody FeedbackRequest request) {
+			@RequestBody FeedbackRequest request) throws Exception {
 		try {
 			Optional<Case> caseResp = Optional.empty();
 			Optional<Chat> chatResp = Optional.empty();
@@ -168,9 +168,9 @@ public class ChatController {
 	}
 
 	@GetMapping("/case")
-	public Optional<Case> getCaseDataByCaseId(@RequestParam(required = false) Long caseId) {
+	public List<Case> getCaseDataByCaseId(@RequestParam(required = false) Long caseId) {
 		try {
-			Optional<Case> response = caseRepository.findById(caseId);
+			List<Case> response = caseRepository.findById(caseId).stream().toList();
 			LOG.info("Api.getCaseDataByCaseId() => {}", response);
 			return response;
 		} catch (Exception e) {

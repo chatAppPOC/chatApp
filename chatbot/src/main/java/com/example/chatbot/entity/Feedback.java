@@ -6,7 +6,7 @@ import java.util.List;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
-import com.example.chatbot.dto.FeedbackRequest.QeustionAndAnswerReq;
+import com.example.chatbot.dto.FeedbackRequest.QuestionAndAnswerReq;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -28,17 +28,17 @@ public class Feedback {
 	@Enumerated(EnumType.STRING)
 	private FeedbackCategory feedbackCategory;
 	@JdbcTypeCode(SqlTypes.JSON)
-	private List<QeustionAndAnswerReq> request;
+	private List<QuestionAndAnswerReq> request;
 	private Boolean issueResolved;
 	private Boolean satisfiedWithSupport;
 	private Long score;
-	private Instant createdAt;
+	private Instant createdOn;
 	
 	public Feedback() {
 
 	}
 
-	public Feedback(Long chatId, Long caseId, FeedbackCategory feedbackCategory, List<QeustionAndAnswerReq> request,
+	public Feedback(Long chatId, Long caseId, FeedbackCategory feedbackCategory, List<QuestionAndAnswerReq> request,
 			Boolean issueResolved, Boolean satisfiedWithSupport, Long score) {
 		this.chatId = chatId;
 		this.caseId = caseId;
@@ -47,7 +47,7 @@ public class Feedback {
 		this.issueResolved = issueResolved;
 		this.satisfiedWithSupport = satisfiedWithSupport;
 		this.score = score;
-		this.createdAt = Instant.now();
+		this.createdOn = Instant.now();
 	}
 
 	public enum FeedbackCategory {
@@ -86,11 +86,11 @@ public class Feedback {
 		this.feedbackCategory = feedbackCategory;
 	}
 
-	public List<QeustionAndAnswerReq> getRequest() {
+	public List<QuestionAndAnswerReq> getRequest() {
 		return request;
 	}
 
-	public void setRequest(List<QeustionAndAnswerReq> request) {
+	public void setRequest(List<QuestionAndAnswerReq> request) {
 		this.request = request;
 	}
 
@@ -118,19 +118,19 @@ public class Feedback {
 		this.score = score;
 	}
 
-	public Instant getCreatedAt() {
-		return createdAt;
+	public Instant getCreatedOn() {
+		return createdOn;
 	}
 
-	public void setCreatedAt(Instant createdAt) {
-		this.createdAt = createdAt;
+	public void setCreatedOn(Instant createdOn) {
+		this.createdOn = createdOn;
 	}
 
 	@Override
 	public String toString() {
 		return "Feedback [id=" + id + ", chatId=" + chatId + ", caseId=" + caseId + ", feedbackCategory="
 				+ feedbackCategory + ", request=" + request + ", issueResolved=" + issueResolved
-				+ ", satisfiedWithSupport=" + satisfiedWithSupport + ", score=" + score + ", createdAt=" + createdAt
+				+ ", satisfiedWithSupport=" + satisfiedWithSupport + ", score=" + score + ", createdOn=" + createdOn
 				+ "]";
 	}
 }

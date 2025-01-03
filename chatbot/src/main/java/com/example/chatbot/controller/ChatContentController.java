@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.chatbot.dto.ContentResponse;
 import com.example.chatbot.entity.ChatContent;
 import com.example.chatbot.entity.Content;
 import com.example.chatbot.service.ChatContentService;
@@ -143,14 +143,14 @@ public class ChatContentController {
 		}
 	}
 	
-	@GetMapping("v2/content/{languageId}")
-	public List<Content> getContentForLanguagev2(@PathVariable Long languageId) {
+	@GetMapping("v2/contents")
+	public List<ContentResponse> getContents() {
 		try {
-			List<Content> contents = chatContentService.getContentsForLanguagev2(languageId);
-	    	LOG.info("Api.copyContent({}) => {}", languageId, contents);
+			List<ContentResponse> contents = chatContentService.getContents();
+	    	LOG.info("Api.copyContent() => {}",contents);
 			return contents;
 		} catch (Exception e) {
-    		LOG.error("Api.copyContent({}) => error!!!", languageId);
+    		LOG.error("Api.copyContent() => error!!!");
 			throw e;
 		}
 	}

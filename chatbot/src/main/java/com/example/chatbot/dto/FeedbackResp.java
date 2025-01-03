@@ -1,4 +1,4 @@
-package com.example.chatbot.entity;
+package com.example.chatbot.dto;
 
 import java.util.List;
 
