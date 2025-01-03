@@ -25,6 +25,8 @@ import com.example.chatbot.dto.ChatMessageRequest;
 import com.example.chatbot.dto.ChatRequestv2;
 import com.example.chatbot.dto.ChatResponsev2;
 import com.example.chatbot.dto.FeedbackRequest;
+import com.example.chatbot.dto.FeedbackResp;
+import com.example.chatbot.dto.FeedbackResp.Answer;
 import com.example.chatbot.entity.Case;
 import com.example.chatbot.entity.Chat;
 import com.example.chatbot.entity.Chat.ChatStatus;
@@ -32,8 +34,6 @@ import com.example.chatbot.entity.ChatMessage;
 import com.example.chatbot.entity.Feedback;
 import com.example.chatbot.entity.Feedback.FeedbackCategory;
 import com.example.chatbot.entity.FeedbackContent;
-import com.example.chatbot.entity.FeedbackResp;
-import com.example.chatbot.entity.FeedbackResp.Answer;
 import com.example.chatbot.entity.Player;
 import com.example.chatbot.entity.Title;
 import com.example.chatbot.entity.User;
@@ -54,13 +54,8 @@ import jakarta.mail.internet.MimeMessage;
 public class ChatService {
 
 	private static final Logger LOG = LoggerFactory.getLogger(ChatService.class);
-
-	
 	private static final String CASE_MESSAGE = "Support case has been created with ID : ";
-	
 	private static final String GREETINGS = "Thank you for contacting us. Have a nice day !";
-
-	
 
 	@Autowired
 	private ChatRepository chatRepository;
@@ -166,7 +161,6 @@ public class ChatService {
 	}
 
 	@Transactional
-
 	public Case createSupportCaseByChatId(Long chatId, String caseType) throws Exception {
 		try {
 			Optional<Chat> chat = chatRepository.findById(chatId);
@@ -192,7 +186,8 @@ public class ChatService {
 			throw e;
 		}
 	}
-
+    
+	@Transactional
 	public ChatMessage addChatMessage(Long chatId, ChatMessageRequest messageRequest) {
 		try {
 			Optional<Chat> chat = chatRepository.findById(chatId);
@@ -293,7 +288,6 @@ public class ChatService {
 		}
 	}
 
-	@Transactional
 	public List<FeedbackResp> getQuestionsAndAnswers() {
 		try {
 			List<FeedbackContent> questions = feedbackContentRepo.findByContentType("Question"); // fetch all questions

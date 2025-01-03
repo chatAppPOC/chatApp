@@ -1,5 +1,7 @@
 package com.example.chatbot.service;
 
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.example.chatbot.dto.ContentResponse;
 import com.example.chatbot.entity.ChatContent;
 import com.example.chatbot.entity.Content;
 import com.example.chatbot.entity.Model;
@@ -23,6 +26,7 @@ import com.example.chatbot.repo.ModelRepository;
 @Service
 public class ChatContentService {
 	private static final Logger LOG = LoggerFactory.getLogger(ChatContentService.class);
+	private static final String ADMIN_USER = "ADMIN";
 
 	@Autowired
 	private ChatContentRepository chatContentRepository;
@@ -165,14 +169,33 @@ public class ChatContentService {
 			throw e;
 		}
 	}
-	
-	public List<Content> getContentsForLanguagev2(Long languageId) {
+
+	public List<ContentResponse> getContents() {
 		try {
-			List<Content> result = contentRepository.findAllByLanguageId(languageId);
-			LOG.debug("ChatContentService.getContentsForLanguagev2({}, {}) => {}", languageId, result);
+			List<Content> contents = contentRepository.findAll();
+			List<ContentResponse> result = new ArrayList<>();
+			if (contents != null) {
+				for (Content content : contents) {
+					ContentResponse response = new ContentResponse();
+					if (content.getCreatedOn() != null)
+						response.setCreatedOn(content.getCreatedOn());
+					if (content.getUpdatedOn() != null)
+						response.setUpdatedOn(content.getUpdatedOn());
+					if (content.getName() != null)
+						response.setName(content.getName());
+					if (content.getId() != null)
+						response.setId(content.getId());
+					if (content.getUpdatedBy() != null)
+						response.setUpdatedBy(content.getUpdatedBy());
+					if (content.getCreatedBy() != null)
+						response.setCreatedBy(content.getCreatedBy());
+					result.add(response);
+				}
+			}
+			LOG.debug("ChatContentService.getContents() => {}", result);
 			return result;
 		} catch (Exception e) {
-			LOG.error("ChatContentService.getContentsForLanguagev2() => error!!!", e);
+			LOG.error("ChatContentService.getContents() => error!!!", e);
 			throw e;
 		}
 	}
@@ -198,9 +221,11 @@ public class ChatContentService {
 			Content existingContent = contentRepository.findById(id)
 					.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
 							"The content with " + id + " does not exist"));
-            
+
 			existingContent.setContent(content);
 			existingContent.setName(name);
+			existingContent.setUpdatedBy(ADMIN_USER);
+			existingContent.setUpdatedOn(Instant.now());
 			contentRepository.save(existingContent);
 			LOG.debug("ChatContentService.updateContentv2({}, {}) => {}", id, existingContent);
 			return existingContent;
@@ -209,7 +234,7 @@ public class ChatContentService {
 			throw e;
 		}
 	}
-	
+
 	@Transactional
 	public Content createContentv2(com.example.chatbot.model.Content content, Long languageId, String name) {
 		try {
@@ -217,28 +242,28 @@ public class ChatContentService {
 			newContent.setContent(content);
 			newContent.setName(name);
 			newContent.setLanguageId(languageId);
+			newContent.setCreatedOn(Instant.now());
+			newContent.setCreatedBy(ADMIN_USER);
 			contentRepository.save(newContent);
 			LOG.debug("ChatContentService.createContentv2({}, {}) => {}", content, languageId, newContent);
 			return newContent;
-		}
-		catch(Exception e) {
+		} catch (Exception e) {
 			LOG.error("ChatContentService.createContentv2({}) => error!!!", content);
 			throw e;
 		}
 	}
-	
+
 	@Transactional
 	public Content copyContentv2(Long srcContentId, String name) {
 		try {
 			Optional<Content> srcContent = contentRepository.findById(srcContentId);
 			Content newContent = null;
-			if(srcContent.isPresent()) {
+			if (srcContent.isPresent()) {
 				newContent = createContentv2(srcContent.get().getContent(), srcContent.get().getLanguageId(), name);
 			}
 			LOG.debug("ChatContentService.copyContentv2({}) => {}", srcContentId, newContent);
 			return newContent;
-		}
-		catch(Exception e) {
+		} catch (Exception e) {
 			LOG.error("ChatContentService.copyContentv2({}) => error!!!", srcContentId);
 			throw e;
 		}

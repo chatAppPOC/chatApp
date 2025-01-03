@@ -36,7 +36,7 @@ public class EmailQuartzJobConfig {
     }
 
 	public Trigger createTrigger(Notification notification) {	
-        String cronExpression = CronUtility.cronConvertor(
+        CronUtility.cronConvertor(
                 Instant.now(),
                 ZoneId.systemDefault(),
                 CronUtility.Recurrence.DAILY,

@@ -1,5 +1,7 @@
 package com.example.chatbot.entity;
 
+import java.time.Instant;
+
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -21,6 +23,10 @@ public class Content {
 	private com.example.chatbot.model.Content content;
 	private String name;
 	private Long languageId;
+	private Instant createdOn;
+	private Instant updatedOn;
+	private String updatedBy;
+	private String createdBy;
 	
 	public Long getId() {
 		return id;
@@ -46,9 +52,34 @@ public class Content {
 	public void setLanguageId(Long languageId) {
 		this.languageId = languageId;
 	}
+	public Instant getCreatedOn() {
+		return createdOn;
+	}
+	public void setCreatedOn(Instant createdOn) {
+		this.createdOn = createdOn;
+	}
+	public Instant getUpdatedOn() {
+		return updatedOn;
+	}
+	public void setUpdatedOn(Instant updatedOn) {
+		this.updatedOn = updatedOn;
+	}
+	public String getUpdatedBy() {
+		return updatedBy;
+	}
+	public void setUpdatedBy(String updatedBy) {
+		this.updatedBy = updatedBy;
+	}
+	public String getCreatedBy() {
+		return createdBy;
+	}
+	public void setCreatedBy(String createdBy) {
+		this.createdBy = createdBy;
+	}
 	@Override
 	public String toString() {
-		return "Content [id=" + id + ", content=" + content + ", name=" + name + ", languageId=" + languageId + "]";
+		return "Content [id=" + id + ", content=" + content + ", name=" + name + ", languageId=" + languageId
+				+ ", createdOn=" + createdOn + ", updatedOn=" + updatedOn + ", updatedBy=" + updatedBy + ", createdBy="
+				+ createdBy + "]";
 	}
-
 }

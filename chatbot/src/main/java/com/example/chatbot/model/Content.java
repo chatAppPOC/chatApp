@@ -13,8 +13,6 @@ public class Content {
 		this.questionare = questionare;
 	}
 
-	
-
 	@Override
 	public String toString() {
 		return "Content [questionare=" + questionare + "]";
