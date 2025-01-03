@@ -21,9 +21,9 @@ public class Player {
 	private Long title;
 
 	public Player() {
-		
+
 	}
-	
+
 	public Player(String firstName, String lastName) {
 		this.firstName = firstName;
 		this.lastName = lastName;
