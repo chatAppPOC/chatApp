@@ -6,7 +6,7 @@ import java.util.List;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
-import com.example.chatbot.dto.FeedbackRequest.QeustionAndAnswerReq;
+import com.example.chatbot.dto.FeedbackRequest.QuestionAndAnswerReq;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -28,7 +28,7 @@ public class Feedback {
 	@Enumerated(EnumType.STRING)
 	private FeedbackCategory feedbackCategory;
 	@JdbcTypeCode(SqlTypes.JSON)
-	private List<QeustionAndAnswerReq> request;
+	private List<QuestionAndAnswerReq> request;
 	private Boolean issueResolved;
 	private Boolean satisfiedWithSupport;
 	private Long score;
@@ -38,7 +38,7 @@ public class Feedback {
 
 	}
 
-	public Feedback(Long chatId, Long caseId, FeedbackCategory feedbackCategory, List<QeustionAndAnswerReq> request,
+	public Feedback(Long chatId, Long caseId, FeedbackCategory feedbackCategory, List<QuestionAndAnswerReq> request,
 			Boolean issueResolved, Boolean satisfiedWithSupport, Long score) {
 		this.chatId = chatId;
 		this.caseId = caseId;
@@ -86,11 +86,11 @@ public class Feedback {
 		this.feedbackCategory = feedbackCategory;
 	}
 
-	public List<QeustionAndAnswerReq> getRequest() {
+	public List<QuestionAndAnswerReq> getRequest() {
 		return request;
 	}
 
-	public void setRequest(List<QeustionAndAnswerReq> request) {
+	public void setRequest(List<QuestionAndAnswerReq> request) {
 		this.request = request;
 	}
 

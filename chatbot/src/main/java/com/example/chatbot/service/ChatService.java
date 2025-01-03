@@ -15,6 +15,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -87,10 +88,8 @@ public class ChatService {
 	@Autowired
 	private JavaMailSender javaMailSender;
 
-	@Value("${spring.mail.username}")
-	private String sender;
-
-	
+	@Value("$(spring.mail.username)")
+	private String fromMailId;	
 
 	@Transactional
 	public ChatResponsev2 performChatv2(ChatRequestv2 request) throws Exception {
@@ -261,14 +260,13 @@ public class ChatService {
 			Feedback response = feedbackRepo.save(feedback);
 
 			// Send email notification
-//			SimpleMailMessage mailMessage = new SimpleMailMessage();
-//			// Setting up necessary details
-//			mailMessage.setFrom(sender);
-//			mailMessage.setTo("testjava0987@gmail.com");
-//			mailMessage.setText("test eamil");
-//			mailMessage.setSubject(response.toString());
-//			// Sending the mail
-//			javaMailSender.send(mailMessage);
+			SimpleMailMessage mailMessage = new SimpleMailMessage();
+			mailMessage.setTo("Sandeepkv.3535@gmail.com");
+			mailMessage.setFrom(fromMailId);
+			mailMessage.setText(response.toString());
+			mailMessage.setSubject("Java Mail Testing");
+			LOG.info("ChatService.providePostResolutionFeedback(email with subject: {}) sent sucessfully to  => {}", response.toString(), "Sandeepkv.3535@gmail.com");
+			javaMailSender.send(mailMessage);
 			LOG.debug("ChatService.providePostResolutionFeedback({}, {}, {}) => {}", request, caseReq, chatReq,
 					response);
 			return response;
