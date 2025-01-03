@@ -20,18 +20,29 @@ public class Case {
 	private Long chatId;
 	private Long userId;
 	private String feedback;
-	private Instant createdAt;
+	private Instant createdOn;
 	@Enumerated(EnumType.STRING)
 	private CaseStatus status;
+	private String caseType;
+	private Instant completedOn;
+	private String userName;
+	private String gameName;
 
 	public enum CaseStatus {
 		OPEN, RESOLVED, IN_PROGRESS
 	}
 
-	public Case(Long userId, Long chatId) {
+	public Case() {
+	}
+
+	public Case(Long userId, Long chatId, String caseType, Instant completedOn, String userName, String gameName) {
 		this.userId = userId;
 		this.chatId = chatId;
-		this.createdAt = Instant.now();
+		this.caseType = caseType;
+		this.completedOn = completedOn;
+		this.userName = userName;
+		this.gameName = gameName;
+		this.createdOn = Instant.now();
 		this.status = CaseStatus.OPEN;
 	}
 
@@ -43,28 +54,20 @@ public class Case {
 		this.id = id;
 	}
 
+	public Long getChatId() {
+		return chatId;
+	}
+
+	public void setChatId(Long chatId) {
+		this.chatId = chatId;
+	}
+
 	public Long getUserId() {
 		return userId;
 	}
 
 	public void setUserId(Long userId) {
 		this.userId = userId;
-	}
-
-	public Instant getCreatedAt() {
-		return createdAt;
-	}
-
-	public void setCreatedAt(Instant createdAt) {
-		this.createdAt = createdAt;
-	}
-
-	public CaseStatus getStatus() {
-		return status;
-	}
-
-	public void setStatus(CaseStatus status) {
-		this.status = status;
 	}
 
 	public String getFeedback() {
@@ -75,17 +78,58 @@ public class Case {
 		this.feedback = feedback;
 	}
 
-	public Long getChatId() {
-		return chatId;
+	public Instant getCreatedOn() {
+		return createdOn;
 	}
 
-	public void setChatId(Long chatId) {
-		this.chatId = chatId;
+	public void setCreatedOn(Instant createdOn) {
+		this.createdOn = createdOn;
+	}
+
+	public CaseStatus getStatus() {
+		return status;
+	}
+
+	public void setStatus(CaseStatus status) {
+		this.status = status;
+	}
+
+	public String getCaseType() {
+		return caseType;
+	}
+
+	public void setCaseType(String caseType) {
+		this.caseType = caseType;
+	}
+
+	public Instant getCompletedOn() {
+		return completedOn;
+	}
+
+	public void setCompletedOn(Instant completedOn) {
+		this.completedOn = completedOn;
+	}
+
+	public String getUserName() {
+		return userName;
+	}
+
+	public void setUserName(String userName) {
+		this.userName = userName;
+	}
+
+	public String getGameName() {
+		return gameName;
+	}
+
+	public void setGameName(String gameName) {
+		this.gameName = gameName;
 	}
 
 	@Override
 	public String toString() {
 		return "Case [id=" + id + ", chatId=" + chatId + ", userId=" + userId + ", feedback=" + feedback
-				+ ", createdAt=" + createdAt + ", status=" + status + "]";
+				+ ", createdOn=" + createdOn + ", status=" + status + ", caseType=" + caseType + ", completedOn="
+				+ completedOn + ", userName=" + userName + ", gameName=" + gameName + "]";
 	}
 }
