@@ -2,15 +2,11 @@ package com.example.chatbot.dto;
 
 import java.util.List;
 
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
-
 public class FeedbackRequest {
 	private String playerFeedbackComments;
 	private Boolean issueResolved;
 	private Boolean satisfiedWithSupport;
 	private List<Long> scores;
-	@JdbcTypeCode(SqlTypes.JSON)
 	private List<QuestionAndAnswerReq> questionAndAnswer;
 	
 	public static class QuestionAndAnswerReq {

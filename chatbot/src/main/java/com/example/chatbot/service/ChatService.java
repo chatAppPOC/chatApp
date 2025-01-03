@@ -15,8 +15,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -25,6 +25,8 @@ import com.example.chatbot.dto.ChatMessageRequest;
 import com.example.chatbot.dto.ChatRequestv2;
 import com.example.chatbot.dto.ChatResponsev2;
 import com.example.chatbot.dto.FeedbackRequest;
+import com.example.chatbot.dto.FeedbackResp;
+import com.example.chatbot.dto.FeedbackResp.Answer;
 import com.example.chatbot.entity.Case;
 import com.example.chatbot.entity.Chat;
 import com.example.chatbot.entity.Chat.ChatStatus;
@@ -32,15 +34,12 @@ import com.example.chatbot.entity.ChatMessage;
 import com.example.chatbot.entity.Feedback;
 import com.example.chatbot.entity.Feedback.FeedbackCategory;
 import com.example.chatbot.entity.FeedbackContent;
-import com.example.chatbot.entity.FeedbackResp;
-import com.example.chatbot.entity.FeedbackResp.Answer;
 import com.example.chatbot.entity.Player;
 import com.example.chatbot.entity.Title;
 import com.example.chatbot.entity.User;
 import com.example.chatbot.model.Message;
 import com.example.chatbot.model.Message.Source;
 import com.example.chatbot.repo.CaseRepository;
-import com.example.chatbot.repo.ChatContentRepository;
 import com.example.chatbot.repo.ChatMessageRepository;
 import com.example.chatbot.repo.ChatRepository;
 import com.example.chatbot.repo.FeedbackContentRepository;
@@ -49,17 +48,14 @@ import com.example.chatbot.repo.PlayerRepository;
 import com.example.chatbot.repo.TitleRepository;
 import com.example.chatbot.repo.UserRepository;
 
+import jakarta.mail.internet.MimeMessage;
+
 @Service
 public class ChatService {
 
 	private static final Logger LOG = LoggerFactory.getLogger(ChatService.class);
-
-	
 	private static final String CASE_MESSAGE = "Support case has been created with ID : ";
-	
 	private static final String GREETINGS = "Thank you for contacting us. Have a nice day !";
-
-	
 
 	@Autowired
 	private ChatRepository chatRepository;
@@ -165,7 +161,6 @@ public class ChatService {
 	}
 
 	@Transactional
-
 	public Case createSupportCaseByChatId(Long chatId, String caseType) throws Exception {
 		try {
 			Optional<Chat> chat = chatRepository.findById(chatId);
@@ -191,7 +186,8 @@ public class ChatService {
 			throw e;
 		}
 	}
-
+    
+	@Transactional
 	public ChatMessage addChatMessage(Long chatId, ChatMessageRequest messageRequest) {
 		try {
 			Optional<Chat> chat = chatRepository.findById(chatId);
@@ -240,7 +236,8 @@ public class ChatService {
 	}
 
 	@Transactional
-	public Feedback providePostResolutionFeedback(FeedbackRequest request, Case caseReq, Chat chatReq) {
+	public Feedback providePostResolutionFeedback(FeedbackRequest request, Case caseReq, Chat chatReq)
+			throws Exception {
 		try {
 			Feedback feedback = null;
 			Long totalScore = request.getScores().stream().mapToLong(Long::longValue).sum();
@@ -259,13 +256,26 @@ public class ChatService {
 			// Save feedback to the repository
 			Feedback response = feedbackRepo.save(feedback);
 
+			String tableHtml = "<html><body>" + "<h3>Feedback Details</h3>"
+					+ "<table border='1' style='border-collapse: collapse; width: 100%;'>"
+					+ "<tr><th>Field</th><th>Value</th></tr>" + "<tr><td>Feedback ID</td><td>" + response.getId()
+					+ "</td></tr>" + "<tr><td>chatId</td><td>" + response.getChatId() + "</td></tr>"
+					+ "<tr><td>caseId</td><td>" + response.getCaseId() + "</td></tr>"
+					+ "<tr><td>feedbackCategory ID</td><td>" + response.getFeedbackCategory() + "</td></tr>"
+					+ "<tr><td>request</td><td>" + response.getRequest() + "</td></tr>"
+					+ "<tr><td>issueResolved</td><td>" + response.getIssueResolved() + "</td></tr>"
+					+ "<tr><td>satisfiedWithSupport</td><td>" + response.getSatisfiedWithSupport() + "</td></tr>"
+					+ "<tr><td>score</td><td>" + response.getScore() + "</td></tr>" + "<tr><td>createdOn</td><td>"
+					+ response.getCreatedOn() + "</td></tr>" + "</table>" + "</body></html>";
 			// Send email notification
-			SimpleMailMessage mailMessage = new SimpleMailMessage();
-			mailMessage.setTo("Sandeepkv.3535@gmail.com");
-			mailMessage.setFrom(fromMailId);
-			mailMessage.setText(response.toString());
-			mailMessage.setSubject("Java Mail Testing");
-			LOG.info("ChatService.providePostResolutionFeedback(email with subject: {}) sent sucessfully to  => {}", response.toString(), "Sandeepkv.3535@gmail.com");
+			MimeMessage mailMessage = javaMailSender.createMimeMessage();
+			MimeMessageHelper helper = new MimeMessageHelper(mailMessage, true);
+			helper.setTo("testjava0987@gmail.com");
+			helper.setFrom(fromMailId);
+			helper.setSubject("Java Mail Testing");
+			helper.setText(tableHtml, true);
+			LOG.info("ChatService.providePostResolutionFeedback(email with subject: {}) sent sucessfully to  => {}",
+					response.toString());
 			javaMailSender.send(mailMessage);
 			LOG.debug("ChatService.providePostResolutionFeedback({}, {}, {}) => {}", request, caseReq, chatReq,
 					response);
@@ -278,7 +288,6 @@ public class ChatService {
 		}
 	}
 
-	@Transactional
 	public List<FeedbackResp> getQuestionsAndAnswers() {
 		try {
 			List<FeedbackContent> questions = feedbackContentRepo.findByContentType("Question"); // fetch all questions
