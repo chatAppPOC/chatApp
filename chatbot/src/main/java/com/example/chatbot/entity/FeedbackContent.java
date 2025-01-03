@@ -1,5 +1,7 @@
 package com.example.chatbot.entity;
 
+import java.util.List;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -16,6 +18,8 @@ public class FeedbackContent {
     private String content;
     private String contentType;
     private Long modelId;
+    private Long score;
+    private List<Long> parentId;
 	public Long getId() {
 		return id;
 	}
@@ -40,9 +44,21 @@ public class FeedbackContent {
 	public void setModelId(Long modelId) {
 		this.modelId = modelId;
 	}
+	public Long getScore() {
+		return score;
+	}
+	public void setScore(Long score) {
+		this.score = score;
+	}
+	public List<Long> getParentId() {
+		return parentId;
+	}
+	public void setParentId(List<Long> parentId) {
+		this.parentId = parentId;
+	}
 	@Override
 	public String toString() {
 		return "FeedbackContent [id=" + id + ", content=" + content + ", contentType=" + contentType + ", modelId="
-				+ modelId + "]";
-	} 
+				+ modelId + ", score=" + score + ", parentId=" + parentId + "]";
+	}
 }

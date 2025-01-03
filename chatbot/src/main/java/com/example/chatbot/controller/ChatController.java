@@ -1,5 +1,6 @@
 package com.example.chatbot.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,16 +20,19 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.example.chatbot.dto.CaseFeedbackRequest;
 import com.example.chatbot.dto.ChatMessageRequest;
-import com.example.chatbot.dto.ChatRequest;
-import com.example.chatbot.dto.ChatResponse;
+import com.example.chatbot.dto.ChatRequestv2;
+import com.example.chatbot.dto.ChatResponsev2;
+import com.example.chatbot.dto.FeedbackRequest;
 import com.example.chatbot.entity.Case;
 import com.example.chatbot.entity.Chat;
 import com.example.chatbot.entity.ChatMessage;
 import com.example.chatbot.entity.Feedback;
+import com.example.chatbot.entity.Feedback.FeedbackCategory;
+import com.example.chatbot.entity.FeedbackResp;
 import com.example.chatbot.entity.User;
 import com.example.chatbot.repo.CaseRepository;
+import com.example.chatbot.repo.ChatRepository;
 import com.example.chatbot.repo.UserRepository;
 import com.example.chatbot.service.ChatService;
 
@@ -48,24 +52,31 @@ public class ChatController {
 	@Autowired
 	UserRepository userRepository;
 
-	@PostMapping("/chat")
-	public ChatResponse performChat(@RequestBody ChatRequest input) throws Exception {
+	@Autowired
+	private ChatRepository chatRepository;
+
+	@PostMapping("v2/chat")
+	public ChatResponsev2 performChatv2(@RequestBody ChatRequestv2 request) throws Exception {
 		try {
-			ChatResponse chatMessages = chatService.performChat(input);
-			LOG.info("Api.performChat({}) => {}", input, chatMessages);
+			ChatResponsev2 chatMessages = chatService.performChatv2(request);
+			LOG.info("Api.performChatv2({}) => {}", request, chatMessages);
 			return chatMessages;
 		} catch (Exception e) {
-			LOG.error("Api.performChat({}) => error!!!", input, e);
+			LOG.error("Api.performChatv2({}) => error!!!", request);
 			throw e;
 		}
 	}
 
 	@GetMapping("/chat/history/{playerId}")
-	public List<Chat> getChatHistory(@PathVariable Long playerId, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "5") int size) throws Exception {
+	public List<Chat> getChatHistory(@PathVariable Long playerId, @RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "5") int size) throws Exception {
 		try {
 			Page<Chat> chatMessages = chatService.getChatHistory(playerId, page, size);
-			List<Chat> result = chatMessages.getContent();
-			LOG.info("Api.getChatHistory({}) => {}", playerId, chatMessages);
+			List<Chat> result = new ArrayList<>();
+			if (chatMessages != null) {
+				result = chatMessages.getContent();
+			}
+			LOG.info("Api.getChatHistory({}) => Result size : {}", playerId, result.size());
 			return result;
 		} catch (Exception e) {
 			LOG.error("Api.getChatHistory({}) => error!!!", playerId, e);
@@ -90,8 +101,8 @@ public class ChatController {
 			throw e;
 		}
 	}
-	
-	@PostMapping("chat/conversation/{chatId}")
+
+	@PostMapping("/chat/conversation/{chatId}")
 	public ChatMessage addChatMessage(@PathVariable Long chatId, @RequestBody ChatMessageRequest message) {
 		try {
 			ChatMessage response = chatService.addChatMessage(chatId, message);
@@ -103,7 +114,7 @@ public class ChatController {
 		}
 	}
 
-	@GetMapping("chat/conversation/{chatId}")
+	@GetMapping("/chat/conversation/{chatId}")
 	public List<ChatMessage> getChatMessages(@PathVariable Long chatId) {
 		try {
 			List<ChatMessage> response = chatService.getChatMessages(chatId);
@@ -115,31 +126,81 @@ public class ChatController {
 		}
 	}
 
-	@PostMapping("/feedback/{caseId}")
-	public Feedback saveFeedback(@PathVariable Long caseId, @RequestBody CaseFeedbackRequest request) {
+	@PostMapping("/{contentType}/feedback/{contentId}")
+	public Feedback saveFeedback(@PathVariable Long contentId, @PathVariable String contentType,
+			@RequestBody FeedbackRequest request) {
 		try {
-			Optional<Case> caseResp = caseRepository.findById(caseId);
+			Optional<Case> caseResp = Optional.empty();
+			Optional<Chat> chatResp = Optional.empty();
 			Feedback response = null;
-			if (caseResp.isPresent()) {
-				response = chatService.providePostResolutionFeedback(request, caseResp.get());
+			if (FeedbackCategory.valueOf(contentType) == FeedbackCategory.CASE) {
+				caseResp = caseRepository.findById(contentId);
+				if (caseResp.isEmpty()) {
+					LOG.warn("Case not found for contentId: {}", contentId);
+					throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Case not found");
+				}
+			} else {
+				chatResp = chatRepository.findById(contentId);
+				if (chatResp.isEmpty()) {
+					LOG.warn("Chat not found for contentId: {}", contentId);
+					throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Chat not found");
+				}
 			}
-			LOG.info("Api.saveFeedback({}, {}) => {}", caseId, request, response);
+			response = chatService.providePostResolutionFeedback(request, caseResp.orElse(null), chatResp.orElse(null));
+			LOG.info("Api.saveFeedback({}, {}, {}) => {}", contentId, contentType, request, response);
 			return response;
 		} catch (Exception e) {
-			LOG.error("Api.saveFeedback({}, {}) => error!!!", caseId, request, e);
+			LOG.error("Api.saveFeedback({}, {}, {}) => error!!!", contentId, contentType, request, e);
 			throw e;
 		}
 	}
-	
-	@GetMapping("/case")
-	public Optional<Case> getCaseDetails(@RequestParam(required = false) Long caseId) {
+
+	@PostMapping("/case/{contentId}/{description}")
+	public Case createCase(@PathVariable Long contentId, @PathVariable String description) throws Exception {
 		try {
-			Optional<Case> response= caseRepository.findById(caseId);
-			LOG.info("Api.getCaseDetails() => {}", response);
+			Case response = chatService.createSupportCaseByChatId(contentId, description);
+			LOG.info("Api.createCase({}, {}, {}) => {}", contentId, description, response);
 			return response;
 		} catch (Exception e) {
-			LOG.error("Api.getCaseDetails() => error!!!", e);
+			LOG.error("Api.createCase({}, {}, {}) => error!!!", contentId, description, e);
 			throw e;
 		}
 	}
+
+	@GetMapping("/case")
+	public Optional<Case> getCaseDataByCaseId(@RequestParam(required = false) Long caseId) {
+		try {
+			Optional<Case> response = caseRepository.findById(caseId);
+			LOG.info("Api.getCaseDataByCaseId() => {}", response);
+			return response;
+		} catch (Exception e) {
+			LOG.error("Api.getCaseDataByCaseId() => error!!!", e);
+			throw e;
+		}
+	}
+
+	@GetMapping("/feedback/questions")
+	public List<FeedbackResp> getFeedbackQuestionsAndAnswers() {
+		try {
+			List<FeedbackResp> response = chatService.getQuestionsAndAnswers();
+			LOG.info("Api.getFeedbackQuestionsAndAnswers() => {}", response);
+			return response;
+		} catch (Exception e) {
+			LOG.error("Api.getFeedbackQuestionsAndAnswers() => error!!!", e);
+			throw e;
+		}
+	}
+
+	@GetMapping("/allCases")
+	public List<Case> getAllCases() {
+		try {
+			List<Case> response = caseRepository.findAll();
+			LOG.info("Api.getAllCases() => {}", response);
+			return response;
+		} catch (Exception e) {
+			LOG.error("Api.getAllCases() => error!!!", e);
+			throw e;
+		}
+	}
+
 }

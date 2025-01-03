@@ -11,6 +11,8 @@ import com.example.chatbot.model.Message;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -29,18 +31,25 @@ public class Chat {
 	@JdbcTypeCode(SqlTypes.JSON)
 	@Column(columnDefinition = "jsonb") 
     private List<Message> messages;
+	
     @Column(columnDefinition = "text")
 	private String description;
     
-	private String status;
+	@Enumerated(EnumType.STRING)
+	private ChatStatus status;
+	
 	private Instant createdOn;
 	private Instant updatedOn;
 	
-	public Chat(Long playerId, String status) {
+	public Chat(Long playerId) {
 	    this.playerId = playerId;
-	    this.status = status;
+	    this.status = ChatStatus.IN_PROGRESS;
 	    this.messages = new ArrayList<>();
 	    this.createdOn = Instant.now();
+	}
+
+	public enum ChatStatus {
+		IN_PROGRESS, CASE_CREATED, COMPLETE
 	}
 	
 	public Chat() {
@@ -80,11 +89,11 @@ public class Chat {
 		this.description = description;
 	}
 
-	public String getStatus() {
+	public ChatStatus getStatus() {
 		return status;
 	}
 
-	public void setStatus(String status) {
+	public void setStatus(ChatStatus status) {
 		this.status = status;
 	}
 
