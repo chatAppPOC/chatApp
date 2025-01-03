@@ -32,7 +32,7 @@ public class Feedback {
 	private Boolean issueResolved;
 	private Boolean satisfiedWithSupport;
 	private Long score;
-	private Instant createdAt;
+	private Instant createdOn;
 	
 	public Feedback() {
 
@@ -47,7 +47,7 @@ public class Feedback {
 		this.issueResolved = issueResolved;
 		this.satisfiedWithSupport = satisfiedWithSupport;
 		this.score = score;
-		this.createdAt = Instant.now();
+		this.createdOn = Instant.now();
 	}
 
 	public enum FeedbackCategory {
@@ -118,19 +118,19 @@ public class Feedback {
 		this.score = score;
 	}
 
-	public Instant getCreatedAt() {
-		return createdAt;
+	public Instant getCreatedOn() {
+		return createdOn;
 	}
 
-	public void setCreatedAt(Instant createdAt) {
-		this.createdAt = createdAt;
+	public void setCreatedOn(Instant createdOn) {
+		this.createdOn = createdOn;
 	}
 
 	@Override
 	public String toString() {
 		return "Feedback [id=" + id + ", chatId=" + chatId + ", caseId=" + caseId + ", feedbackCategory="
 				+ feedbackCategory + ", request=" + request + ", issueResolved=" + issueResolved
-				+ ", satisfiedWithSupport=" + satisfiedWithSupport + ", score=" + score + ", createdAt=" + createdAt
+				+ ", satisfiedWithSupport=" + satisfiedWithSupport + ", score=" + score + ", createdOn=" + createdOn
 				+ "]";
 	}
 }

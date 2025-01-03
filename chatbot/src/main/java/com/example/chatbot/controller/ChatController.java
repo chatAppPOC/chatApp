@@ -128,7 +128,7 @@ public class ChatController {
 
 	@PostMapping("/{contentType}/feedback/{contentId}")
 	public Feedback saveFeedback(@PathVariable Long contentId, @PathVariable String contentType,
-			@RequestBody FeedbackRequest request) {
+			@RequestBody FeedbackRequest request) throws Exception {
 		try {
 			Optional<Case> caseResp = Optional.empty();
 			Optional<Chat> chatResp = Optional.empty();
