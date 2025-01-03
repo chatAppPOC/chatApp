@@ -11,9 +11,9 @@ public class FeedbackRequest {
 	private Boolean satisfiedWithSupport;
 	private List<Long> scores;
 	@JdbcTypeCode(SqlTypes.JSON)
-	private List<QeustionAndAnswerReq> questionAndAnswer;
+	private List<QuestionAndAnswerReq> questionAndAnswer;
 	
-	public static class QeustionAndAnswerReq {
+	public static class QuestionAndAnswerReq {
 		private String question;
 		private String Answer;
 
@@ -35,7 +35,7 @@ public class FeedbackRequest {
 
 		@Override
 		public String toString() {
-			return "QeustionsAnswerReq [question=" + question + ", Answer=" + Answer + "]";
+			return "QuestionAndAnswerReq [question=" + question + ", Answer=" + Answer + "]";
 		}
 	}
 
@@ -71,11 +71,11 @@ public class FeedbackRequest {
 		this.scores = scores;
 	}
 
-	public List<QeustionAndAnswerReq> getQuestionAndAnswer() {
+	public List<QuestionAndAnswerReq> getQuestionAndAnswer() {
 		return questionAndAnswer;
 	}
 
-	public void setQuestionAndAnswer(List<QeustionAndAnswerReq> questionAndAnswer) {
+	public void setQuestionAndAnswer(List<QuestionAndAnswerReq> questionAndAnswer) {
 		this.questionAndAnswer = questionAndAnswer;
 	}
 

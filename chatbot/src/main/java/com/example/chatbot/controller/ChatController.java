@@ -168,9 +168,9 @@ public class ChatController {
 	}
 
 	@GetMapping("/case")
-	public Optional<Case> getCaseDataByCaseId(@RequestParam(required = false) Long caseId) {
+	public List<Case> getCaseDataByCaseId(@RequestParam(required = false) Long caseId) {
 		try {
-			Optional<Case> response = caseRepository.findById(caseId);
+			List<Case> response = caseRepository.findById(caseId).stream().toList();
 			LOG.info("Api.getCaseDataByCaseId() => {}", response);
 			return response;
 		} catch (Exception e) {
