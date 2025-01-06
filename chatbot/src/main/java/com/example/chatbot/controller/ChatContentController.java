@@ -1,7 +1,6 @@
 package com.example.chatbot.controller;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -130,13 +129,9 @@ public class ChatContentController {
 	@GetMapping("v2/content")
 	public Content getContentv2(@RequestParam Long contentId) {
 		try {
-			Optional<Content> existingContent = chatContentService.getContentv2(contentId);
-			Content result = null;
-			if(existingContent.isPresent()) {
-				result = existingContent.get();
-			}
-	    	LOG.info("Api.getContentv2({}) => {}", contentId, result);
-			return result;
+			Content content = chatContentService.getContentv2(contentId);
+	    	LOG.info("Api.getContentv2({}) => {}", contentId, content);
+			return content;
 		} catch (Exception e) {
     		LOG.error("Api.getContentv2({}) => error!!!", contentId);
 			throw e;

@@ -158,11 +158,17 @@ public class ChatContentService {
 		return dest;
 	}
 
-	public Optional<Content> getContentv2(Long id) {
+	public Content getContentv2(Long id) {
 		try {
 			Optional<Content> result = contentRepository.findById(id);
-			LOG.debug("ChatContentService.getContentv2({}, {}) => {}", id, result);
-			return result;
+			if(result.isPresent()) {
+				LOG.debug("ChatContentService.getContentv2({}, {}) => {}", id, result.get());
+				return result.get();
+			}
+			else{
+				LOG.warn("ChatContentService.getContentv2({}) => Content ID does not exist", id);
+				return (new Content());
+			}
 		} catch (Exception e) {
 			LOG.error("ChatContentService.getContentv2() => error!!!", e);
 			throw e;

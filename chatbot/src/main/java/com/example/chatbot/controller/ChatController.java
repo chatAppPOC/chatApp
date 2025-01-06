@@ -83,6 +83,19 @@ public class ChatController {
 			throw e;
 		}
 	}
+	
+	@GetMapping("v2/chat/{chatId}")
+	public Chat getChat(@PathVariable Long chatId) {
+		try{
+			Chat chat = chatService.getChat(chatId);
+			LOG.info("Api.getChat({}) => {}", chatId, chat);
+		    return chat;
+		}
+		catch(Exception e) {
+			LOG.error("Api.getChat({}, {}) => error!!!", chatId, e);
+			throw e;
+		}
+	}
 
 	@PutMapping("/case/{caseId}/re-assign/{userId}")
 	public Case reAssignTicketToAgent(@PathVariable Long caseId, @PathVariable Long userId) {

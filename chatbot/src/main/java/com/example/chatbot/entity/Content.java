@@ -5,6 +5,9 @@ import java.time.Instant;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -14,6 +17,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "content")
+@JsonInclude(Include.NON_NULL)
 public class Content {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,6 +31,10 @@ public class Content {
 	private Instant updatedOn;
 	private String updatedBy;
 	private String createdBy;
+	
+	public Content() {
+		
+	}
 	
 	public Long getId() {
 		return id;

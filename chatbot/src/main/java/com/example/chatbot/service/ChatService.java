@@ -146,7 +146,7 @@ public class ChatService {
 
 	}
 
-	@Transactional
+	
 	public Page<Chat> getChatHistory(Long playerId, int page, int size) {
 		try {
 			Pageable pageable = PageRequest.of(page, size);
@@ -156,6 +156,25 @@ public class ChatService {
 		}
 		catch(Exception e) {
 			LOG.error("ChatService.getChatHistory({}, {}, {}) => error!!!", playerId, page, size);
+			throw e;
+		}
+	}
+	
+	
+	public Chat getChat(Long chatId) {
+		try {
+			Optional<Chat> result = chatRepository.findById(chatId);
+			if(result.isPresent()) {
+				LOG.debug("ChatService.getChat({}) => {}", chatId, result.get());
+				return result.get();
+			}
+			else{
+				LOG.warn("ChatService.getChat({}) => ChatId does not exist", chatId);
+				return (new Chat());
+			}
+		}
+		catch(Exception e) {
+			LOG.error("ChatService.getChat({}, {}, {}) => error!!!", chatId, e);
 			throw e;
 		}
 	}
