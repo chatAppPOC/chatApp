@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 interface QAContent {
   id: string;
   createdDate: string;
+  createdBy:string;
   updatedDate: string;
   updatedBy: string;
   language: string;
@@ -42,35 +43,35 @@ const QAContentTable: React.FC = () => {
     window.location.href = `/qa-content/${id}`; // or use React Router
   };
 
-  
-  // const handleDelete = (id: string) => {
-  //   const updatedContents = qaContents.filter((content) => content.id !== id);
-  //   setQAContents(updatedContents);
-  // };
 
-  const handleDelete = async (id: string) => {
-    try {
-      const response = await fetch(`http://localhost:8080/api/v2/content?contentId=${id}`, {
-        method: "DELETE",
-      });
-   
-      if (!response.ok) {
-        throw new Error(`Failed to delete content: ${response.statusText}`);
-      }
-   
-      // Remove the deleted item from the UI
-  const updatedContents = qaContents.filter((content) => content.id !== id);
-      setQAContents(updatedContents);
-   
-      alert("Content deleted successfully!");
-    } catch (error: any) {
-      console.error("Error deleting content:", error);
-      alert("Failed to delete content. Please try again.");
-    }
+  const handleDelete = (id: string) => {
+    const updatedContents = qaContents.filter((content) => content.id !== id);
+    setQAContents(updatedContents);
   };
 
+  // const handleDelete = async (id: string) => {
+  //   try {
+  //     const response = await fetch(`http://localhost:8080/api/v2/content?contentId=${id}`, {
+  //       method: "DELETE",
+  //     });
+
+  //     if (!response.ok) {
+  //       throw new Error(`Failed to delete content: ${response.statusText}`);
+  //     }
+
+  //     // Remove the deleted item from the UI
+  //     const updatedContents = qaContents.filter((content) => content.id !== id);
+  //     setQAContents(updatedContents);
+
+  //     alert("Content deleted successfully!");
+  //   } catch (error: any) {
+  //     console.error("Error deleting content:", error);
+  //     alert("Failed to delete content. Please try again.");
+  //   }
+  // };
+
   const handleCreate = () => {
-    window.location.href = `/qa-content/new`; // Navigate to the QA editor page for new content
+    window.location.href = `/qa-content`; // Navigate to the QA editor page for new content
   };
 
   if (loading) {
@@ -85,14 +86,14 @@ const QAContentTable: React.FC = () => {
       <h1 className="text-xl font-semibold mb-4">Q/A Content Grid</h1>
 
       {/* Create Button */}
-      <div className="mb-4 flex justify-end">
+      {/* <div className="mb-4 flex justify-end">
         <button
           onClick={handleCreate}
           className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600"
         >
           Create Q/A Content
         </button>
-      </div>
+      </div> */}
 
       <table className="table-auto w-full border-collapse border border-gray-200">
         <thead>
@@ -100,6 +101,7 @@ const QAContentTable: React.FC = () => {
             <th className="border border-gray-300 px-4 py-2">ID</th>
             <th className="border border-gray-300 px-4 py-2">Language</th>
             <th className="border border-gray-300 px-4 py-2">Created Date</th>
+            <th className="border border-gray-300 px-4 py-2">Created By</th>
             <th className="border border-gray-300 px-4 py-2">Updated Date</th>
             <th className="border border-gray-300 px-4 py-2">Updated By</th>
             <th className="border border-gray-300 px-4 py-2">Action</th>
@@ -128,6 +130,12 @@ const QAContentTable: React.FC = () => {
                 onClick={() => handleRowClick(content.id)}
               >
                 {content.createdDate}
+              </td>
+              <td
+                className="border border-gray-300 px-4 py-2"
+                onClick={() => handleRowClick(content.id)}
+              >
+                {content.createdBy}
               </td>
               <td
                 className="border border-gray-300 px-4 py-2"
