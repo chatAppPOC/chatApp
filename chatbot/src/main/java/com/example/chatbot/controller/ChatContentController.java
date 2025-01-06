@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.chatbot.dto.ContentLanguageProjection;
 import com.example.chatbot.dto.ContentResponse;
 import com.example.chatbot.entity.ChatContent;
 import com.example.chatbot.entity.Content;
