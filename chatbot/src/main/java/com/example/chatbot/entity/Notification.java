@@ -1,141 +1,98 @@
 package com.example.chatbot.entity;
 
+import jakarta.persistence.*;
 import java.time.Instant;
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-
 @Entity
 public class Notification {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-	private String content;
+    private String content;
 
-	private String recipient;
+    @Enumerated(EnumType.STRING)
+    private NotificationSource source;
 
-	@Enumerated(EnumType.STRING)
-	private NotificationType notificationType;
+    @Column(name = "PlayerId")
+    private Long playerId; // Reference to the Player table
 
-	@Enumerated(EnumType.STRING)
-	private NotificationStatus notificationStatus;
+    private Instant scheduleTime; // Scheduled time for the notification
 
-	private Long playerId;
+    private Instant expireTime; // Expiration time for the notification
 
-	private Instant sentAt;
+    @Column(name = "SentCount")
+    private int sentCount; // Dynamic count that increments
 
-	private Instant scheduledTime;
+    @Column(name = "Count")
+    private int count; // Static count for the upper limit (flag)
 
-	private Instant expireTime;
+    // Getters and Setters
+    public Long getId() {
+        return id;
+    }
 
-	public Notification() {
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-	}
+    public String getContent() {
+        return content;
+    }
 
-	public Notification(String content, String recipient, NotificationType notificationType,
-			NotificationStatus notificationStatus, Long playerId, Instant sentAt, Instant scheduledTime,
-			Instant expireTime) {
-		this.content = content;
-		this.recipient = recipient;
-		this.notificationType = notificationType;
-		this.notificationStatus = notificationStatus;
-		this.playerId = playerId;
-		this.sentAt = sentAt;
-		this.scheduledTime = scheduledTime;
-		this.expireTime = expireTime;
-	}
+    public void setContent(String content) {
+        this.content = content;
+    }
 
-	public Long getId() {
-		return id;
-	}
+    public NotificationSource getSource() {
+        return source;
+    }
 
-	public void setId(Long id) {
-		this.id = id;
-	}
+    public void setSource(NotificationSource source) {
+        this.source = source;
+    }
 
-	public String getContent() {
-		return content;
-	}
+    public Long getPlayerId() {
+        return playerId;
+    }
 
-	public void setContent(String content) {
-		this.content = content;
-	}
+    public void setPlayerId(Long playerId) {
+        this.playerId = playerId;
+    }
 
-	public String getRecipient() {
-		return recipient;
-	}
+    public Instant getScheduleTime() {
+        return scheduleTime;
+    }
 
-	public void setRecipient(String recipient) {
-		this.recipient = recipient;
-	}
+    public void setScheduleTime(Instant scheduleTime) {
+        this.scheduleTime = scheduleTime;
+    }
 
-	public NotificationType getNotificationType() {
-		return notificationType;
-	}
+    public Instant getExpireTime() {
+        return expireTime;
+    }
 
-	public void setNotificationType(NotificationType notificationType) {
-		this.notificationType = notificationType;
-	}
+    public void setExpireTime(Instant expireTime) {
+        this.expireTime = expireTime;
+    }
 
-	public NotificationStatus getNotificationStatus() {
-		return notificationStatus;
-	}
+    public int getSentCount() {
+        return sentCount;
+    }
 
-	public void setNotificationStatus(NotificationStatus notificationStatus) {
-		this.notificationStatus = notificationStatus;
-	}
+    public void setSentCount(int sentCount) {
+        this.sentCount = sentCount;
+    }
 
-	public Long getPlayerId() {
-		return playerId;
-	}
+    public int getCount() {
+        return count;
+    }
 
-	public void setPlayerId(Long playerId) {
-		this.playerId = playerId;
-	}
+    public void setCount(int count) {
+        this.count = count;
+    }
 
-	public Instant getSentAt() {
-		return sentAt;
-	}
-
-	public void setSentAt(Instant sentAt) {
-		this.sentAt = sentAt;
-	}
-
-	public Instant getScheduledTime() {
-		return scheduledTime;
-	}
-
-	public void setScheduledTime(Instant scheduledTime) {
-		this.scheduledTime = scheduledTime;
-	}
-
-	public Instant getExpireTime() {
-		return expireTime;
-	}
-
-	public void setExpireTime(Instant expireTime) {
-		this.expireTime = expireTime;
-	}
-
-	public enum NotificationType {
-		EMAIL, SMS, PUSH_NOTIFICATION
-	}
-
-	public enum NotificationStatus {
-		PENDING, SENT, FAILED
-	}
-
-	@Override
-	public String toString() {
-		return "Notification [id=" + id + ", content=" + content + ", notificationType=" + notificationType
-				+ ", notificationStatus=" + notificationStatus + ", playerId=" + playerId + ", sentAt=" + sentAt
-				+ ", scheduledTime=" + scheduledTime + ", expireTime=" + expireTime + "]";
-	}
-
+    public enum NotificationSource {
+        EMAIL, PUSH_NOTIFICATION
+    }
 }
