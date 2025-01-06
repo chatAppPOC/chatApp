@@ -138,7 +138,7 @@ public class ChatContentController {
 	    	LOG.info("Api.getContentv2({}) => {}", contentId, result);
 			return result;
 		} catch (Exception e) {
-    		LOG.error("Api.copyContent({}) => error!!!", contentId);
+    		LOG.error("Api.getContentv2({}) => error!!!", contentId);
 			throw e;
 		}
 	}
@@ -147,10 +147,10 @@ public class ChatContentController {
 	public List<ContentResponse> getContents() {
 		try {
 			List<ContentResponse> contents = chatContentService.getContents();
-	    	LOG.info("Api.copyContent() => {}",contents);
+	    	LOG.info("Api.getContents() => {}",contents);
 			return contents;
 		} catch (Exception e) {
-    		LOG.error("Api.copyContent() => error!!!");
+    		LOG.error("Api.getContents() => error!!!");
 			throw e;
 		}
 	}

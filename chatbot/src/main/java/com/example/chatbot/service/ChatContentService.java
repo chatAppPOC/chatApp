@@ -1,7 +1,6 @@
 package com.example.chatbot.service;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -172,28 +171,9 @@ public class ChatContentService {
 
 	public List<ContentResponse> getContents() {
 		try {
-			List<Content> contents = contentRepository.findAll();
-			List<ContentResponse> result = new ArrayList<>();
-			if (contents != null) {
-				for (Content content : contents) {
-					ContentResponse response = new ContentResponse();
-					if (content.getCreatedOn() != null)
-						response.setCreatedOn(content.getCreatedOn());
-					if (content.getUpdatedOn() != null)
-						response.setUpdatedOn(content.getUpdatedOn());
-					if (content.getName() != null)
-						response.setName(content.getName());
-					if (content.getId() != null)
-						response.setId(content.getId());
-					if (content.getUpdatedBy() != null)
-						response.setUpdatedBy(content.getUpdatedBy());
-					if (content.getCreatedBy() != null)
-						response.setCreatedBy(content.getCreatedBy());
-					result.add(response);
-				}
-			}
-			LOG.debug("ChatContentService.getContents() => {}", result);
-			return result;
+			List<ContentResponse> contents = contentRepository.findAllContents();
+			LOG.debug("ChatContentService.getContents() => {}", contents);
+			return contents;
 		} catch (Exception e) {
 			LOG.error("ChatContentService.getContents() => error!!!", e);
 			throw e;
