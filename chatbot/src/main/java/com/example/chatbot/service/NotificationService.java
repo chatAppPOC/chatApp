@@ -1,24 +1,20 @@
 package com.example.chatbot.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.stereotype.Service;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
-
-import com.example.chatbot.dto.NotificationRequest;
-import com.example.chatbot.entity.Notification;
-import com.example.chatbot.repo.NotificationRepository;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.example.chatbot.dto.NotificationRequest;
+import com.example.chatbot.entity.Notification;
+import com.example.chatbot.repo.NotificationRepository;
 @Service
 public class NotificationService {
 
-    @Autowired
-    private JavaMailSender mailSender;
+   
 
     @Autowired
     private NotificationRepository notificationRepository;

@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.chatbot.dto.ContentLanguageProjection;
 import com.example.chatbot.dto.ContentResponse;
 import com.example.chatbot.entity.ChatContent;
 import com.example.chatbot.entity.Content;
@@ -138,7 +139,7 @@ public class ChatContentController {
 	    	LOG.info("Api.getContentv2({}) => {}", contentId, result);
 			return result;
 		} catch (Exception e) {
-    		LOG.error("Api.copyContent({}) => error!!!", contentId);
+    		LOG.error("Api.getContentv2({}) => error!!!", contentId);
 			throw e;
 		}
 	}
@@ -147,10 +148,10 @@ public class ChatContentController {
 	public List<ContentResponse> getContents() {
 		try {
 			List<ContentResponse> contents = chatContentService.getContents();
-	    	LOG.info("Api.copyContent() => {}",contents);
+	    	LOG.info("Api.getContents() => {}",contents);
 			return contents;
 		} catch (Exception e) {
-    		LOG.error("Api.copyContent() => error!!!");
+    		LOG.error("Api.getContents() => error!!!");
 			throw e;
 		}
 	}
