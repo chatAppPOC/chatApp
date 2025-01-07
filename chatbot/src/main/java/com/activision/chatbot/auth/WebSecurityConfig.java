@@ -36,6 +36,8 @@ public class WebSecurityConfig {
                 .requestMatchers("/").hasAnyAuthority("USER", "PLAYER", "ADMIN")
                 .anyRequest().authenticated()
             )
+        	.cors(cors -> cors.disable())
+        	.csrf(csrf -> csrf.disable())
             .formLogin(login -> login.permitAll())
             .logout(logout -> logout.permitAll())
             .exceptionHandling(eh -> eh.accessDeniedPage("/403"))
