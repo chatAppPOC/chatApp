@@ -14,4 +14,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 			""", nativeQuery = true)
 	User fetchUserByLanguageAndPlatformAndTitle(@Param("language") Long language, @Param("platform") Long platform,
 			@Param("title") Long title);
+	
+	@Query("SELECT u FROM User u WHERE u.email = :email")
+    public User getUserByEmail(@Param("email") String email);
 }
