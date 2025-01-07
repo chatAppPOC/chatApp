@@ -14,7 +14,7 @@ public class Group {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	private String name;
-	
+	private Boolean enabled;
 	
 	public Long getId() {
 		return id;
@@ -28,9 +28,16 @@ public class Group {
 	public void setName(String name) {
 		this.name = name;
 	}
+	public Boolean getEnabled() {
+		return enabled;
+	}
+	public void setEnabled(Boolean enabled) {
+		this.enabled = enabled;
+	}
+	
 	@Override
 	public String toString() {
-		return "Group [id=" + id + ", name=" + name + "]";
+		return "Group [id=" + id + ", name=" + name + ", enabled=" + enabled + "]";
 	}
-
+	
 }

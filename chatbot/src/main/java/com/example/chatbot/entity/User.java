@@ -20,6 +20,8 @@ public class User {
 	private List<Long> preferredLanguage;
 	private List<Long> platform;
 	private List<Long> title;
+	private Long groupId;
+	private Boolean enabled;
 
 	public User() {
 	}
@@ -71,10 +73,28 @@ public class User {
 	public void setTitle(List<Long> title) {
 		this.title = title;
 	}
+	
+	public Long getGroupId() {
+		return groupId;
+	}
+
+	public void setGroupId(Long groupId) {
+		this.groupId = groupId;
+	}
+
+	public Boolean getEnabled() {
+		return enabled;
+	}
+
+	public void setEnabled(Boolean enabled) {
+		this.enabled = enabled;
+	}
 
 	@Override
 	public String toString() {
 		return "User [id=" + id + ", firstName=" + firstName + ", lastName=" + lastName + ", preferredLanguage="
-				+ preferredLanguage + ", platform=" + platform + ", title=" + title + "]";
+				+ preferredLanguage + ", platform=" + platform + ", title=" + title + ", groupId=" + groupId
+				+ ", enabled=" + enabled + "]";
 	}
+
 }
