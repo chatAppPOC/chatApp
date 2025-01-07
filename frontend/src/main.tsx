@@ -19,7 +19,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         <Route path="qa-content-grid" element={<QAContentTable />} />
         <Route path="qa-content/:id" element={<QAContentEditor />} />
         <Route path="case-deatils-grid" element={<CaseDetailsTable />} />
-        <Route path="case-details/:id" element={<CaseDeatilsPage />} />
+        {/* <Route path="case-details/:id" element={<CaseDeatilsPage />} /> */}
       </Route>
     </Routes>
   </Router>
