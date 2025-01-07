@@ -69,7 +69,6 @@ public class ChatController {
 	}
 
 	@GetMapping("/chat/history/{playerId}")
-	@PreAuthorize("hasAuthority('ADMIN')")
 	public List<Chat> getChatHistory(@PathVariable Long playerId, @RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "5") int size) throws Exception {
 		try {
