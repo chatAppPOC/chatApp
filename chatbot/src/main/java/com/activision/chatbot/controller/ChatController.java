@@ -9,8 +9,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,15 +28,14 @@ import com.activision.chatbot.entity.Case;
 import com.activision.chatbot.entity.Chat;
 import com.activision.chatbot.entity.ChatMessage;
 import com.activision.chatbot.entity.Feedback;
-import com.activision.chatbot.entity.User;
 import com.activision.chatbot.entity.Feedback.FeedbackCategory;
+import com.activision.chatbot.entity.User;
 import com.activision.chatbot.repo.CaseRepository;
 import com.activision.chatbot.repo.ChatRepository;
 import com.activision.chatbot.repo.UserRepository;
 import com.activision.chatbot.service.ChatService;
 
 @RestController
-@CrossOrigin
 @RequestMapping("/api")
 public class ChatController {
 
