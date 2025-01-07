@@ -27,6 +27,7 @@ import com.example.chatbot.dto.ChatResponsev2;
 import com.example.chatbot.dto.FeedbackRequest;
 import com.example.chatbot.dto.FeedbackResp;
 import com.example.chatbot.dto.FeedbackResp.Answer;
+import com.example.chatbot.dto.PlayerUserResponse;
 import com.example.chatbot.entity.Case;
 import com.example.chatbot.entity.Chat;
 import com.example.chatbot.entity.Chat.ChatStatus;
@@ -34,9 +35,6 @@ import com.example.chatbot.entity.ChatMessage;
 import com.example.chatbot.entity.Feedback;
 import com.example.chatbot.entity.Feedback.FeedbackCategory;
 import com.example.chatbot.entity.FeedbackContent;
-import com.example.chatbot.entity.Player;
-import com.example.chatbot.entity.Title;
-import com.example.chatbot.entity.User;
 import com.example.chatbot.model.Message;
 import com.example.chatbot.model.Message.Source;
 import com.example.chatbot.repo.CaseRepository;
@@ -185,14 +183,12 @@ public class ChatService {
 			Optional<Chat> chat = chatRepository.findById(chatId);
 			Case newCase = null;
 			if (chat.isPresent()) {
-				Optional<Player> player = playerRepository.findById(chat.get().getPlayerId());
-				Optional<Title> title = titleRepo.findById(player.get().getTitle());
-				User assignedUser = userRepository.fetchUserByLanguageAndPlatformAndTitle(
-						player.get().getPreferredLanguage(), player.get().getPlatform(), player.get().getTitle());
+				PlayerUserResponse assignedUser = playerRepository
+						.fetchUserByLanguageAndPlatformAndTitle(chat.get().getPlayerId());
 				if (assignedUser != null) {
-					String fullName = assignedUser.getFirstName() + " " + assignedUser.getLastName();
-					newCase = new Case(assignedUser.getId(), chat.get().getId(), caseType, null, fullName,
-							title.get().getName());
+					String fullName = assignedUser.getUserFirstName() + " " + assignedUser.getUserLastName();
+					newCase = new Case(assignedUser.getUserId(), chat.get().getId(), caseType, null, fullName,
+							assignedUser.getGameName());
 				}
 			} else {
 				LOG.warn("ChatService.createSupportCaseByChatId({}) => ChatId does not exist", chatId);

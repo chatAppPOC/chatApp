@@ -2,6 +2,9 @@ package com.example.chatbot.entity;
 
 import java.time.Instant;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -12,6 +15,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "case_audit")
+@JsonInclude(Include.NON_NULL)
 public class Case {
 
 	@Id
@@ -27,6 +31,8 @@ public class Case {
 	private Instant completedOn;
 	private String userName;
 	private String gameName;
+	private Instant startedOn;
+	private Integer estimationDays;
 
 	public enum CaseStatus {
 		OPEN, RESOLVED, IN_PROGRESS
@@ -126,10 +132,27 @@ public class Case {
 		this.gameName = gameName;
 	}
 
+	public Instant getStartedOn() {
+		return startedOn;
+	}
+
+	public void setStartedOn(Instant startedOn) {
+		this.startedOn = startedOn;
+	}
+
+	public Integer getEstimationDays() {
+		return estimationDays;
+	}
+
+	public void setEstimationDays(Integer estimationDays) {
+		this.estimationDays = estimationDays;
+	}
+
 	@Override
 	public String toString() {
 		return "Case [id=" + id + ", chatId=" + chatId + ", userId=" + userId + ", feedback=" + feedback
 				+ ", createdOn=" + createdOn + ", status=" + status + ", caseType=" + caseType + ", completedOn="
-				+ completedOn + ", userName=" + userName + ", gameName=" + gameName + "]";
+				+ completedOn + ", userName=" + userName + ", gameName=" + gameName + ", startedOn=" + startedOn
+				+ ", estimationDays=" + estimationDays + "]";
 	}
 }

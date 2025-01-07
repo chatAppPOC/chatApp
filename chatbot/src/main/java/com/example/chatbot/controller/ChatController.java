@@ -97,20 +97,33 @@ public class ChatController {
 		}
 	}
 
-	@PutMapping("/case/{caseId}/re-assign/{userId}")
-	public Case reAssignTicketToAgent(@PathVariable Long caseId, @PathVariable Long userId) {
+	@PutMapping("/case/re-assign")
+	public Case updateTicket(@RequestBody Case input) {
 		try {
-			Optional<Case> caseResp = caseRepository.findById(caseId);
-			Optional<User> userResp = userRepository.findById(userId);
+			Optional<Case> caseResp = caseRepository.findById(input.getId());
+			Optional<User> userResp = userRepository.findById(input.getUserId());
 			if (caseResp.isPresent() && userResp.isPresent()) {
-				caseResp.get().setUserId(userResp.get().getId());
-			} else
+				Case existingCase = caseResp.get();
+
+				// Update the existing case with the new values
+				existingCase.setUserId(input.getUserId());
+				existingCase.setCaseType(input.getCaseType());
+				existingCase.setCompletedOn(input.getCompletedOn());
+				existingCase.setStatus(input.getStatus());
+				existingCase.setStartedOn(input.getStartedOn());
+				existingCase.setEstimationDays(input.getEstimationDays());
+				existingCase.setUserName(input.getUserName());
+				existingCase.setGameName(input.getGameName());
+
+				// Save the updated case
+				LOG.info("Api.updateTicket({}, {}) => {}", input, existingCase);
+				return caseRepository.save(existingCase); // Save the updated case object
+			} else {
 				throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Either caseId or userId is invalid");
-			Case updatedTicket = caseRepository.save(caseResp.get());
-			LOG.info("Api.assignTicket({}, {}) => {}", caseId, userId, updatedTicket);
-			return updatedTicket;
+			}
+
 		} catch (Exception e) {
-			LOG.error("Api.assignTicket({}, {}) => error!!!", caseId, userId, e);
+			LOG.error("Api.updateTicket({}, {}) => error!!!", input, e);
 			throw e;
 		}
 	}
@@ -216,4 +229,15 @@ public class ChatController {
 		}
 	}
 
+	@GetMapping("/users")
+	public List<User> getUsers() {
+		try {
+			List<User> response = userRepository.findAll();
+			LOG.info("Api.getUsers() => {}", response);
+			return response;
+		} catch (Exception e) {
+			LOG.error("Api.getUsers() => error!!!", e);
+			throw e;
+		}
+	}
 }
