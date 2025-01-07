@@ -1,5 +1,6 @@
 package com.example.chatbot.controller;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -180,5 +181,15 @@ public class UserManagementController {
 		}
 	}
 
-		
+	@GetMapping("/users")
+	public List<User> getUsers() {
+		try {
+			List<User> response = userRepo.findAll();
+			LOG.info("Api.getUsers() => {}", response);
+			return response;
+		} catch (Exception e) {
+			LOG.error("Api.getUsers() => error!!!", e);
+			throw e;
+		}
+	}	
 }

@@ -228,16 +228,4 @@ public class ChatController {
 			throw e;
 		}
 	}
-
-	@GetMapping("/users")
-	public List<User> getUsers() {
-		try {
-			List<User> response = userRepository.findAll();
-			LOG.info("Api.getUsers() => {}", response);
-			return response;
-		} catch (Exception e) {
-			LOG.error("Api.getUsers() => error!!!", e);
-			throw e;
-		}
-	}
 }
