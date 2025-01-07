@@ -1,5 +1,6 @@
 package com.activision.chatbot.auth;
 
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -12,7 +13,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import com.activision.chatbot.entity.Role;
 import com.activision.chatbot.entity.User;
 
-public class UserDetailsImpl implements UserDetails {
+public class UserDetailsImpl implements UserDetails, Principal {
 
 	private User user;
     
@@ -64,5 +65,15 @@ public class UserDetailsImpl implements UserDetails {
 	public boolean isEnabled() {
 		// TODO Auto-generated method stub
 		return user.isEnabled();
+	}
+	
+	public User getUser() {
+		return user;
+	}
+
+	@Override
+	public String getName() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }
