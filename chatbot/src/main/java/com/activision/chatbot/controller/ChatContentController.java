@@ -24,7 +24,6 @@ import com.activision.chatbot.service.ChatContentService;
 @RestController
 @CrossOrigin
 @RequestMapping("/api")
-@PreAuthorize("hasAuthority('ADMIN')")
 public class ChatContentController {
 	
 	private static final Logger LOG = LoggerFactory.getLogger(ChatContentController.class);
@@ -33,6 +32,7 @@ public class ChatContentController {
 	private ChatContentService chatContentService;
 
 	@PutMapping("v1/content")
+	@PreAuthorize("hasAuthority('ADMIN')")
 	public ChatContent updateContent(@RequestParam Long contentId, @RequestBody ChatContent chatContent) {
 		try {
 			ChatContent updatedContent = chatContentService.updateContent(contentId, chatContent);
@@ -45,6 +45,7 @@ public class ChatContentController {
 	}
 	
 	@DeleteMapping("v1/content")
+	@PreAuthorize("hasAuthority('ADMIN')")
 	public ChatContent deleteContent(@RequestParam Long contentId) {
 		try {
 			ChatContent deletedContent = chatContentService.deleteContent(contentId);
@@ -57,6 +58,7 @@ public class ChatContentController {
 	}
 	
 	@PostMapping("v1/content")
+	@PreAuthorize("hasAuthority('ADMIN')")
 	public ChatContent createContent(@RequestParam Long contentId, @RequestBody ChatContent chatContent) {
 		try {
 			ChatContent createdContent = chatContentService.createContent(contentId,chatContent);
@@ -69,6 +71,7 @@ public class ChatContentController {
 	}
 	
 	@PostMapping("v1/content/copy")
+	@PreAuthorize("hasAuthority('ADMIN')")
 	public boolean copyContent(@RequestParam Long modelId) {
 		try {
 			boolean createdContent = chatContentService.copyContent(modelId);
@@ -81,6 +84,7 @@ public class ChatContentController {
 	}
 	
 	@PutMapping("v2/content")
+	@PreAuthorize("hasAuthority('ADMIN')")
 	public Content updateContentv2(@RequestParam Long contentId, @RequestParam String name, @RequestBody com.activision.chatbot.model.Content chatContent) {
 		try {
 			Content updatedContent = chatContentService.updateContentv2(contentId, chatContent, name);
@@ -93,6 +97,7 @@ public class ChatContentController {
 	}
 	
 	@DeleteMapping("v2/content")
+	@PreAuthorize("hasAuthority('ADMIN')")
 	public Content deleteContentv2(@RequestParam Long contentId) {
 		try {
 			Content deletedContent = chatContentService.deleteContentv2(contentId);
@@ -105,6 +110,7 @@ public class ChatContentController {
 	}
 	
 	@PostMapping("v2/content")
+	@PreAuthorize("hasAuthority('ADMIN')")
 	public Content createContentv2(@RequestParam Long languageId, @RequestParam String name, @RequestBody com.activision.chatbot.model.Content chatContent) {
 		try {
 			Content createdContent = chatContentService.createContentv2(chatContent,languageId, name);
@@ -117,6 +123,7 @@ public class ChatContentController {
 	}
 	
 	@PostMapping("v2/content/copy")
+	@PreAuthorize("hasAuthority('ADMIN')")
 	public Content copyContentv2(@RequestParam Long srcContentId, @RequestParam String name) {
 		try {
 			Content createdContent = chatContentService.copyContentv2(srcContentId, name);
