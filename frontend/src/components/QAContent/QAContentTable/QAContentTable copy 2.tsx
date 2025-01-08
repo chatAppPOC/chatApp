@@ -1,32 +1,35 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
 
-// Define the interface matching the API response
 interface QAContent {
-  id: number;
+  id: string;
+  createdDate: string;
+  createdBy:string;
+  updatedDate: string;
+  updatedBy: string;
   language: string;
-  name: string;
-  createdOn: string | null;
-  updatedOn: string | null;
-  updatedBy: string | null;
-  createdBy: string | null;
+  action: string;
 }
 
 const QAContentTable: React.FC = () => {
   const [qaContents, setQAContents] = useState<QAContent[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  
-  // Fetch data from API
+
+  // Fetch data from the public folder
   useEffect(() => {
     const fetchQAContent = async () => {
       try {
-        const response = await fetch(`http://localhost:8080/api/v2/contents`);
+        const response = await fetch("./public/qaContent.json");
         if (!response.ok) {
           throw new Error(`Failed to fetch data: ${response.statusText}`);
         }
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+          throw new Error("Received non-JSON response");
+        }
         const data: QAContent[] = await response.json();
-        setQAContents(data); // Set the data directly as it's already an array
+        setQAContents(data);
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -35,60 +38,29 @@ const QAContentTable: React.FC = () => {
     };
     fetchQAContent();
   }, []);
-  //  useEffect(() => {
-  //     const fetchQAContent = async () => {
-  //       try {
-  //         const response = await fetch("./public/qaContent.json");
-  //         if (!response.ok) {
-  //           throw new Error(`Failed to fetch data: ${response.statusText}`);
-  //         }
-  //         const contentType = response.headers.get("content-type");
-  //         if (!contentType || !contentType.includes("application/json")) {
-  //           throw new Error("Received non-JSON response");
-  //         }
-  //         const data: QAContent[] = await response.json();
-  //         setQAContents(data);
-  //       } catch (err: any) {
-  //         setError(err.message);
-  //       } finally {
-  //         setLoading(false);
-  //       }
-  //     };
-  //     fetchQAContent();
-  //   }, []);
 
-  const handleCreate = () => {
-    window.location.href = `/qa-content`; // Navigate to the QA editor page for new content
+  const handleRowClick = (id: string) => {
+    window.location.href = `/qa-content/${id}`; // or use React Router
   };
 
-  const navigate = useNavigate();
 
-  const handleRowClick = (id: number) => {
-    navigate(`/qa-content/${id}`);
-  };
-
-  const handleDelete = (id: number) => {
+  const handleDelete = (id: string) => {
     const updatedContents = qaContents.filter((content) => content.id !== id);
     setQAContents(updatedContents);
   };
 
-  // const handleDelete = async (id: number) => {
+  // const handleDelete = async (id: string) => {
   //   try {
-  //     const response = await fetch(
-  //       `http://localhost:8080/api/v2/content?contentId=${id}`,
-  //       {
-  //         method: "DELETE",
-  //       }
-  //     );
+  //     const response = await fetch(`http://localhost:8080/api/v2/content?contentId=${id}`, {
+  //       method: "DELETE",
+  //     });
 
   //     if (!response.ok) {
   //       throw new Error(`Failed to delete content: ${response.statusText}`);
   //     }
 
   //     // Remove the deleted item from the UI
-  //     const updatedContents = qaContents.filter(
-  //       (content) => content.id !== Number(id)
-  //     );
+  //     const updatedContents = qaContents.filter((content) => content.id !== id);
   //     setQAContents(updatedContents);
 
   //     alert("Content deleted successfully!");
@@ -98,10 +70,13 @@ const QAContentTable: React.FC = () => {
   //   }
   // };
 
+  const handleCreate = () => {
+    window.location.href = `/qa-content`; // Navigate to the QA editor page for new content
+  };
+
   if (loading) {
     return <p>Loading...</p>;
   }
-
   if (error) {
     return <p>Error: {error}</p>;
   }
@@ -109,6 +84,7 @@ const QAContentTable: React.FC = () => {
   return (
     <div className="p-4">
       <h1 className="text-xl font-semibold mb-4">Q/A Content Grid</h1>
+
       {/* Create Button */}
       {/* <div className="mb-4 flex justify-end">
         <button
@@ -118,12 +94,12 @@ const QAContentTable: React.FC = () => {
           Create Q/A Content
         </button>
       </div> */}
+
       <table className="table-auto w-full border-collapse border border-gray-200">
         <thead>
           <tr className="bg-gray-100">
             <th className="border border-gray-300 px-4 py-2">ID</th>
             <th className="border border-gray-300 px-4 py-2">Language</th>
-            <th className="border border-gray-300 px-4 py-2">Name</th>
             <th className="border border-gray-300 px-4 py-2">Created Date</th>
             <th className="border border-gray-300 px-4 py-2">Created By</th>
             <th className="border border-gray-300 px-4 py-2">Updated Date</th>
@@ -135,27 +111,43 @@ const QAContentTable: React.FC = () => {
           {qaContents.map((content) => (
             <tr
               key={content.id}
-              className="hover:bg-gray-50 cursor-pointer text-center"
-              onClick={() => handleRowClick(content.id)}
+              className="hover:bg-gray-50 cursor-pointer text-gray text-center"
             >
-              <td className="border border-gray-300 px-4 py-2">{content.id}</td>
-              <td className="border border-gray-300 px-4 py-2">
-                {content.language || "N/A"}
+              <td
+                className="border border-gray-300 px-4 py-2"
+                onClick={() => handleRowClick(content.id)}
+              >
+                {content.id}
               </td>
-              <td className="border border-gray-300 px-4 py-2">
-                {content.name}
+              <td
+                className="border border-gray-300 px-4 py-2"
+                onClick={() => handleRowClick(content.id)}
+              >
+                {content.language}
               </td>
-              <td className="border border-gray-300 px-4 py-2">
-                {content.createdOn || "N/A"}
+              <td
+                className="border border-gray-300 px-4 py-2"
+                onClick={() => handleRowClick(content.id)}
+              >
+                {content.createdDate}
               </td>
-              <td className="border border-gray-300 px-4 py-2">
-                {content.createdBy || "N/A"}
+              <td
+                className="border border-gray-300 px-4 py-2"
+                onClick={() => handleRowClick(content.id)}
+              >
+                {content.createdBy}
               </td>
-              <td className="border border-gray-300 px-4 py-2">
-                {content.updatedOn || "N/A"}
+              <td
+                className="border border-gray-300 px-4 py-2"
+                onClick={() => handleRowClick(content.id)}
+              >
+                {content.updatedDate}
               </td>
-              <td className="border border-gray-300 px-4 py-2">
-                {content.updatedBy || "N/A"}
+              <td
+                className="border border-gray-300 px-4 py-2"
+                onClick={() => handleRowClick(content.id)}
+              >
+                {content.updatedBy}
               </td>
               <td className="border border-gray-300 px-4 py-2">
                 <button
