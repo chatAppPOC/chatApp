@@ -13,7 +13,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.activision.chatbot.entity.Notification;
+import com.activision.chatbot.entity.Notification.NotificationStatus;
 import com.activision.chatbot.entity.Player;
+import com.activision.chatbot.repo.NotificationRepository;
 import com.activision.chatbot.repo.PlayerRepository;
 
 @Service
@@ -26,6 +28,9 @@ public class EmailService {
 
 	@Autowired
 	PlayerRepository playerRepository;
+	
+	@Autowired
+	NotificationRepository notificationRepo;
 	
 	@Value("$(spring.mail.username)")
 	private String fromMailId;
@@ -59,4 +64,21 @@ public class EmailService {
 			throw e;
 		}
 	}
+	
+	public void processNotification(Notification notification) {
+        try {
+            if (notification.getSentCount() < notification.getCount()) {
+                sendEmail(notification);
+                notification.setSentCount(notification.getSentCount() + 1);
+                notificationRepo.save(notification);
+                LOG.info("Email sent successfully to PlayerId: {}", notification.getPlayerId());
+            } else {
+            	notification.setNotificationStatus(NotificationStatus.SENT);
+				sendEmail(notification);
+                LOG.info("Notification for PlayerId {} has reached the maximum count.", notification.getPlayerId());
+            }
+        } catch (Exception e) {
+            LOG.error("Failed to send email for PlayerId: {}", notification.getPlayerId(), e);
+        }
+    }
 }

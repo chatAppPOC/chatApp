@@ -1,33 +1,54 @@
 package com.activision.chatbot.job;
 
-import org.quartz.Job;
-import org.quartz.JobDataMap;
+import java.time.Instant;
+import java.util.List;
+
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.quartz.QuartzJobBean;
 
 import com.activision.chatbot.entity.Notification;
+import com.activision.chatbot.repo.NotificationRepository;
 import com.activision.chatbot.service.EmailService;
 
-public class EmailJob implements Job {
+public class EmailJob extends QuartzJobBean {
+	
+	private static final Logger LOG = LoggerFactory.getLogger(EmailJob.class);
 
 	@Autowired
 	private EmailService emailService;
+	
+	@Autowired
+	NotificationRepository notificationRepo;
+	
+	@Autowired
+	QuartzJobService quartzJobService;
 
 	@Override
-	public void execute(JobExecutionContext context) throws JobExecutionException {
+	public void executeInternal(JobExecutionContext context) throws JobExecutionException {
+		LOG.info("Executing email job.!!!!!");
 		try {
-			JobDataMap dataMap = context.getJobDetail().getJobDataMap();
-			String playerId = dataMap.getString("playerId");
-			String content = dataMap.getString("content");
-
-			Notification notification = new Notification();
-			notification.setContent(content);
-			notification.setPlayerId(playerId != null && !playerId.isEmpty() ? Long.parseLong(playerId) : null);
-
-			emailService.sendEmail(notification);
+			//
+			List<Notification> notifications = notificationRepo.findNotificationsToSend(Instant.now());		
+			for(Notification notify : notifications) {
+                    Instant now = Instant.now();
+                    if (now.isAfter(notify.getScheduleTime()) && now.isBefore(notify.getExpireTime())) {
+                    	emailService.processNotification(notify);
+                    
+                } else {
+                    // If scheduledTime and expireTime are null, send the email immediately
+                	emailService.processNotification(notify);
+                }
+			}
 		} catch (Exception e) {
-			throw new JobExecutionException("Error while sending email", e);
+			LOG.error("EmailJob.executeInternal({} Currently No Emails are there to sent in the Schedule time!!!)", context);
 		}
+		
 	}
+
+	
+
 }

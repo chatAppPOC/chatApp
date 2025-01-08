@@ -1,5 +1,6 @@
 package com.activision.chatbot.repo;
 
+import java.time.Instant;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -25,4 +26,9 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     List<Notification> findBySourceInAndPlayerIdAndSentCountLessThanCount(
             @Param("sources") List<NotificationSource> sources, 
             @Param("playerId") Long playerId);
+
+    @Query(value = "SELECT * FROM Notification  \r\n"
+			+ "	WHERE scheduled_time <= :currentTime \r\n"
+			+ "	AND (expire_time IS NULL OR expire_time > :currentTime) AND notification_status NOT IN ( 'SENT')" , nativeQuery = true)
+    List<Notification> findNotificationsToSend(@Param("currentTime") Instant currentTime);
 }
