@@ -203,7 +203,7 @@ public class ChatController {
 		}
 	}
 
-	@GetMapping("/feedback/questions")
+	@GetMapping("/feedback/content")
 	public List<FeedbackResp> getFeedbackQuestionsAndAnswers() {
 		try {
 			List<FeedbackResp> response = chatService.getQuestionsAndAnswers();
