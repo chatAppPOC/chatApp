@@ -14,6 +14,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 @EnableMethodSecurity(securedEnabled = true)
@@ -42,27 +44,31 @@ public class WebSecurityConfig {
 	}
 
 	@Bean
-	public CorsConfigurationSource corsConfigurationSource() {
-		CorsConfiguration cors = new CorsConfiguration();
-		cors.setAllowedOrigins(Arrays.asList("http://localhost:4321"));
-		cors.setAllowedMethods(Arrays.asList("GET", "POST", "DELETE", "PATCH", "OPTIONS"));
-		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-		source.registerCorsConfiguration("/**", cors);
-		return source;
-
-	}
-
-	@Bean
 	SecurityFilterChain configure(HttpSecurity http) throws Exception {
 		http.authorizeHttpRequests(auth -> auth.requestMatchers("/login")
 				.hasAnyAuthority("USER", "PLAYER", "ADMIN")
 				.anyRequest().authenticated())
-				.cors(c -> c.configurationSource(corsConfigurationSource()))
 				.formLogin(login -> login.disable())
 				.logout(logout -> logout.disable())
+				.csrf(csrf -> csrf.disable())
 				.httpBasic(basic -> basic.authenticationEntryPoint(authEntryPoint));
-
+				
 		return http.build();
 	}
+	
+    @Bean
+    public WebMvcConfigurer corsMvcConfig() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(@jakarta.annotation.Nonnull CorsRegistry registry) {
+                String[] allowedOrigins;
+                    allowedOrigins = new String[] { "http://localhost:5173"};
+                registry
+                    .addMapping("/api/**")
+                    .allowedOrigins(allowedOrigins)
+                    .allowedMethods("GET", "POST", "DELETE", "PATCH", "OPTIONS");
+            }
+        };
+    }
 
 }
