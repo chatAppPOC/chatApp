@@ -29,7 +29,6 @@ public class Case {
 	private CaseStatus status;
 	private String caseType;
 	private Instant completedOn;
-	private String userName;
 	private String gameName;
 	private Instant startedOn;
 	private Integer estimationDays;
@@ -41,12 +40,11 @@ public class Case {
 	public Case() {
 	}
 
-	public Case(Long userId, Long chatId, String caseType, Instant completedOn, String userName, String gameName) {
+	public Case(Long userId, Long chatId, String caseType, Instant completedOn, String gameName) {
 		this.userId = userId;
 		this.chatId = chatId;
 		this.caseType = caseType;
 		this.completedOn = completedOn;
-		this.userName = userName;
 		this.gameName = gameName;
 		this.createdOn = Instant.now();
 		this.status = CaseStatus.OPEN;
@@ -116,14 +114,6 @@ public class Case {
 		this.completedOn = completedOn;
 	}
 
-	public String getUserName() {
-		return userName;
-	}
-
-	public void setUserName(String userName) {
-		this.userName = userName;
-	}
-
 	public String getGameName() {
 		return gameName;
 	}
@@ -152,7 +142,7 @@ public class Case {
 	public String toString() {
 		return "Case [id=" + id + ", chatId=" + chatId + ", userId=" + userId + ", feedback=" + feedback
 				+ ", createdOn=" + createdOn + ", status=" + status + ", caseType=" + caseType + ", completedOn="
-				+ completedOn + ", userName=" + userName + ", gameName=" + gameName + ", startedOn=" + startedOn
-				+ ", estimationDays=" + estimationDays + "]";
+				+ completedOn + ", gameName=" + gameName + ", startedOn=" + startedOn + ", estimationDays="
+				+ estimationDays + "]";
 	}
 }
