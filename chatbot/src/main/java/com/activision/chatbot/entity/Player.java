@@ -1,5 +1,7 @@
 package com.activision.chatbot.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -20,6 +22,9 @@ public class Player {
 	private Long platform;
 	private Long title;
 	private String email;
+	private boolean enabled;
+	@JsonIgnore
+	private String password;
 
 	public Player() {
 
@@ -84,6 +89,22 @@ public class Player {
 	
 	public void setEmail(String email) {
 		this.email = email;
+	}
+
+	public boolean isEnabled() {
+		return enabled;
+	}
+
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
 	}
 
 	@Override

@@ -25,4 +25,7 @@ public interface PlayerRepository extends JpaRepository<Player, Long>{
 			WHERE p.id = :playerId limit 1
 	        """, nativeQuery = true)
 	        PlayerUserResponse fetchUserByLanguageAndPlatformAndTitle(@Param("playerId") Long playerId);
+	
+	@Query("SELECT p FROM Player p WHERE p.email = :email")
+    public Player getPlayerByEmail(@Param("email") String email);
 }
