@@ -186,7 +186,7 @@ public class ChatService {
 				PlayerUserResponse assignedUser = playerRepository
 						.fetchUserByLanguageAndPlatformAndTitle(chat.get().getPlayerId());
 				if (assignedUser != null) {
-					newCase = new Case(assignedUser.getUserId(), chat.get().getId(), caseType, null,
+					newCase = new Case(assignedUser.getUserId(), chat.get().getId(), caseType,
 							assignedUser.getGameName());
 				}
 			} else {
