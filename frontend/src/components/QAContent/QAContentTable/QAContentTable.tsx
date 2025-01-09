@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import moment from "moment-timezone";
 
 // Define the interface matching the API response
 interface QAContent {
@@ -16,17 +17,26 @@ const QAContentTable: React.FC = () => {
   const [qaContents, setQAContents] = useState<QAContent[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Fetch data from API
   useEffect(() => {
     const fetchQAContent = async () => {
       try {
-        const response = await fetch(`http://localhost:8080/api/v2/contents`);
+        // const response = await fetch("./public/qaContent.json");
+        const response = await fetch(`http://localhost:8080/api/v2/contents`, {
+          headers: {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+            Authorization: "Basic " + btoa(`admin@test.com:admin123`),
+          },
+        });
+        console.log("response", response);
+
         if (!response.ok) {
           throw new Error(`Failed to fetch data: ${response.statusText}`);
         }
         const data: QAContent[] = await response.json();
-        setQAContents(data); // Set the data directly as it's already an array
+        setQAContents(data);
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -35,27 +45,6 @@ const QAContentTable: React.FC = () => {
     };
     fetchQAContent();
   }, []);
-  //  useEffect(() => {
-  //     const fetchQAContent = async () => {
-  //       try {
-  //         const response = await fetch("./public/qaContent.json");
-  //         if (!response.ok) {
-  //           throw new Error(`Failed to fetch data: ${response.statusText}`);
-  //         }
-  //         const contentType = response.headers.get("content-type");
-  //         if (!contentType || !contentType.includes("application/json")) {
-  //           throw new Error("Received non-JSON response");
-  //         }
-  //         const data: QAContent[] = await response.json();
-  //         setQAContents(data);
-  //       } catch (err: any) {
-  //         setError(err.message);
-  //       } finally {
-  //         setLoading(false);
-  //       }
-  //     };
-  //     fetchQAContent();
-  //   }, []);
 
   const handleCreate = () => {
     window.location.href = `/qa-content`; // Navigate to the QA editor page for new content
@@ -67,36 +56,41 @@ const QAContentTable: React.FC = () => {
     navigate(`/qa-content/${id}`);
   };
 
-  const handleDelete = (id: number) => {
-    const updatedContents = qaContents.filter((content) => content.id !== id);
-    setQAContents(updatedContents);
-  };
-
-  // const handleDelete = async (id: number) => {
-  //   try {
-  //     const response = await fetch(
-  //       `http://localhost:8080/api/v2/content?contentId=${id}`,
-  //       {
-  //         method: "DELETE",
-  //       }
-  //     );
-
-  //     if (!response.ok) {
-  //       throw new Error(`Failed to delete content: ${response.statusText}`);
-  //     }
-
-  //     // Remove the deleted item from the UI
-  //     const updatedContents = qaContents.filter(
-  //       (content) => content.id !== Number(id)
-  //     );
-  //     setQAContents(updatedContents);
-
-  //     alert("Content deleted successfully!");
-  //   } catch (error: any) {
-  //     console.error("Error deleting content:", error);
-  //     alert("Failed to delete content. Please try again.");
-  //   }
+  // const handleDelete = (id: number) => {
+  //   const updatedContents = qaContents.filter((content) => content.id !== id);
+  //   setQAContents(updatedContents);
   // };
+
+  const handleDelete = async (id: number) => {
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/v2/content?contentId=${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+            Authorization: "Basic " + btoa(`admin@test.com:admin123`),
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to delete content: ${response.statusText}`);
+      }
+
+      // Remove the deleted item from the UI
+      const updatedContents = qaContents.filter(
+        (content) => content.id !== Number(id)
+      );
+      setQAContents(updatedContents);
+
+      alert("Content deleted successfully!");
+    } catch (error: any) {
+      console.error("Error deleting content:", error);
+      alert("Failed to delete content. Please try again.");
+    }
+  };
 
   if (loading) {
     return <p>Loading...</p>;
@@ -146,13 +140,23 @@ const QAContentTable: React.FC = () => {
                 {content.name}
               </td>
               <td className="border border-gray-300 px-4 py-2">
-                {content.createdOn || "N/A"}
+                {content.createdOn
+                  ? moment(content.createdOn)
+                      .tz("America/Los_Angeles")
+                      .format("ddd MMMM DD YYYY hh:mm:ss A z")
+                  : "N/A"}
+                {/* {content.createdOn || "N/A"} */}
               </td>
               <td className="border border-gray-300 px-4 py-2">
                 {content.createdBy || "N/A"}
               </td>
               <td className="border border-gray-300 px-4 py-2">
-                {content.updatedOn || "N/A"}
+                {content.updatedOn
+                  ? moment(content.updatedOn)
+                      .tz("America/Los_Angeles")
+                      .format("ddd MMMM DD YYYY hh:mm:ss A z")
+                  : "N/A"}
+                {/* {content.updatedOn || "N/A"} */}
               </td>
               <td className="border border-gray-300 px-4 py-2">
                 {content.updatedBy || "N/A"}

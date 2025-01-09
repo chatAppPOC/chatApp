@@ -55,9 +55,20 @@ const QAContentEditor: React.FC = () => {
   // Fetch Languages through Api
   const fetchLanguages = async () => {
     try {
-      const response = await fetch("http://localhost:8080/api/languages"); // Replace with your API endpoint
+      const response = await fetch("http://localhost:8080/api/languages", {
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+          Authorization: "Basic " + btoa(`admin@test.com:admin123`),
+        },
+      });
       const data = await response.json();
       setLanguages(data); // Store languages
+
+      //   // Set language for create mode
+      //   if (!id) {
+      //     setLanguage(data[0]?.id || 1); // Default to the first language
+      //   }
 
       // Respect selectedLanguage or fallback to the first language
       setLanguage(selectedLanguageId || data[0]?.id || 1);
@@ -76,7 +87,14 @@ const QAContentEditor: React.FC = () => {
   const fetchContentById = async (contentId: string) => {
     try {
       const response = await fetch(
-        `http://localhost:8080/api/v2/content?contentId=${contentId}`
+        `http://localhost:8080/api/v2/content?contentId=${contentId}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+            Authorization: "Basic " + btoa(`admin@test.com:admin123`),
+          },
+        }
       );
       const data = await response.json();
       const parsedData = parseApiResponse(data);
@@ -281,32 +299,32 @@ const QAContentEditor: React.FC = () => {
   };
 
   // Recursive copy function
-//   const handleCopy = (id: string) => {
-//     setQASections((prev) => {
-//       const newSections = JSON.parse(JSON.stringify(prev));
-//       const findAndCopy = (items: any[]): any[] =>
-//         items
-//           .map((item) => {
-//             if (item.id === id) {
-//               const copied = { ...item, id: `${item.id}-copy` };
-//               return [item, copied];
-//             }
-//             if (item.answers) {
-//               item.answers = findAndCopy(item.answers);
-//             }
-//             if (item.childQuestion) {
-//               item.childQuestion = findAndCopy([item.childQuestion])[0];
-//             }
-//             return item;
-//           })
-//           .flat();
-//       return findAndCopy(newSections);
-//     });
-//   };
+  //   const handleCopy = (id: string) => {
+  //     setQASections((prev) => {
+  //       const newSections = JSON.parse(JSON.stringify(prev));
+  //       const findAndCopy = (items: any[]): any[] =>
+  //         items
+  //           .map((item) => {
+  //             if (item.id === id) {
+  //               const copied = { ...item, id: `${item.id}-copy` };
+  //               return [item, copied];
+  //             }
+  //             if (item.answers) {
+  //               item.answers = findAndCopy(item.answers);
+  //             }
+  //             if (item.childQuestion) {
+  //               item.childQuestion = findAndCopy([item.childQuestion])[0];
+  //             }
+  //             return item;
+  //           })
+  //           .flat();
+  //       return findAndCopy(newSections);
+  //     });
+  //   };
 
-//   const handleTranslate = (text: string) => {
-//     alert(`Translate: ${text}`);
-//   };
+  //   const handleTranslate = (text: string) => {
+  //     alert(`Translate: ${text}`);
+  //   };
 
   // Recursive function to handle changes to question and answer fields
   const handleInputChange = (
@@ -405,6 +423,8 @@ const QAContentEditor: React.FC = () => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+            Authorization: "Basic " + btoa(`admin@test.com:admin123`),
           },
           body: JSON.stringify(dataToSubmit),
         }
@@ -441,7 +461,11 @@ const QAContentEditor: React.FC = () => {
         )}`,
         {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+            Authorization: "Basic " + btoa(`admin@test.com:admin123`),
+          },
           body: JSON.stringify(dataToSubmit),
         }
       )
@@ -462,7 +486,11 @@ const QAContentEditor: React.FC = () => {
         )}`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+            Authorization: "Basic " + btoa(`admin@test.com:admin123`),
+          },
           body: JSON.stringify(dataToSubmit),
         }
       )
@@ -611,7 +639,34 @@ const QAContentEditor: React.FC = () => {
       <div className="mb-4 flex justify-between">
         {/* Language Dropdown */}
         <div className="mb-4">
-          <label htmlFor="language" className="mr-2 text-lg font-medium">
+          {id ? (
+            // Edit Mode: Display selected language name as a label
+            <div>
+              <label className="text-lg font-medium">Language: </label>
+              {languages.find((lang) => lang.id === selectedLanguageId)?.name ||
+                "Unknown Language"}
+            </div>
+          ) : (
+            // Create Mode: Display dropdown for language selection
+            <div>
+              <label htmlFor="language" className="mr-2 text-lg font-medium">
+                Select Language:
+              </label>
+              <select
+                id="language"
+                value={language}
+                onChange={handleLanguageChange}
+                className="border px-4 py-2 rounded-lg"
+              >
+                {languages.map((lang) => (
+                  <option key={lang.id} value={lang.id}>
+                    {lang.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+          {/* <label htmlFor="language" className="mr-2 text-lg font-medium">
             Select Language:
           </label>
           <select
@@ -625,7 +680,7 @@ const QAContentEditor: React.FC = () => {
                 {lang.name}
               </option>
             ))}
-          </select>
+          </select> */}
         </div>
         {/* Copy Button at the Top */}
         {/* <button
