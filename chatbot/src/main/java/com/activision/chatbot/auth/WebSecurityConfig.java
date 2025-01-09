@@ -66,7 +66,7 @@ public class WebSecurityConfig {
                 registry
                     .addMapping("/api/**")
                     .allowedOrigins(allowedOrigins)
-                    .allowedMethods("GET", "POST", "DELETE", "PATCH", "OPTIONS");
+                    .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS");
             }
         };
     }
