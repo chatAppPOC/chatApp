@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.activision.chatbot.auth.UserDetailsImpl;
-import com.activision.chatbot.entity.User;
 
 @RequestMapping("/api/users")
 @RestController
