@@ -1,17 +1,13 @@
 package com.activision.chatbot.controller;
 
-import java.util.Collection;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.activision.chatbot.auth.UserDetailsImpl;
-import com.activision.chatbot.entity.User;
 
 @RequestMapping("/api/users")
 @RestController
@@ -23,7 +19,11 @@ public class UserController {
 	}
 	
 	@GetMapping("/@me")
-	public User getUser(@AuthenticationPrincipal UserDetailsImpl principal){
-		return principal.getUser();
+	public Object getUser(@AuthenticationPrincipal UserDetailsImpl principal){
+		
+		if(principal.getUser() != null) {
+			return principal.getUser();
+		}		
+		return principal.getPlayer();
 	}
 }

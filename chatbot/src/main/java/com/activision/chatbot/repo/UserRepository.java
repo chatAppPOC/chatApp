@@ -1,5 +1,7 @@
 package com.activision.chatbot.repo;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -17,4 +19,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	
 	@Query("SELECT u FROM User u WHERE u.email = :email")
     public User getUserByEmail(@Param("email") String email);
+	
+	@Query(value = """
+		    select u.* from users u inner join users_roles ur ON u.id = ur.user_id
+			inner join roles r ON ur.role_id = r.id
+			where r.name in ('USER', 'ADMIN') and u.enabled = true
+			""", nativeQuery = true)
+	List<User> fetchUsers();
 }
