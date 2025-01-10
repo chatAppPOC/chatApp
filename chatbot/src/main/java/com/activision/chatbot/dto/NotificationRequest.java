@@ -1,18 +1,25 @@
 package com.activision.chatbot.dto;
+
+
 import java.time.LocalDateTime;
+import java.util.List;
+
+import com.activision.chatbot.entity.Notification.NotificationSource;
+import com.activision.chatbot.entity.Notification.NotificationStatus;
 
 public class NotificationRequest {
 
     private String content;
-    private String source; // Pass source as a string (e.g., "EMAIL", "PUSH_NOTIFICATION", etc.)
+    private List<NotificationSource> sources; // Pass source as a list of strings (e.g., "EMAIL", "PUSH_NOTIFICATION")
     private String recipient;
-    private Long playerId; // Player ID reference
+    private Long playerId;
     private LocalDateTime scheduleTime;
     private LocalDateTime expireTime;
-    private Integer sentCount; // Changed field name
-    private Integer count; // Changed field name
+    private Integer sentCount; 
+    private Integer count; 
+    private NotificationStatus notificationStatus; 
 
-    // Getters and Setters
+    
     public String getContent() {
         return content;
     }
@@ -21,12 +28,12 @@ public class NotificationRequest {
         this.content = content;
     }
 
-    public String getSource() {
-        return source;
+    public List<NotificationSource> getSource() {
+        return sources;
     }
 
-    public void setSource(String source) {
-        this.source = source;
+    public void setSource(List<NotificationSource> sources) {
+        this.sources = sources;
     }
 
     public String getRecipient() {
@@ -75,5 +82,13 @@ public class NotificationRequest {
 
     public void setCount(Integer count) {
         this.count = count; // Changed method name
+    }
+
+    public NotificationStatus getNotificationStatus() {
+        return notificationStatus;
+    }
+
+    public void setNotificationStatus(NotificationStatus notificationStatus) {
+        this.notificationStatus = notificationStatus;
     }
 }

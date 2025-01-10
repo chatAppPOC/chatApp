@@ -63,7 +63,12 @@
 			<artifactId>quartz</artifactId>
 			<version>2.3.2</version><!--$NO-MVN-MAN-VER$-->
 		</dependency>
-		
+		 <!-- Spring Boot Starter WebSocket -->
+		<dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
+        </dependency>
+
 	</dependencies>
 
 	<build>

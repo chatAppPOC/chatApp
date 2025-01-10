@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Push Notification Demo</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.2/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .notification-row {
+            padding: 10px;
+            background-color: lightblue;
+            margin: 10px;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+        }
+        .notification-row h4 {
+            margin: 0;
+        }
+        .notification-details {
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>WebSocket Push Notification Demo</h1>
+    <div id="notifications-container"></div> <!-- Container to hold all notifications -->
+
+    <script>
+        const socketUrl = 'http://localhost:8080/ws';
+        var socket = new SockJS(socketUrl);
+        var stompClient = Stomp.over(socket);
+        
+        stompClient.connect({}, function(frame) {
+            var notificationsQueue = []; // Queue to store notifications
+
+            stompClient.subscribe('/topic/notifications', function(notification) {
+                var payload = JSON.parse(notification.body);
+                var content = payload.content || 'No message content';
+                var sentCount = payload.sentCount || 'No count';
+                var playerId = payload.playerId || 'Unknown player ID';
+
+                // Create a new notification object
+                var notificationRow = {
+                    playerId: playerId,
+                    content: content,
+                    sentCount: sentCount,
+                    id: payload.id
+                };
+
+                // Add the notification to the queue
+                notificationsQueue.push(notificationRow);
+
+                // Process the notifications with a 1-second delay between each
+                if (notificationsQueue.length === 1) { // Start the timer only if the queue has a notification
+                    processNotifications();
+                }
+
+                function processNotifications() {
+                    if (notificationsQueue.length > 0) {
+                        var currentNotification = notificationsQueue.shift(); // Get and remove the first notification in the queue
+                        
+                        // Create a new div element for the notification
+                        var notificationDiv = document.createElement('div');
+                        notificationDiv.className = 'notification-row';
+                        
+                        // Add notification content
+                        var notificationHeader = document.createElement('h4');
+                        notificationHeader.innerText = `Notification ID: ${currentNotification.id}`;
+                        notificationDiv.appendChild(notificationHeader);
+                        
+                        // Add player ID and sent count details
+                        var notificationDetails = document.createElement('div');
+                        notificationDetails.className = 'notification-details';
+                        notificationDetails.innerHTML = `Player ID: ${currentNotification.playerId}<br>Message: ${currentNotification.content}<br>Sent Count: ${currentNotification.sentCount}`;
+                        notificationDiv.appendChild(notificationDetails);
+                        
+                        // Append the notification to the container
+                        document.getElementById('notifications-container').appendChild(notificationDiv);
+                        
+                        // Wait 1 second before processing the next notification in the queue
+                        // setTimeout(processNotifications, 2000); // 1000 ms = 1 second delay
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

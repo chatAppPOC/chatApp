@@ -40,8 +40,7 @@ public class WebSecurityConfig {
 
 	@Bean
 	SecurityFilterChain configure(HttpSecurity http) throws Exception {
-		http.authorizeHttpRequests(auth -> auth.requestMatchers("/login")
-				.hasAnyAuthority("USER", "PLAYER", "ADMIN")
+		http.authorizeHttpRequests(auth -> auth.requestMatchers("/login", "/push_notification_demo.html","/ws/**","/app","/topic").permitAll()
 				.anyRequest().authenticated())
 				.formLogin(login -> login.disable())
 				.logout(logout -> logout.disable())
