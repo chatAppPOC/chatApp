@@ -20,6 +20,8 @@ import com.activision.chatbot.entity.ChatContent;
 import com.activision.chatbot.entity.Content;
 import com.activision.chatbot.service.ChatContentService;
 
+import jakarta.validation.constraints.NotBlank;
+
 @RestController
 @RequestMapping("/api")
 public class ChatContentController {
@@ -83,7 +85,7 @@ public class ChatContentController {
 	
 	@PutMapping("v2/content")
 	@PreAuthorize("hasAuthority('ADMIN')")
-	public Content updateContentv2(@RequestParam Long contentId, @RequestParam String name, @RequestBody com.activision.chatbot.model.Content chatContent) {
+	public Content updateContentv2(@RequestParam Long contentId, @NotBlank @RequestParam String name, @RequestBody com.activision.chatbot.model.Content chatContent) {
 		try {
 			Content updatedContent = chatContentService.updateContentv2(contentId, chatContent, name);
 	    	LOG.info("Api.updateContentv2({}, {}) => {}", contentId, chatContent, updatedContent);
@@ -109,7 +111,7 @@ public class ChatContentController {
 	
 	@PostMapping("v2/content")
 	@PreAuthorize("hasAuthority('ADMIN')")
-	public Content createContentv2(@RequestParam Long languageId, @RequestParam String name, @RequestBody com.activision.chatbot.model.Content chatContent) {
+	public Content createContentv2(@RequestParam Long languageId, @NotBlank @RequestParam String name, @RequestBody com.activision.chatbot.model.Content chatContent) {
 		try {
 			Content createdContent = chatContentService.createContentv2(chatContent,languageId, name);
 	    	LOG.info("Api.createContentv2({}, {}) => {}", languageId, chatContent, createdContent);
@@ -122,7 +124,7 @@ public class ChatContentController {
 	
 	@PostMapping("v2/content/copy")
 	@PreAuthorize("hasAuthority('ADMIN')")
-	public Content copyContentv2(@RequestParam Long srcContentId, @RequestParam String name) {
+	public Content copyContentv2(@RequestParam Long srcContentId, @NotBlank @RequestParam String name) {
 		try {
 			Content createdContent = chatContentService.copyContentv2(srcContentId, name);
 	    	LOG.info("Api.copyContentv2({}) => {}", srcContentId, createdContent);

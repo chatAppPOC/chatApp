@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import i18n from "./i18n";
 import ChatWindow from "./components/ChatPage/ChatWindow";
@@ -30,6 +30,8 @@ const ChatPage: React.FC = () => {
   const chatId = useRef<string | null>(null);
   const [caseId, setCaseId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {});
 
   const handleSendMessage = async (
     message: string,
@@ -222,8 +224,9 @@ const ChatPage: React.FC = () => {
                     <button
                       key={language.code}
                       onClick={() => changeLanguage(language.code)}
-                      className={`w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center space-x-2 ${currentLanguage === language.code ? "bg-gray-100" : ""
-                        }`}
+                      className={`w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center space-x-2 ${
+                        currentLanguage === language.code ? "bg-gray-100" : ""
+                      }`}
                     >
                       <span>{language.flag}</span>
                       <span>{language.name}</span>
@@ -239,7 +242,12 @@ const ChatPage: React.FC = () => {
             <ChatWindow messages={messages} />
           </div>
           <div className="border-t border-gray-200">
-            <ChatInput onSendMessage={(message: string) => handleSendMessage(message, null, null)} disabled={isLoading} />
+            <ChatInput
+              onSendMessage={(message: string) =>
+                handleSendMessage(message, null, null)
+              }
+              disabled={isLoading}
+            />
           </div>
         </div>
       </div>

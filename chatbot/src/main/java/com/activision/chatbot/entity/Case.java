@@ -1,9 +1,7 @@
 package com.activision.chatbot.entity;
 
 import java.time.Instant;
-
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import java.time.LocalDate;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -28,10 +26,9 @@ public class Case {
 	@Enumerated(EnumType.STRING)
 	private CaseStatus status;
 	private String caseType;
-	private Instant completedOn;
+	private LocalDate completedOn;
 	private String gameName;
-	private Instant startedOn;
-	private Integer estimationDays;
+	private LocalDate startedOn;
 
 	public enum CaseStatus {
 		OPEN, RESOLVED, IN_PROGRESS
@@ -40,11 +37,10 @@ public class Case {
 	public Case() {
 	}
 
-	public Case(Long userId, Long chatId, String caseType, Instant completedOn, String gameName) {
+	public Case(Long userId, Long chatId, String caseType, String gameName) {
 		this.userId = userId;
 		this.chatId = chatId;
 		this.caseType = caseType;
-		this.completedOn = completedOn;
 		this.gameName = gameName;
 		this.createdOn = Instant.now();
 		this.status = CaseStatus.OPEN;
@@ -106,14 +102,6 @@ public class Case {
 		this.caseType = caseType;
 	}
 
-	public Instant getCompletedOn() {
-		return completedOn;
-	}
-
-	public void setCompletedOn(Instant completedOn) {
-		this.completedOn = completedOn;
-	}
-
 	public String getGameName() {
 		return gameName;
 	}
@@ -122,27 +110,26 @@ public class Case {
 		this.gameName = gameName;
 	}
 
-	public Instant getStartedOn() {
+	public LocalDate getCompletedOn() {
+		return completedOn;
+	}
+
+	public void setCompletedOn(LocalDate completedOn) {
+		this.completedOn = completedOn;
+	}
+
+	public LocalDate getStartedOn() {
 		return startedOn;
 	}
 
-	public void setStartedOn(Instant startedOn) {
+	public void setStartedOn(LocalDate startedOn) {
 		this.startedOn = startedOn;
-	}
-
-	public Integer getEstimationDays() {
-		return estimationDays;
-	}
-
-	public void setEstimationDays(Integer estimationDays) {
-		this.estimationDays = estimationDays;
 	}
 
 	@Override
 	public String toString() {
 		return "Case [id=" + id + ", chatId=" + chatId + ", userId=" + userId + ", feedback=" + feedback
 				+ ", createdOn=" + createdOn + ", status=" + status + ", caseType=" + caseType + ", completedOn="
-				+ completedOn + ", gameName=" + gameName + ", startedOn=" + startedOn + ", estimationDays="
-				+ estimationDays + "]";
+				+ completedOn + ", gameName=" + gameName + ", startedOn=" + startedOn + "]";
 	}
 }

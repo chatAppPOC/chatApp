@@ -182,7 +182,7 @@ public class UserManagementController {
 	@GetMapping("/users")
 	public List<User> getUsers() {
 		try {
-			List<User> response = userRepo.findAll();
+			List<User> response = userRepo.fetchUsers();
 			LOG.info("Api.getUsers() => {}", response);
 			return response;
 		} catch (Exception e) {

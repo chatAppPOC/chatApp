@@ -1,7 +1,5 @@
 package com.activision.chatbot.auth;
 
-import java.util.Arrays;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,9 +9,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -45,8 +40,7 @@ public class WebSecurityConfig {
 
 	@Bean
 	SecurityFilterChain configure(HttpSecurity http) throws Exception {
-		http.authorizeHttpRequests(auth -> auth.requestMatchers("/login")
-				.hasAnyAuthority("USER", "PLAYER", "ADMIN")
+		http.authorizeHttpRequests(auth -> auth.requestMatchers("/login", "/push_notification_demo.html","/ws/**","/app","/topic").permitAll()
 				.anyRequest().authenticated())
 				.formLogin(login -> login.disable())
 				.logout(logout -> logout.disable())

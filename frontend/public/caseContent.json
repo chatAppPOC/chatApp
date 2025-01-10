@@ -1,0 +1,42 @@
+[
+  {
+    "id": "1",
+    "email": "user1@gmail.com",
+    "descp": "case not resolved",
+    "gameName": "XYZ",
+    "status": "completed",
+    "createdDate": "2024-12-01"
+  },
+  {
+    "id": "2",
+    "email": "user1@gmail.com",
+    "descp": "case not resolved",
+    "gameName": "XYZ",
+    "status": "completed",
+    "createdDate": "2024-12-01"
+  },
+  {
+    "id": "3",
+    "email": "user1@gmail.com",
+    "descp": "case not resolved",
+    "gameName": "XYZ",
+    "status": "completed",
+    "createdDate": "2024-12-01"
+  },
+  {
+    "id": "4",
+    "email": "user1@gmail.com",
+    "descp": "case not resolved",
+    "gameName": "XYZ",
+    "status": "completed",
+    "createdDate": "2024-12-01"
+  },
+  {
+    "id": "5",
+    "email": "user1@gmail.com",
+    "descp": "case not resolved",
+    "gameName": "XYZ",
+    "status": "completed",
+    "createdDate": "2024-12-01"
+  }
+]

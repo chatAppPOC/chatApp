@@ -6,21 +6,20 @@ import java.time.Instant;
 public class Notification {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String content;
 
     @Enumerated(EnumType.STRING)
     private NotificationSource source;
-    
-    @Enumerated(EnumType.STRING)
-	private NotificationStatus notificationStatus;
 
-    @Column(name = "PlayerId")
     private Long playerId; // Reference to the Player table
 
     private Instant scheduleTime; // Scheduled time for the notification
+
+    @Enumerated(EnumType.STRING)
+	private NotificationStatus notificationStatus;
 
     private Instant expireTime; // Expiration time for the notification
 
@@ -46,6 +45,13 @@ public class Notification {
     public void setContent(String content) {
         this.content = content;
     }
+    public NotificationStatus getNotificationStatus() {
+		return notificationStatus;
+	}
+ 
+	public void setNotificationStatus(NotificationStatus notificationStatus) {
+		this.notificationStatus = notificationStatus;
+	}
 
     public NotificationSource getSource() {
         return source;
@@ -54,14 +60,6 @@ public class Notification {
     public void setSource(NotificationSource source) {
         this.source = source;
     }
-    
-    public NotificationStatus getNotificationStatus() {
-		return notificationStatus;
-	}
- 
-	public void setNotificationStatus(NotificationStatus notificationStatus) {
-		this.notificationStatus = notificationStatus;
-	}
 
     public Long getPlayerId() {
         return playerId;
@@ -104,10 +102,11 @@ public class Notification {
     }
 
     public enum NotificationSource {
-        EMAIL, PUSH_NOTIFICATION
+        EMAIL, PUSH_NOTIFICATION 
     }
-    
+
     public enum NotificationStatus {
 		PENDING, SENT, FAILED
 	}
+
 }

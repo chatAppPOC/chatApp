@@ -1,0 +1,91 @@
+.child
+{
+    float: left;
+    top: 6px;
+    left: 6px;
+    width: 25%;
+    padding: 10px;
+    white-space: nowrap;
+    
+}
+
+.childc
+{
+    float: right;
+    top: 6px;
+    left: 6px;
+    width: 45%;
+    padding: 10px;
+  overflow-x: hidden;
+  word-wrap: break-word;
+    
+    
+}
+
+input.childc{
+    color:#000;
+    font-size: 14px;
+    font-weight: 400;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 5px;
+    width: 43%;
+    height: 30px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    margin-left: 5px;
+    margin-right: 5px;
+    /* background-color: #fff; */
+    outline: none;
+    box-sizing: border-box;
+}
+
+input.childc:focus{
+    border: 1px solid #ddd;
+    border-color: #edf7eb;
+    border-radius: 5px;
+    height:100px;
+}
+
+select.childc{
+    color:#000;
+    font-size: 14px;
+    font-weight: 400;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 5px;
+    width: 44%;
+    height: 30px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+
+
+.childc .react-datepicker__input-container input{
+    color:#000;
+    font-size: 14px;
+     font-weight: 400;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 10px;
+    width: 247px;
+    height: 27px; 
+    margin-top: 5px;
+    margin-bottom: 5px;
+    margin-left: -3px;
+    margin-right: 5px;
+    /* background-color: #fff; */
+    outline: none;
+    box-sizing: border-box;
+}
+
+.clear
+{
+    clear: both;
+    display: block;    
+}
+
+.modal-content{
+    border: 1px solid #ddd;
+}

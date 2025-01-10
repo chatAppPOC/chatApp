@@ -109,7 +109,6 @@ public class ChatController {
 				existingCase.setCompletedOn(input.getCompletedOn());
 				existingCase.setStatus(input.getStatus());
 				existingCase.setStartedOn(input.getStartedOn());
-				existingCase.setEstimationDays(input.getEstimationDays());
 				existingCase.setGameName(input.getGameName());
 
 				// Save the updated case
