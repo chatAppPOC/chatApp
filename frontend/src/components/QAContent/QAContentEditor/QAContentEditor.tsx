@@ -442,8 +442,82 @@ const QAContentEditor: React.FC = () => {
     }
   };
 
+  const validateFields = (): string | null => {
+    if (!contentName.trim()) {
+      return "Content name is required.";
+    }
+
+    if (!language) {
+      return "Please select a language.";
+    }
+
+    if (!qaSections.length) {
+      return "At least one question is required.";
+    }
+
+    for (const section of qaSections) {
+      if (!section.question.trim()) {
+        return "All questions must have a valid text.";
+      }
+
+      for (const answer of section.answers) {
+        if (!answer.answer.trim()) {
+          return "All answers must have a valid text.";
+        }
+
+        if (answer.solution !== undefined && !answer.solution.trim()) {
+          return "All solutions must have a valid text.";
+        }
+
+        if (answer.childQuestion) {
+          const childValidationError = validateChildSections([
+            answer.childQuestion,
+          ]);
+          if (childValidationError) {
+            return childValidationError;
+          }
+        }
+      }
+    }
+
+    return null;
+  };
+
+  const validateChildSections = (sections: QASection[]): string | null => {
+    for (const section of sections) {
+      if (!section.question.trim()) {
+        return "All child questions must have valid text.";
+      }
+
+      for (const answer of section.answers) {
+        if (!answer.answer.trim()) {
+          return "All child answers must have valid text.";
+        }
+
+        if (answer.solution !== undefined && !answer.solution.trim()) {
+          return "All child solutions must have valid text.";
+        }
+
+        if (answer.childQuestion) {
+          const error = validateChildSections([answer.childQuestion]);
+          if (error) {
+            return error;
+          }
+        }
+      }
+    }
+    return null;
+  };
+
   //Handle submit button click
   const handleSubmit = () => {
+    const validationError = validateFields();
+
+    if (validationError) {
+      alert(validationError);
+      return;
+    }
+
     const dataToSubmit = {
       language,
       questionare: {
@@ -520,8 +594,14 @@ const QAContentEditor: React.FC = () => {
             handleInputChange(section.id, "question", e.target.value)
           }
           className="w-full border p-2 mb-2 rounded-lg"
+          // className={`w-full border p-2 mb-2 rounded-lg ${
+          //   !section.question.trim() ? "border-red-500" : "border-gray-300"
+          // }`}
           placeholder="Enter question"
         />
+        {/* {!section.question.trim() && (
+          <p className="text-red-500">This question is required.</p>
+        )} */}
         {section.answers.map((answer) => (
           <div
             key={answer.id}
@@ -631,9 +711,13 @@ const QAContentEditor: React.FC = () => {
           type="text"
           value={contentName}
           onChange={(e) => setContentName(e.target.value)}
+          // className={`border p-2 rounded-lg w-full ${
+          //   !contentName.trim() ? "border-red-500" : "border-gray-300"
+          // }`}
           className="border p-2 rounded-lg w-full"
           placeholder="Enter Game Title"
         />
+        {/* {!contentName.trim() && <p className="text-red-500">Content name is required.</p>} */}
       </h1>
 
       <div className="mb-4 flex justify-between">
