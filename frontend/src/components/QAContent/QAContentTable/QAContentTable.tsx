@@ -104,14 +104,14 @@ const QAContentTable: React.FC = () => {
     <div className="p-4">
       <h1 className="text-xl font-semibold mb-4">Q/A Content Grid</h1>
       {/* Create Button */}
-      {/* <div className="mb-4 flex justify-end">
+      <div className="mb-4 flex justify-end">
         <button
           onClick={handleCreate}
           className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600"
         >
           Create Q/A Content
         </button>
-      </div> */}
+      </div>
       <table className="table-auto w-full border-collapse border border-gray-200">
         <thead>
           <tr className="bg-gray-100">
