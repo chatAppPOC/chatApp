@@ -24,6 +24,13 @@ const CaseDetailsTable = () => {
     setSelectedCaseId(id);
     setModalIsOpen(true);
   };
+  // useEffect(() => {
+  //   const timer = setTimeout(() => {
+  //     setModalIsOpen(true);
+  //   }, 10000); // Change 3000 to the desired delay in milliseconds
+
+  //   return () => clearTimeout(timer);
+  // }, []);
 
   const handleCloseModal = () => {
     setModalIsOpen(false);
@@ -43,29 +50,43 @@ const CaseDetailsTable = () => {
   }
 
   useEffect(() => {
-    const fetchCaseContent = async () => {
-      try {
-        //const response = await fetch("./caseContent.json");
-        const response = await fetch("http://localhost:8080/api/allCases");
-        console.log("check res", response);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch data: ${response.statusText}`);
-        }
-        const contentType = response.headers.get("content-type");
-        if (!contentType || !contentType.includes("application/json")) {
-          throw new Error("Received non-JSON response");
-        }
-        const data: CaseContent[] = Object.values(await response.json());
-        setCaseContent(data);
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchCaseContent();
   }, []);
+
+  const fetchCaseContent = async () => {
+    try {
+      //const response = await fetch("./caseContent.json");
+      //const cookie = document.cookie;
+      const response = await fetch("http://localhost:8080/api/allCases", {
+        // credentials: "same-origin",
+        //mode: "no-cors",
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+          Authorization: "Basic " + btoa(`admin@test.com:admin123`),
+          //"Access-Control-Allow-Credentials": "true",
+          // Accept: "application/json",
+          //Cookie: "JSESSIONID=FE06813246C825EAC62E09232C6844A0",
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          setCaseContent(data);
+          console.log(data);
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+        });
+      // const data = await response.json();
+      // setCaseContent(data);
+      // console.log(data);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div>
@@ -109,39 +130,44 @@ const CaseDetailsTable = () => {
           ))}
         </tbody>
       </table>
-      <Modal
+      {selectedCaseId && (
+        // <div className="modal">
+        //   <div className="modal-header">
+        //     <h1 className="modal-title">Case Details</h1>
+        //     <button onClick={handleCloseModal} className="modal-close-button">
+        //       ×
+        //     </button>
+        //   </div>
+        <CaseDeatilsPage
+          caseId={selectedCaseId}
+          isModalOpen={modalIsOpen}
+          closeModal={handleCloseModal}
+        />
+        //</div>
+      )}
+      {/* <Modal
         isOpen={modalIsOpen}
         onRequestClose={() => setModalIsOpen(false)}
+        // className="w-1/4 bg-gradient-to-br from-blue-500 to-blue-700"
         style={{
           overlay: {
             backgroundColor: "rgba(0, 0, 0, 0.5)",
           },
           content: {
-            width: "600px",
-            height: "auto",
+            width: "630px",
+            height: "560px",
             margin: "50px auto",
             padding: "20px",
             //backgroundColor: "#000000",
             background: "linear-gradient(to bottom, #000000, #333333)",
-            border: "1px solid #ddd",
+            //border: "1px solid #ddd",
             borderRadius: "10px",
             // boxShadow: "0 0 10px rgba(0, 0, 0, 0.2)",
           },
         }}
       >
-        {/* {selectedCaseId && <CaseDeatilsPage caseId={selectedCaseId} />} */}
-        {selectedCaseId && (
-          <div className="modal">
-            <div className="modal-header">
-              <h1 className="modal-title">Case Details</h1>
-              <button onClick={handleCloseModal} className="modal-close-button">
-                ×
-              </button>
-            </div>
-            <CaseDeatilsPage caseId={selectedCaseId} />
-          </div>
-        )}
-      </Modal>
+        
+      </Modal> */}
     </div>
   );
 };
