@@ -21,7 +21,7 @@ import java.time.ZoneOffset;
 import java.util.Optional; // Make sure this import is correct
 
 @RestController
-@RequestMapping("/notifications")
+@RequestMapping("/api/notifications")
 public class NotificationController {
 
     @Autowired

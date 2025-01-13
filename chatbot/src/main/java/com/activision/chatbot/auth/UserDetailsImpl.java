@@ -15,7 +15,7 @@ import com.activision.chatbot.entity.Role;
 import com.activision.chatbot.entity.User;
 
 public class UserDetailsImpl implements UserDetails, Principal {
-
+	private static final long serialVersionUID = 1L;
 	private User user;
 	private Player player;
     

@@ -7,8 +7,6 @@ import org.quartz.Scheduler;
 import org.quartz.SimpleScheduleBuilder;
 import org.quartz.Trigger;
 import org.quartz.TriggerBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,8 +17,6 @@ import com.activision.chatbot.repo.NotificationRepository;
 @Configuration
 public class QuartzJobService {
 	
-	private static final Logger LOG = LoggerFactory.getLogger(QuartzJobService.class);
-
 	@Autowired
 	@Lazy
 	Scheduler scheduler;

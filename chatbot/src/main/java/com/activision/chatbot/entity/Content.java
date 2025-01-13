@@ -14,9 +14,10 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 @Entity
-@Table(name = "content")
+@Table(name = "content", uniqueConstraints={@UniqueConstraint(columnNames = {"language_id" , "name"})})
 @JsonInclude(Include.NON_NULL)
 public class Content {
 	@Id
