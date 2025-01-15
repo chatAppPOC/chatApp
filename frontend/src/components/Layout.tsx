@@ -8,7 +8,7 @@ const Layout: React.FC = () => {
   return (
     <div className="flex min-h-screen">
       {/* Sidebar */}
-      <div className="w-1/4 bg-gradient-to-br from-blue-500 to-blue-700 text-white p-8 hidden md:flex flex-col">
+      <div className="w-1/5 bg-gradient-to-br from-blue-500 to-blue-700 text-white p-8 hidden md:flex flex-col">
         <div className="flex flex-col items-center">
           <img
             src="/atvilogo-wht.png"

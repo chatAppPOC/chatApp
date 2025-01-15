@@ -552,7 +552,8 @@ const QAContentEditor: React.FC = () => {
           }
         })
         .catch((error) => console.error("Error updating Q/A data:", error));
-    } else {
+    } 
+    else {
       // Create API call
       fetch(
         `http://localhost:8080/api/v2/content?languageId=${language}&name=${encodeURIComponent(
