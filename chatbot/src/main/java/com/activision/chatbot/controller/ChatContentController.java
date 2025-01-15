@@ -5,6 +5,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -85,11 +87,11 @@ public class ChatContentController {
 	
 	@PutMapping("v2/content")
 	@PreAuthorize("hasAuthority('ADMIN')")
-	public Content updateContentv2(@RequestParam Long contentId, @NotBlank @RequestParam String name, @RequestBody com.activision.chatbot.model.Content chatContent) {
+	public ResponseEntity<?>  updateContentv2(@RequestParam Long contentId, @NotBlank @RequestParam String name, @RequestBody com.activision.chatbot.model.Content chatContent) {
 		try {
 			Content updatedContent = chatContentService.updateContentv2(contentId, chatContent, name);
 	    	LOG.info("Api.updateContentv2({}, {}) => {}", contentId, chatContent, updatedContent);
-			return updatedContent;
+			return ResponseEntity.status(HttpStatus.NO_CONTENT).body(updatedContent);
 		} catch (Exception e) {
     		LOG.error("Api.updateContentv2({}, {}) => error!!!", contentId, chatContent);
 			throw e;
@@ -111,11 +113,11 @@ public class ChatContentController {
 	
 	@PostMapping("v2/content")
 	@PreAuthorize("hasAuthority('ADMIN')")
-	public Content createContentv2(@RequestParam Long languageId, @NotBlank @RequestParam String name, @RequestBody com.activision.chatbot.model.Content chatContent) {
+	public ResponseEntity<?> createContentv2(@RequestParam Long languageId, @NotBlank @RequestParam String name, @RequestBody com.activision.chatbot.model.Content chatContent) {
 		try {
 			Content createdContent = chatContentService.createContentv2(chatContent,languageId, name);
 	    	LOG.info("Api.createContentv2({}, {}) => {}", languageId, chatContent, createdContent);
-			return createdContent;
+			return ResponseEntity.status(HttpStatus.CREATED).body(createdContent);
 		} catch (Exception e) {
     		LOG.error("Api.createContentv2({}, {}) => error!!!", languageId, chatContent);
 			throw e;
@@ -124,11 +126,11 @@ public class ChatContentController {
 	
 	@PostMapping("v2/content/copy")
 	@PreAuthorize("hasAuthority('ADMIN')")
-	public Content copyContentv2(@RequestParam Long srcContentId, @NotBlank @RequestParam String name) {
+	public ResponseEntity<?>  copyContentv2(@RequestParam Long srcContentId, @NotBlank @RequestParam String name) {
 		try {
 			Content createdContent = chatContentService.copyContentv2(srcContentId, name);
 	    	LOG.info("Api.copyContentv2({}) => {}", srcContentId, createdContent);
-			return createdContent;
+			return ResponseEntity.status(HttpStatus.CREATED).body(createdContent);
 		} catch (Exception e) {
     		LOG.error("Api.copyContentv2({}) => error!!!", srcContentId);
 			throw e;
@@ -136,6 +138,7 @@ public class ChatContentController {
 	}
 	
 	@GetMapping("v2/content")
+	@PreAuthorize("hasAuthority('ADMIN')")
 	public Content getContentv2(@RequestParam Long contentId) {
 		try {
 			Content content = chatContentService.getContentv2(contentId);
@@ -148,6 +151,7 @@ public class ChatContentController {
 	}
 	
 	@GetMapping("v2/contents")
+	@PreAuthorize("hasAuthority('ADMIN')")
 	public List<ContentResponse> getContents() {
 		try {
 			List<ContentResponse> contents = chatContentService.getContents();

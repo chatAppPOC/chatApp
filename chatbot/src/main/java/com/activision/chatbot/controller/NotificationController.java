@@ -15,13 +15,14 @@ import java.util.HashMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.Optional; // Make sure this import is correct
 
 @RestController
-@RequestMapping("/notifications")
+@RequestMapping("/api/notifications")
 public class NotificationController {
 
     @Autowired
@@ -30,6 +31,7 @@ public class NotificationController {
 private PlayerRepository playerRepository;
 
 @PostMapping("/add")
+@PreAuthorize("hasAuthority('ADMIN')")
 public ResponseEntity<?> addNotification(@RequestBody NotificationRequest notificationRequest) {
     try {
         List<NotificationSource> sources = notificationRequest.getSource();
@@ -77,6 +79,7 @@ public ResponseEntity<?> addNotification(@RequestBody NotificationRequest notifi
     }
 }
     @GetMapping("/source")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> getNotificationsBySources(
             @RequestParam List<NotificationSource> sources,
             @RequestParam(required = false) Long playerId) {
@@ -96,6 +99,7 @@ public ResponseEntity<?> addNotification(@RequestBody NotificationRequest notifi
     
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<Notification> updateNotification(
         @PathVariable Long id,
         @RequestBody NotificationRequest notificationRequest) {
@@ -109,6 +113,7 @@ public ResponseEntity<?> addNotification(@RequestBody NotificationRequest notifi
 
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<Void> deleteNotification(@PathVariable Long id) {
         notificationService.deleteNotification(id);
         return ResponseEntity.noContent().build();

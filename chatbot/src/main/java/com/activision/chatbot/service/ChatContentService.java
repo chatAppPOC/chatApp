@@ -1,5 +1,6 @@
 package com.activision.chatbot.service;
 
+import java.sql.SQLException;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +20,7 @@ import com.activision.chatbot.dto.ContentResponse;
 import com.activision.chatbot.entity.ChatContent;
 import com.activision.chatbot.entity.Content;
 import com.activision.chatbot.entity.Model;
+import com.activision.chatbot.exception.UniqueConstraintViolationException;
 import com.activision.chatbot.repo.ChatContentRepository;
 import com.activision.chatbot.repo.ContentRepository;
 import com.activision.chatbot.repo.ModelRepository;
@@ -207,15 +210,21 @@ public class ChatContentService {
 			Content existingContent = contentRepository.findById(id)
 					.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
 							"The content with " + id + " does not exist"));
-
-			existingContent.setContent(content);
-			existingContent.setName(name);
-			existingContent.setUpdatedBy(ADMIN_USER);
-			existingContent.setUpdatedOn(Instant.now());
-			contentRepository.save(existingContent);
-			LOG.debug("ChatContentService.updateContentv2({}, {}) => {}", id, existingContent);
-			return existingContent;
-		} catch (Exception e) {
+            Boolean nameExists = contentRepository.existsByLanguageIdAndName(existingContent.getLanguageId(), name);
+            if(nameExists) {
+            	throw  new UniqueConstraintViolationException();
+            }
+            else {
+            	existingContent.setContent(content);
+    			existingContent.setName(name);
+    			existingContent.setUpdatedBy(ADMIN_USER);
+    			existingContent.setUpdatedOn(Instant.now());
+    			contentRepository.save(existingContent);
+    			LOG.debug("ChatContentService.updateContentv2({}, {}) => {}", id, existingContent);
+    			return existingContent;
+            }
+		} 
+		catch (Exception e) {
 			LOG.error("ChatContentService.updateContentv2({}, {}) => error!!!", id, content);
 			throw e;
 		}
@@ -233,10 +242,16 @@ public class ChatContentService {
 			contentRepository.save(newContent);
 			LOG.debug("ChatContentService.createContentv2({}, {}) => {}", content, languageId, newContent);
 			return newContent;
-		} catch (Exception e) {
-			LOG.error("ChatContentService.createContentv2({}) => error!!!", content);
-			throw e;
 		}
+		catch (DataIntegrityViolationException e) {
+		    if (e.getMostSpecificCause().getClass().getName().equals("org.postgresql.util.PSQLException") && ((SQLException) e.getMostSpecificCause()).getSQLState().equals("23505"))
+		        throw new UniqueConstraintViolationException(e.getMostSpecificCause());
+		    throw e;
+		}
+		catch (Exception e) {
+			LOG.error("ChatContentService.createContentv2({}, {}) => error!!!", languageId, content);
+			throw e;
+		}	
 	}
 
 	@Transactional
@@ -247,12 +262,21 @@ public class ChatContentService {
 			if (srcContent.isPresent()) {
 				newContent = createContentv2(srcContent.get().getContent(), srcContent.get().getLanguageId(), name);
 			}
+			else {
+				throw new ResponseStatusException(HttpStatus.NOT_FOUND,"The content with " + srcContentId + " does not exist");
+			}
 			LOG.debug("ChatContentService.copyContentv2({}) => {}", srcContentId, newContent);
 			return newContent;
-		} catch (Exception e) {
+		}
+		catch (DataIntegrityViolationException e) {
+		    if (e.getMostSpecificCause().getClass().getName().equals("org.postgresql.util.PSQLException") && ((SQLException) e.getMostSpecificCause()).getSQLState().equals("23505"))
+		        throw new UniqueConstraintViolationException(e.getMostSpecificCause());
+		    throw e;
+		}
+		catch (Exception e) {
 			LOG.error("ChatContentService.copyContentv2({}) => error!!!", srcContentId);
 			throw e;
 		}
 	}
-
+    
 }
