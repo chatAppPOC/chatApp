@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -35,6 +36,7 @@ public class UserManagementController {
 	GroupRepository groupRepo;
 
 	@PostMapping("/user")
+	@PreAuthorize("hasAuthority('ADMIN')")
 	public User addUser(@RequestBody User user) throws Exception {
 		try {
 			User savedUser = userRepo.save(user);
@@ -47,6 +49,7 @@ public class UserManagementController {
 	}
 	
 	@PutMapping("/user")
+	@PreAuthorize("hasAuthority('ADMIN')")
 	public User editUser(@RequestBody User user) throws Exception {
 		try {
 			Optional<User> mayBeUser = userRepo.findById(user.getId());
@@ -82,6 +85,7 @@ public class UserManagementController {
 	}
 
 	@GetMapping("/user/{userId}")
+	@PreAuthorize("hasAuthority('ADMIN')")
 	public User getUser(@PathVariable Long userId) throws Exception {
 		try {
 			Optional<User> mayBeUser = userRepo.findById(userId);
@@ -97,6 +101,7 @@ public class UserManagementController {
 	}
 	
 	@DeleteMapping("/user/{userId}")
+	@PreAuthorize("hasAuthority('ADMIN')")
 	public User disableUser(@PathVariable Long userId) throws Exception {
 		try {
 			Optional<User> mayBeUser = userRepo.findById(userId);
@@ -115,6 +120,7 @@ public class UserManagementController {
 	}
 	
 	@PostMapping("/group")
+	@PreAuthorize("hasAuthority('ADMIN')")
 	public Group addGroup(@RequestBody Group group) throws Exception {
 		try {
 			Group savedGroup = groupRepo.save(group);
@@ -128,6 +134,7 @@ public class UserManagementController {
 	}
 	
 	@PutMapping("/group")
+	@PreAuthorize("hasAuthority('ADMIN')")
 	public Group editGroup(@RequestBody Group group) throws Exception {
 		try {
 			Optional<Group> mayBeGroup = groupRepo.findById(group.getId());
@@ -147,6 +154,7 @@ public class UserManagementController {
 	}
 
 	@GetMapping("/group/{groupId}")
+	@PreAuthorize("hasAuthority('ADMIN')")
 	public Group getGroup(@PathVariable Long groupId) throws Exception {
 		try {
 			Optional<Group> mayBeGroup = groupRepo.findById(groupId);
@@ -162,6 +170,7 @@ public class UserManagementController {
 	}
 	
 	@DeleteMapping("/group/{groupId}")
+	@PreAuthorize("hasAuthority('ADMIN')")
 	public Group disableGroup(@PathVariable Long groupId) throws Exception {
 		try {
 			Optional<Group> mayBeGroup = groupRepo.findById(groupId);
@@ -180,6 +189,7 @@ public class UserManagementController {
 	}
 
 	@GetMapping("/users")
+	@PreAuthorize("hasAuthority('ADMIN')")
 	public List<User> getUsers() {
 		try {
 			List<User> response = userRepo.fetchUsers();

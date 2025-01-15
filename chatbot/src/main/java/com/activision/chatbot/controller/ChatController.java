@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -54,6 +55,7 @@ public class ChatController {
 	private ChatRepository chatRepository;
 
 	@PostMapping("v2/chat")
+	@PreAuthorize("hasAuthority('ADMIN')")
 	public ChatResponsev2 performChatv2(@RequestBody ChatRequestv2 request) throws Exception {
 		try {
 			ChatResponsev2 chatMessages = chatService.performChatv2(request);
@@ -66,6 +68,7 @@ public class ChatController {
 	}
 
 	@GetMapping("/chat/history/{playerId}")
+	@PreAuthorize("hasAuthority('ADMIN')")
 	public List<Chat> getChatHistory(@PathVariable Long playerId, @RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "5") int size) throws Exception {
 		try {
@@ -83,6 +86,7 @@ public class ChatController {
 	}
 	
 	@GetMapping("v2/chat/{chatId}")
+	@PreAuthorize("hasAuthority('ADMIN')")
 	public Chat getChat(@PathVariable Long chatId) {
 		try{
 			Chat chat = chatService.getChat(chatId);
@@ -96,6 +100,7 @@ public class ChatController {
 	}
 
 	@PutMapping("/case/re-assign")
+	@PreAuthorize("hasAuthority('ADMIN')")
 	public Case updateTicket(@RequestBody Case input) {
 		try {
 			Optional<Case> caseResp = caseRepository.findById(input.getId());
@@ -125,6 +130,7 @@ public class ChatController {
 	}
 
 	@PostMapping("/chat/conversation/{chatId}")
+	@PreAuthorize("hasAuthority('ADMIN')")
 	public ChatMessage addChatMessage(@PathVariable Long chatId, @RequestBody ChatMessageRequest message) {
 		try {
 			ChatMessage response = chatService.addChatMessage(chatId, message);
@@ -137,6 +143,7 @@ public class ChatController {
 	}
 
 	@GetMapping("/chat/conversation/{chatId}")
+	@PreAuthorize("hasAuthority('ADMIN')")
 	public List<ChatMessage> getChatMessages(@PathVariable Long chatId) {
 		try {
 			List<ChatMessage> response = chatService.getChatMessages(chatId);
@@ -149,6 +156,7 @@ public class ChatController {
 	}
 
 	@PostMapping("/{contentType}/feedback/{contentId}")
+	@PreAuthorize("hasAuthority('ADMIN')")
 	public Feedback saveFeedback(@PathVariable Long contentId, @PathVariable String contentType,
 			@RequestBody FeedbackRequest request) throws Exception {
 		try {
@@ -178,6 +186,7 @@ public class ChatController {
 	}
 
 	@PostMapping("/case/{contentId}/{description}")
+	@PreAuthorize("hasAuthority('ADMIN')")
 	public Case createCase(@PathVariable Long contentId, @PathVariable String description) throws Exception {
 		try {
 			Case response = chatService.createSupportCaseByChatId(contentId, description);
@@ -190,6 +199,7 @@ public class ChatController {
 	}
 
 	@GetMapping("/case")
+	@PreAuthorize("hasAuthority('ADMIN')")
 	public List<Case> getCaseDataByCaseId(@RequestParam(required = false) Long caseId) {
 		try {
 			List<Case> response = caseRepository.findById(caseId).stream().toList();
@@ -202,6 +212,7 @@ public class ChatController {
 	}
 
 	@GetMapping("/feedback/content")
+	@PreAuthorize("hasAuthority('ADMIN')")
 	public List<FeedbackResp> getFeedbackQuestionsAndAnswers() {
 		try {
 			List<FeedbackResp> response = chatService.getQuestionsAndAnswers();
@@ -214,6 +225,7 @@ public class ChatController {
 	}
 
 	@GetMapping("/allCases")
+	@PreAuthorize("hasAuthority('ADMIN')")
 	public List<Case> getAllCases() {
 		try {
 			List<Case> response = caseRepository.findAll();
