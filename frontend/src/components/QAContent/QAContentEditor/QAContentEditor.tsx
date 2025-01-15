@@ -510,9 +510,185 @@ const QAContentEditor: React.FC = () => {
   };
 
   //Handle submit button click
-  const handleSubmit = () => {
-    const validationError = validateFields();
+  // const handleSubmit = () => {
+  //   const validationError = validateFields();
 
+  //   if (validationError) {
+  //     alert(validationError);
+  //     return;
+  //   }
+
+  //   const dataToSubmit = {
+  //     language,
+  //     questionare: {
+  //       questions: mapToApiFormat(qaSections), // Transform state to API format
+  //     },
+  //   };
+
+  //   console.log("Submitting Q/A Data:", dataToSubmit);
+
+  //   if (id) {
+  //     // Update API call
+  //     fetch(
+  //       `http://localhost:8080/api/v2/content?contentId=${id}&name=${encodeURIComponent(
+  //         contentName
+  //       )}`,
+  //       {
+  //         method: "PUT",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           "Access-Control-Allow-Origin": "*",
+  //           Authorization: "Basic " + btoa(`admin@test.com:admin123`),
+  //         },
+  //         body: JSON.stringify(dataToSubmit),
+  //       }
+  //     )
+  //       .then((response) => {
+  //         if (response.ok) {
+  //           alert("Q/A data updated successfully!");
+  //           navigate("/"); // Navigate back to the listing page
+  //         } else {
+  //           alert("Failed to update Q/A data.");
+  //         }
+  //       })
+  //       .catch((error) => console.error("Error updating Q/A data:", error));
+  //   }
+  //   else {
+  //     // Create API call
+  //     fetch(
+  //       `http://localhost:8080/api/v2/content?languageId=${language}&name=${encodeURIComponent(
+  //         contentName
+  //       )}`,
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           "Access-Control-Allow-Origin": "*",
+  //           Authorization: "Basic " + btoa(`admin@test.com:admin123`),
+  //         },
+  //         body: JSON.stringify(dataToSubmit),
+  //       }
+  //     )
+  //       .then((response) => {
+  //         if (response.ok) {
+  //           alert("Q/A data created successfully!");
+  //           navigate("/"); // Navigate back to the listing page
+  //         } else {
+  //           alert("Failed to create Q/A data.");
+  //         }
+  //       })
+  //       .catch((error) => console.error("Error creating Q/A data:", error));
+  //   }
+  // };
+
+  // const handleSubmit = async () => {
+  //   const validationError = validateFields();
+  //   if (validationError) {
+  //     alert(validationError);
+  //     return;
+  //   }
+
+  //   // Fetch the latest contents to validate uniqueness
+  //   try {
+  //     const response = await fetch("http://localhost:8080/api/v2/contents", {
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         "Access-Control-Allow-Origin": "*",
+  //         Authorization: "Basic " + btoa(`admin@test.com:admin123`),
+  //       },
+  //     });
+
+  //     if (!response.ok) {
+  //       throw new Error(`Failed to fetch contents: ${response.statusText}`);
+  //     }
+
+  //     const contents = await response.json();
+
+  //     // Check for duplicate name and language
+  //     const isDuplicate = contents.some(
+  //       (content: { id: string; name: string; language: string }) =>
+  //         content.name.trim().toLowerCase() ===
+  //           contentName.trim().toLowerCase() &&
+  //         content.language === String(language) &&
+  //         (!id || content.id !== id) // Allow updates for the same entry
+  //     );
+
+  //     if (isDuplicate) {
+  //       alert(
+  //         "A content with the same name and language already exists. Please try with a different name or language."
+  //       );
+  //       return;
+  //     }
+  //   } catch (error: any) {
+  //     console.error("Error fetching contents for validation:", error.message);
+  //     alert("Failed to validate uniqueness. Please try again later.");
+  //     return;
+  //   }
+
+  //   const dataToSubmit = {
+  //     language,
+  //     questionare: {
+  //       questions: mapToApiFormat(qaSections), // Transform state to API format
+  //     },
+  //   };
+
+  //   console.log("Submitting Q/A Data:", dataToSubmit);
+
+  //   if (id) {
+  //     // Update API call
+  //     fetch(
+  //       `http://localhost:8080/api/v2/content?contentId=${id}&name=${encodeURIComponent(
+  //         contentName
+  //       )}`,
+  //       {
+  //         method: "PUT",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           "Access-Control-Allow-Origin": "*",
+  //           Authorization: "Basic " + btoa(`admin@test.com:admin123`),
+  //         },
+  //         body: JSON.stringify(dataToSubmit),
+  //       }
+  //     )
+  //       .then((response) => {
+  //         if (response.ok) {
+  //           alert("Q/A data updated successfully!");
+  //           navigate("/"); // Navigate back to the listing page
+  //         } else {
+  //           alert("Failed to update Q/A data.");
+  //         }
+  //       })
+  //       .catch((error) => console.error("Error updating Q/A data:", error));
+  //   } else {
+  //     // Create API call
+  //     fetch(
+  //       `http://localhost:8080/api/v2/content?languageId=${language}&name=${encodeURIComponent(
+  //         contentName
+  //       )}`,
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           "Access-Control-Allow-Origin": "*",
+  //           Authorization: "Basic " + btoa(`admin@test.com:admin123`),
+  //         },
+  //         body: JSON.stringify(dataToSubmit),
+  //       }
+  //     )
+  //       .then((response) => {
+  //         if (response.ok) {
+  //           alert("Q/A data created successfully!");
+  //           navigate("/"); // Navigate back to the listing page
+  //         } else {
+  //           alert("Failed to create Q/A data.");
+  //         }
+  //       })
+  //       .catch((error) => console.error("Error creating Q/A data:", error));
+  //   }
+  // };
+
+  const handleSubmit = async () => {
+    const validationError = validateFields();
     if (validationError) {
       alert(validationError);
       return;
@@ -527,57 +703,72 @@ const QAContentEditor: React.FC = () => {
 
     console.log("Submitting Q/A Data:", dataToSubmit);
 
-    if (id) {
-      // Update API call
-      fetch(
-        `http://localhost:8080/api/v2/content?contentId=${id}&name=${encodeURIComponent(
-          contentName
-        )}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*",
-            Authorization: "Basic " + btoa(`admin@test.com:admin123`),
-          },
-          body: JSON.stringify(dataToSubmit),
-        }
-      )
-        .then((response) => {
-          if (response.ok) {
-            alert("Q/A data updated successfully!");
-            navigate("/"); // Navigate back to the listing page
-          } else {
-            alert("Failed to update Q/A data.");
+    try {
+      let response;
+
+      if (id) {
+        // Update API call
+        response = await fetch(
+          `http://localhost:8080/api/v2/content?contentId=${id}&name=${encodeURIComponent(
+            contentName
+          )}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              "Access-Control-Allow-Origin": "*",
+              Authorization: "Basic " + btoa(`admin@test.com:admin123`),
+            },
+            body: JSON.stringify(dataToSubmit),
           }
-        })
-        .catch((error) => console.error("Error updating Q/A data:", error));
-    } 
-    else {
-      // Create API call
-      fetch(
-        `http://localhost:8080/api/v2/content?languageId=${language}&name=${encodeURIComponent(
-          contentName
-        )}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*",
-            Authorization: "Basic " + btoa(`admin@test.com:admin123`),
-          },
-          body: JSON.stringify(dataToSubmit),
-        }
-      )
-        .then((response) => {
-          if (response.ok) {
-            alert("Q/A data created successfully!");
-            navigate("/"); // Navigate back to the listing page
-          } else {
-            alert("Failed to create Q/A data.");
+        );
+      } else {
+        // Create API call
+        response = await fetch(
+          `http://localhost:8080/api/v2/content?languageId=${language}&name=${encodeURIComponent(
+            contentName
+          )}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Access-Control-Allow-Origin": "*",
+              Authorization: "Basic " + btoa(`admin@test.com:admin123`),
+            },
+            body: JSON.stringify(dataToSubmit),
           }
-        })
-        .catch((error) => console.error("Error creating Q/A data:", error));
+        );
+      }
+
+      const responseData = await response.json();
+
+      if (response.ok) {
+        alert(
+          id
+            ? "Q/A data updated successfully!"
+            : "Q/A data created successfully!"
+        );
+        navigate("/"); // Navigate back to the listing page
+      } else {
+        // Handle specific error responses from the API
+        if (response.status === 409) {
+          alert(
+            responseData.message
+          );
+          // alert(
+          //   "Conflict: A content with the same name and language already exists. Please try with a different name or language."
+          // );
+        } else {
+          alert(
+            `Failed to ${id ? "update" : "create"} Q/A data: ${
+              responseData.message || "Unknown error"
+            }`
+          );
+        }
+      }
+    } catch (error) {
+      console.error("Error in submission:", error);
+      alert(`Failed to ${id ? "update" : "create"} Q/A data: Network error`);
     }
   };
 
