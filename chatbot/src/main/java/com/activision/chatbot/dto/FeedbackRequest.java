@@ -39,7 +39,7 @@ public class FeedbackRequest {
 
 		@Override
 		public String toString() {
-			return "QuestionAndAnswerReq [question=" + question + ", Answer=" + Answer + ", score=" + score + "]";
+			return "[question=" + question + ", Answer=" + Answer + ", score=" + score + "]";
 		}
 	}
 
