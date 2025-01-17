@@ -298,34 +298,6 @@ const QAContentEditor: React.FC = () => {
     setQASections((prev) => deleteSolutionRecursively(prev));
   };
 
-  // Recursive copy function
-  //   const handleCopy = (id: string) => {
-  //     setQASections((prev) => {
-  //       const newSections = JSON.parse(JSON.stringify(prev));
-  //       const findAndCopy = (items: any[]): any[] =>
-  //         items
-  //           .map((item) => {
-  //             if (item.id === id) {
-  //               const copied = { ...item, id: `${item.id}-copy` };
-  //               return [item, copied];
-  //             }
-  //             if (item.answers) {
-  //               item.answers = findAndCopy(item.answers);
-  //             }
-  //             if (item.childQuestion) {
-  //               item.childQuestion = findAndCopy([item.childQuestion])[0];
-  //             }
-  //             return item;
-  //           })
-  //           .flat();
-  //       return findAndCopy(newSections);
-  //     });
-  //   };
-
-  //   const handleTranslate = (text: string) => {
-  //     alert(`Translate: ${text}`);
-  //   };
-
   // Recursive function to handle changes to question and answer fields
   const handleInputChange = (
     id: string,
@@ -752,12 +724,7 @@ const QAContentEditor: React.FC = () => {
       } else {
         // Handle specific error responses from the API
         if (response.status === 409) {
-          alert(
-            responseData.message
-          );
-          // alert(
-          //   "Conflict: A content with the same name and language already exists. Please try with a different name or language."
-          // );
+          alert(responseData.message);
         } else {
           alert(
             `Failed to ${id ? "update" : "create"} Q/A data: ${
@@ -819,13 +786,6 @@ const QAContentEditor: React.FC = () => {
                   className="w-full border p-2 mb-2 rounded-lg"
                   placeholder="Enter solution"
                 />
-                {/* Delete Solution Button
-                <button
-                  onClick={() => handleDeleteSolution(answer.id)}
-                  className="bg-red-500 text-white px-4 py-2 rounded-lg mt-2"
-                >
-                  Delete Solution
-                </button> */}
               </div>
             )}
             <div className="flex gap-4 items-center mb-2">
@@ -850,18 +810,6 @@ const QAContentEditor: React.FC = () => {
                   Delete Question
                 </button>
               )}
-              {/* <button
-              onClick={() => handleCopy(answer.id)}
-              className="bg-green-500 text-white px-4 py-2 rounded-lg"
-            >
-              Copy
-            </button>
-            <button
-              onClick={() => handleTranslate(answer.answer)}
-              className="bg-yellow-500 text-white px-4 py-2 rounded-lg"
-            >
-              Translate
-            </button> */}
               {answer.solution !== undefined && (
                 <button
                   onClick={() => handleDeleteSolution(answer.id)}
@@ -897,7 +845,6 @@ const QAContentEditor: React.FC = () => {
   return (
     <div className="p-4">
       {/* Display Content Name */}
-      {/* <h1 className="text-2xl font-bold mb-4">{contentName}</h1> */}
       <h1 className="text-2xl font-bold mb-4">
         <input
           type="text"
@@ -907,7 +854,7 @@ const QAContentEditor: React.FC = () => {
           //   !contentName.trim() ? "border-red-500" : "border-gray-300"
           // }`}
           className="border p-2 rounded-lg w-full"
-          placeholder="Enter Game Title"
+          placeholder="Enter Q/A Content Title"
         />
         {/* {!contentName.trim() && <p className="text-red-500">Content name is required.</p>} */}
       </h1>
@@ -942,21 +889,6 @@ const QAContentEditor: React.FC = () => {
               </select>
             </div>
           )}
-          {/* <label htmlFor="language" className="mr-2 text-lg font-medium">
-            Select Language:
-          </label>
-          <select
-            id="language"
-            value={language}
-            onChange={handleLanguageChange}
-            className="border px-4 py-2 rounded-lg"
-          >
-            {languages.map((lang) => (
-              <option key={lang.id} value={lang.id}>
-                {lang.name}
-              </option>
-            ))}
-          </select> */}
         </div>
         {/* Copy Button at the Top */}
         {/* <button

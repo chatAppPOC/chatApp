@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import moment from "moment-timezone";
 
-// Define the interface matching the API response
 interface QAContent {
   id: number;
   language: string;
@@ -55,11 +54,6 @@ const QAContentTable: React.FC = () => {
   const handleRowClick = (id: number) => {
     navigate(`/qa-content/${id}`);
   };
-
-  // const handleDelete = (id: number) => {
-  //   const updatedContents = qaContents.filter((content) => content.id !== id);
-  //   setQAContents(updatedContents);
-  // };
 
   const handleDelete = async (id: number) => {
     try {
