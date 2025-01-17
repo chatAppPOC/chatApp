@@ -482,183 +482,6 @@ const QAContentEditor: React.FC = () => {
   };
 
   //Handle submit button click
-  // const handleSubmit = () => {
-  //   const validationError = validateFields();
-
-  //   if (validationError) {
-  //     alert(validationError);
-  //     return;
-  //   }
-
-  //   const dataToSubmit = {
-  //     language,
-  //     questionare: {
-  //       questions: mapToApiFormat(qaSections), // Transform state to API format
-  //     },
-  //   };
-
-  //   console.log("Submitting Q/A Data:", dataToSubmit);
-
-  //   if (id) {
-  //     // Update API call
-  //     fetch(
-  //       `http://localhost:8080/api/v2/content?contentId=${id}&name=${encodeURIComponent(
-  //         contentName
-  //       )}`,
-  //       {
-  //         method: "PUT",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //           "Access-Control-Allow-Origin": "*",
-  //           Authorization: "Basic " + btoa(`admin@test.com:admin123`),
-  //         },
-  //         body: JSON.stringify(dataToSubmit),
-  //       }
-  //     )
-  //       .then((response) => {
-  //         if (response.ok) {
-  //           alert("Q/A data updated successfully!");
-  //           navigate("/"); // Navigate back to the listing page
-  //         } else {
-  //           alert("Failed to update Q/A data.");
-  //         }
-  //       })
-  //       .catch((error) => console.error("Error updating Q/A data:", error));
-  //   }
-  //   else {
-  //     // Create API call
-  //     fetch(
-  //       `http://localhost:8080/api/v2/content?languageId=${language}&name=${encodeURIComponent(
-  //         contentName
-  //       )}`,
-  //       {
-  //         method: "POST",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //           "Access-Control-Allow-Origin": "*",
-  //           Authorization: "Basic " + btoa(`admin@test.com:admin123`),
-  //         },
-  //         body: JSON.stringify(dataToSubmit),
-  //       }
-  //     )
-  //       .then((response) => {
-  //         if (response.ok) {
-  //           alert("Q/A data created successfully!");
-  //           navigate("/"); // Navigate back to the listing page
-  //         } else {
-  //           alert("Failed to create Q/A data.");
-  //         }
-  //       })
-  //       .catch((error) => console.error("Error creating Q/A data:", error));
-  //   }
-  // };
-
-  // const handleSubmit = async () => {
-  //   const validationError = validateFields();
-  //   if (validationError) {
-  //     alert(validationError);
-  //     return;
-  //   }
-
-  //   // Fetch the latest contents to validate uniqueness
-  //   try {
-  //     const response = await fetch("http://localhost:8080/api/v2/contents", {
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //         "Access-Control-Allow-Origin": "*",
-  //         Authorization: "Basic " + btoa(`admin@test.com:admin123`),
-  //       },
-  //     });
-
-  //     if (!response.ok) {
-  //       throw new Error(`Failed to fetch contents: ${response.statusText}`);
-  //     }
-
-  //     const contents = await response.json();
-
-  //     // Check for duplicate name and language
-  //     const isDuplicate = contents.some(
-  //       (content: { id: string; name: string; language: string }) =>
-  //         content.name.trim().toLowerCase() ===
-  //           contentName.trim().toLowerCase() &&
-  //         content.language === String(language) &&
-  //         (!id || content.id !== id) // Allow updates for the same entry
-  //     );
-
-  //     if (isDuplicate) {
-  //       alert(
-  //         "A content with the same name and language already exists. Please try with a different name or language."
-  //       );
-  //       return;
-  //     }
-  //   } catch (error: any) {
-  //     console.error("Error fetching contents for validation:", error.message);
-  //     alert("Failed to validate uniqueness. Please try again later.");
-  //     return;
-  //   }
-
-  //   const dataToSubmit = {
-  //     language,
-  //     questionare: {
-  //       questions: mapToApiFormat(qaSections), // Transform state to API format
-  //     },
-  //   };
-
-  //   console.log("Submitting Q/A Data:", dataToSubmit);
-
-  //   if (id) {
-  //     // Update API call
-  //     fetch(
-  //       `http://localhost:8080/api/v2/content?contentId=${id}&name=${encodeURIComponent(
-  //         contentName
-  //       )}`,
-  //       {
-  //         method: "PUT",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //           "Access-Control-Allow-Origin": "*",
-  //           Authorization: "Basic " + btoa(`admin@test.com:admin123`),
-  //         },
-  //         body: JSON.stringify(dataToSubmit),
-  //       }
-  //     )
-  //       .then((response) => {
-  //         if (response.ok) {
-  //           alert("Q/A data updated successfully!");
-  //           navigate("/"); // Navigate back to the listing page
-  //         } else {
-  //           alert("Failed to update Q/A data.");
-  //         }
-  //       })
-  //       .catch((error) => console.error("Error updating Q/A data:", error));
-  //   } else {
-  //     // Create API call
-  //     fetch(
-  //       `http://localhost:8080/api/v2/content?languageId=${language}&name=${encodeURIComponent(
-  //         contentName
-  //       )}`,
-  //       {
-  //         method: "POST",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //           "Access-Control-Allow-Origin": "*",
-  //           Authorization: "Basic " + btoa(`admin@test.com:admin123`),
-  //         },
-  //         body: JSON.stringify(dataToSubmit),
-  //       }
-  //     )
-  //       .then((response) => {
-  //         if (response.ok) {
-  //           alert("Q/A data created successfully!");
-  //           navigate("/"); // Navigate back to the listing page
-  //         } else {
-  //           alert("Failed to create Q/A data.");
-  //         }
-  //       })
-  //       .catch((error) => console.error("Error creating Q/A data:", error));
-  //   }
-  // };
-
   const handleSubmit = async () => {
     const validationError = validateFields();
     if (validationError) {
@@ -789,13 +612,26 @@ const QAContentEditor: React.FC = () => {
               </div>
             )}
             <div className="flex gap-4 items-center mb-2">
-              <button
+              {/* <button
                 onClick={() => handleAddQuestion(answer.id)}
                 className="bg-blue-500 text-white px-4 py-2 rounded-lg"
                 disabled={!!answer.solution}
               >
                 + Add Question
+              </button> */}
+              {/* Add Question Button */}
+              <button
+                onClick={() => handleAddQuestion(answer.id)}
+                className={`px-4 py-2 rounded-lg ${
+                  answer.solution
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-blue-500 hover:bg-blue-600 text-white"
+                }`}
+                disabled={!!answer.solution} // Disable if solution exists
+              >
+                + Add Question
               </button>
+
               <button
                 onClick={() => handleDeleteAnswer(section.id, answer.id)}
                 className="bg-red-500 text-white px-4 py-2 rounded-lg"
@@ -818,10 +654,22 @@ const QAContentEditor: React.FC = () => {
                   Delete Solution
                 </button>
               )}
-              <button
+              {/* <button
                 onClick={() => handleAddSolution(answer.id)}
                 className="bg-green-500 text-white px-4 py-2 rounded-lg"
                 disabled={!!answer.solution}
+              >
+                Add Solution
+              </button> */}
+              {/* Add Solution Button */}
+              <button
+                onClick={() => handleAddSolution(answer.id)}
+                className={`px-4 py-2 rounded-lg ${
+                  answer.solution
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-green-500 hover:bg-green-600 text-white"
+                }`}
+                disabled={!!answer.solution} // Disable if solution exists
               >
                 Add Solution
               </button>
@@ -831,10 +679,22 @@ const QAContentEditor: React.FC = () => {
             )}
           </div>
         ))}
-        <button
+        {/* <button
           onClick={() => handleAddAnswer(section.id)}
           className="bg-blue-500 text-white px-4 py-2 mt-4 rounded-lg"
           disabled={section.answers.some((ans) => ans.solution)}
+        >
+          + Add Answer
+        </button> */}
+        {/* Add Answer Button */}
+        <button
+          onClick={() => handleAddAnswer(section.id)}
+          className={`px-4 py-2 mt-4 rounded-lg ${
+            section.answers.some((ans) => ans.solution)
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-blue-500 hover:bg-blue-600 text-white"
+          }`}
+          disabled={section.answers.some((ans) => ans.solution)} // Disable if any answer has a solution
         >
           + Add Answer
         </button>

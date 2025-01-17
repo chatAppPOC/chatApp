@@ -97,6 +97,7 @@ const QAContentTable: React.FC = () => {
   return (
     <div className="p-4">
       <h1 className="text-xl font-semibold mb-4">Q/A Content Grid</h1>
+
       {/* Create Button */}
       <div className="mb-4 flex justify-end">
         <button
@@ -106,70 +107,77 @@ const QAContentTable: React.FC = () => {
           Create Q/A Content
         </button>
       </div>
-      <table className="table-auto w-full border-collapse border border-gray-200">
-        <thead>
-          <tr className="bg-gray-100">
-            <th className="border border-gray-300 px-4 py-2">ID</th>
-            <th className="border border-gray-300 px-4 py-2">Language</th>
-            <th className="border border-gray-300 px-4 py-2">Name</th>
-            <th className="border border-gray-300 px-4 py-2">Created Date</th>
-            <th className="border border-gray-300 px-4 py-2">Created By</th>
-            <th className="border border-gray-300 px-4 py-2">Updated Date</th>
-            <th className="border border-gray-300 px-4 py-2">Updated By</th>
-            <th className="border border-gray-300 px-4 py-2">Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {qaContents.map((content) => (
-            <tr
-              key={content.id}
-              className="hover:bg-gray-50 cursor-pointer text-center"
-              onClick={() => handleRowClick(content.id)}
-            >
-              <td className="border border-gray-300 px-4 py-2">{content.id}</td>
-              <td className="border border-gray-300 px-4 py-2">
-                {content.language || "N/A"}
-              </td>
-              <td className="border border-gray-300 px-4 py-2">
-                {content.name}
-              </td>
-              <td className="border border-gray-300 px-4 py-2">
-                {content.createdOn
-                  ? moment(content.createdOn)
-                      .tz("America/Los_Angeles")
-                      .format("ddd MMMM DD YYYY hh:mm:ss A z")
-                  : "N/A"}
-                {/* {content.createdOn || "N/A"} */}
-              </td>
-              <td className="border border-gray-300 px-4 py-2">
-                {content.createdBy || "N/A"}
-              </td>
-              <td className="border border-gray-300 px-4 py-2">
-                {content.updatedOn
-                  ? moment(content.updatedOn)
-                      .tz("America/Los_Angeles")
-                      .format("ddd MMMM DD YYYY hh:mm:ss A z")
-                  : "N/A"}
-                {/* {content.updatedOn || "N/A"} */}
-              </td>
-              <td className="border border-gray-300 px-4 py-2">
-                {content.updatedBy || "N/A"}
-              </td>
-              <td className="border border-gray-300 px-4 py-2">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDelete(content.id);
-                  }}
-                  className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
-                >
-                  Delete
-                </button>
-              </td>
+
+      {/* Table Wrapper with Overflow Hidden for Rounded Borders */}
+      {/* <div className="overflow-hidden rounded-lg border border-gray-300 shadow-lg"> */}
+      <div className="overflow-hidden rounded-lg border border-gray-300">
+        <table className="table-auto w-full border-collapse">
+          <thead>
+            <tr className="bg-gray-100 first:rounded-t-lg">
+              <th className="border border-gray-300 px-4 py-2">ID</th>
+              <th className="border border-gray-300 px-4 py-2">Language</th>
+              <th className="border border-gray-300 px-4 py-2">Name</th>
+              <th className="border border-gray-300 px-4 py-2">Created Date</th>
+              <th className="border border-gray-300 px-4 py-2">Created By</th>
+              <th className="border border-gray-300 px-4 py-2">Updated Date</th>
+              <th className="border border-gray-300 px-4 py-2">Updated By</th>
+              <th className="border border-gray-300 px-4 py-2">Action</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {qaContents.map((content, index) => (
+              <tr
+                key={content.id}
+                className={`hover:bg-gray-50 cursor-pointer text-center ${
+                  index === qaContents.length - 1 ? "last:rounded-b-lg" : ""
+                }`}
+                onClick={() => handleRowClick(content.id)}
+              >
+                <td className="border border-gray-300 px-4 py-2">
+                  {content.id}
+                </td>
+                <td className="border border-gray-300 px-4 py-2">
+                  {content.language || "N/A"}
+                </td>
+                <td className="border border-gray-300 px-4 py-2">
+                  {content.name}
+                </td>
+                <td className="border border-gray-300 px-4 py-2">
+                  {content.createdOn
+                    ? moment(content.createdOn)
+                        .tz("America/Los_Angeles")
+                        .format("ddd MMMM DD YYYY hh:mm:ss A z")
+                    : "N/A"}
+                </td>
+                <td className="border border-gray-300 px-4 py-2">
+                  {content.createdBy || "N/A"}
+                </td>
+                <td className="border border-gray-300 px-4 py-2">
+                  {content.updatedOn
+                    ? moment(content.updatedOn)
+                        .tz("America/Los_Angeles")
+                        .format("ddd MMMM DD YYYY hh:mm:ss A z")
+                    : "N/A"}
+                </td>
+                <td className="border border-gray-300 px-4 py-2">
+                  {content.updatedBy || "N/A"}
+                </td>
+                <td className="border border-gray-300 px-4 py-2">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(content.id);
+                    }}
+                    className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };
