@@ -6,12 +6,12 @@ public class FeedbackRequest {
 	private String playerFeedbackComments;
 	private Boolean issueResolved;
 	private Boolean satisfiedWithSupport;
-	private List<Long> scores;
 	private List<QuestionAndAnswerReq> questionAndAnswer;
 	
 	public static class QuestionAndAnswerReq {
 		private String question;
 		private String Answer;
+		private Long score;
 
 		public String getQuestion() {
 			return question;
@@ -29,9 +29,17 @@ public class FeedbackRequest {
 			Answer = answer;
 		}
 
+		public Long getScore() {
+			return score;
+		}
+
+		public void setScore(Long score) {
+			this.score = score;
+		}
+
 		@Override
 		public String toString() {
-			return "QuestionAndAnswerReq [question=" + question + ", Answer=" + Answer + "]";
+			return "[question=" + question + ", Answer=" + Answer + ", score=" + score + "]";
 		}
 	}
 
@@ -58,15 +66,7 @@ public class FeedbackRequest {
 	public void setSatisfiedWithSupport(Boolean satisfiedWithSupport) {
 		this.satisfiedWithSupport = satisfiedWithSupport;
 	}
-
-	public List<Long> getScores() {
-		return scores;
-	}
-
-	public void setScores(List<Long> scores) {
-		this.scores = scores;
-	}
-
+	
 	public List<QuestionAndAnswerReq> getQuestionAndAnswer() {
 		return questionAndAnswer;
 	}
@@ -78,7 +78,6 @@ public class FeedbackRequest {
 	@Override
 	public String toString() {
 		return "FeedbackRequest [playerFeedbackComments=" + playerFeedbackComments + ", issueResolved=" + issueResolved
-				+ ", satisfiedWithSupport=" + satisfiedWithSupport + ", scores=" + scores + ", questionAndAnswer="
-				+ questionAndAnswer + "]";
+				+ ", satisfiedWithSupport=" + satisfiedWithSupport + ", questionAndAnswer=" + questionAndAnswer + "]";
 	}
 }

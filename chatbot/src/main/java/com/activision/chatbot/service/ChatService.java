@@ -254,7 +254,7 @@ public class ChatService {
 			throws Exception {
 		try {
 			Feedback feedback = null;
-			Long totalScore = request.getScores().stream().mapToLong(Long::longValue).sum();
+			Long totalScore = request.getQuestionAndAnswer().stream().mapToLong(FeedbackRequest.QuestionAndAnswerReq::getScore).sum();
 
 			if (caseReq != null && caseReq.getId() != null) {
 				feedback = new Feedback(null, caseReq.getId(), FeedbackCategory.CASE, request.getQuestionAndAnswer(),
