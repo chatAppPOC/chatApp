@@ -91,7 +91,7 @@ public class ChatContentController {
 		try {
 			Content updatedContent = chatContentService.updateContentv2(contentId, chatContent, name);
 	    	LOG.info("Api.updateContentv2({}, {}) => {}", contentId, chatContent, updatedContent);
-			return ResponseEntity.status(HttpStatus.NO_CONTENT).body(updatedContent);
+			return ResponseEntity.status(HttpStatus.OK).body(updatedContent);
 		} catch (Exception e) {
     		LOG.error("Api.updateContentv2({}, {}) => error!!!", contentId, chatContent);
 			throw e;
