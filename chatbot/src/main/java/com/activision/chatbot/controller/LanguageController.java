@@ -22,7 +22,6 @@ public class LanguageController {
 	LanguageService languageService;
 	
 	@GetMapping("/languages")
-	@PreAuthorize("hasAuthority('ADMIN')")
 	public List<Language> getLanguages() {
 		try {
 			List<Language> response = languageService.getLanguages();

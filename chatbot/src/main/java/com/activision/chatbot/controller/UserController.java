@@ -15,13 +15,11 @@ import com.activision.chatbot.auth.UserDetailsImpl;
 public class UserController {
 
 	@GetMapping("/@me/roles")
-	@PreAuthorize("hasAuthority('ADMIN')")
 	public List<String> getRoles(@AuthenticationPrincipal UserDetailsImpl principal){
 		return principal.getAuthorities().stream().map(auth -> auth.getAuthority()).toList();
 	}
 	
 	@GetMapping("/@me")
-	@PreAuthorize("hasAuthority('ADMIN')")
 	public Object getUser(@AuthenticationPrincipal UserDetailsImpl principal){
 		
 		if(principal.getUser() != null) {
