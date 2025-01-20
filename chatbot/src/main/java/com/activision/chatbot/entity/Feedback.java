@@ -28,25 +28,23 @@ public class Feedback {
 	@Enumerated(EnumType.STRING)
 	private FeedbackCategory feedbackCategory;
 	@JdbcTypeCode(SqlTypes.JSON)
-	private List<QuestionAndAnswerReq> request;
+	private List<QuestionAndAnswerReq> description;
 	private Boolean issueResolved;
-	private Boolean satisfiedWithSupport;
-	private Long score;
+	private int averageScore;
 	private Instant createdOn;
 	
 	public Feedback() {
 
 	}
 
-	public Feedback(Long chatId, Long caseId, FeedbackCategory feedbackCategory, List<QuestionAndAnswerReq> request,
-			Boolean issueResolved, Boolean satisfiedWithSupport, Long score) {
+	public Feedback(Long chatId, Long caseId, FeedbackCategory feedbackCategory, List<QuestionAndAnswerReq> description,
+			Boolean issueResolved, int averageScore) {
 		this.chatId = chatId;
 		this.caseId = caseId;
 		this.feedbackCategory = feedbackCategory;
-		this.request = request;
+		this.description = description;
 		this.issueResolved = issueResolved;
-		this.satisfiedWithSupport = satisfiedWithSupport;
-		this.score = score;
+		this.averageScore = averageScore;
 		this.createdOn = Instant.now();
 	}
 
@@ -86,12 +84,12 @@ public class Feedback {
 		this.feedbackCategory = feedbackCategory;
 	}
 
-	public List<QuestionAndAnswerReq> getRequest() {
-		return request;
+	public List<QuestionAndAnswerReq> getDescription() {
+		return description;
 	}
 
-	public void setRequest(List<QuestionAndAnswerReq> request) {
-		this.request = request;
+	public void setDescription(List<QuestionAndAnswerReq> description) {
+		this.description = description;
 	}
 
 	public Boolean getIssueResolved() {
@@ -102,20 +100,12 @@ public class Feedback {
 		this.issueResolved = issueResolved;
 	}
 
-	public Boolean getSatisfiedWithSupport() {
-		return satisfiedWithSupport;
+	public int getAverageScore() {
+		return averageScore;
 	}
 
-	public void setSatisfiedWithSupport(Boolean satisfiedWithSupport) {
-		this.satisfiedWithSupport = satisfiedWithSupport;
-	}
-
-	public Long getScore() {
-		return score;
-	}
-
-	public void setScore(Long score) {
-		this.score = score;
+	public void setAverageScore(int averageScore) {
+		this.averageScore = averageScore;
 	}
 
 	public Instant getCreatedOn() {
@@ -129,8 +119,7 @@ public class Feedback {
 	@Override
 	public String toString() {
 		return "Feedback [id=" + id + ", chatId=" + chatId + ", caseId=" + caseId + ", feedbackCategory="
-				+ feedbackCategory + ", request=" + request + ", issueResolved=" + issueResolved
-				+ ", satisfiedWithSupport=" + satisfiedWithSupport + ", score=" + score + ", createdOn=" + createdOn
-				+ "]";
+				+ feedbackCategory + ", description=" + description + ", issueResolved=" + issueResolved
+				+ ", averageScore=" + averageScore + ", createdOn=" + createdOn + "]";
 	}
 }

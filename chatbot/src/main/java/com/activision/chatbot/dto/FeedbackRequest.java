@@ -5,7 +5,6 @@ import java.util.List;
 public class FeedbackRequest {
 	private String playerFeedbackComments;
 	private Boolean issueResolved;
-	private Boolean satisfiedWithSupport;
 	private List<QuestionAndAnswerReq> questionAndAnswer;
 	
 	public static class QuestionAndAnswerReq {
@@ -58,14 +57,6 @@ public class FeedbackRequest {
 	public void setIssueResolved(Boolean issueResolved) {
 		this.issueResolved = issueResolved;
 	}
-
-	public Boolean getSatisfiedWithSupport() {
-		return satisfiedWithSupport;
-	}
-
-	public void setSatisfiedWithSupport(Boolean satisfiedWithSupport) {
-		this.satisfiedWithSupport = satisfiedWithSupport;
-	}
 	
 	public List<QuestionAndAnswerReq> getQuestionAndAnswer() {
 		return questionAndAnswer;
@@ -78,6 +69,6 @@ public class FeedbackRequest {
 	@Override
 	public String toString() {
 		return "FeedbackRequest [playerFeedbackComments=" + playerFeedbackComments + ", issueResolved=" + issueResolved
-				+ ", satisfiedWithSupport=" + satisfiedWithSupport + ", questionAndAnswer=" + questionAndAnswer + "]";
+				+ ", questionAndAnswer=" + questionAndAnswer + "]";
 	}
 }

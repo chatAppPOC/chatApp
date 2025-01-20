@@ -91,7 +91,7 @@ public class ChatContentController {
 		try {
 			Content updatedContent = chatContentService.updateContentv2(contentId, chatContent, name);
 	    	LOG.info("Api.updateContentv2({}, {}) => {}", contentId, chatContent, updatedContent);
-			return ResponseEntity.status(HttpStatus.NO_CONTENT).body(updatedContent);
+			return ResponseEntity.status(HttpStatus.OK).body(updatedContent);
 		} catch (Exception e) {
     		LOG.error("Api.updateContentv2({}, {}) => error!!!", contentId, chatContent);
 			throw e;
@@ -138,7 +138,7 @@ public class ChatContentController {
 	}
 	
 	@GetMapping("v2/content")
-	@PreAuthorize("hasAuthority('ADMIN')")
+	@PreAuthorize("hasAuthority('ADMIN','USER','PLAYER')")
 	public Content getContentv2(@RequestParam Long contentId) {
 		try {
 			Content content = chatContentService.getContentv2(contentId);
@@ -151,7 +151,7 @@ public class ChatContentController {
 	}
 	
 	@GetMapping("v2/contents")
-	@PreAuthorize("hasAuthority('ADMIN')")
+	@PreAuthorize("hasAuthority('ADMIN','USER','PLAYER')")
 	public List<ContentResponse> getContents() {
 		try {
 			List<ContentResponse> contents = chatContentService.getContents();

@@ -79,7 +79,7 @@ public ResponseEntity<?> addNotification(@RequestBody NotificationRequest notifi
     }
 }
     @GetMapping("/source")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('PLAYER')")
     public ResponseEntity<?> getNotificationsBySources(
             @RequestParam List<NotificationSource> sources,
             @RequestParam(required = false) Long playerId) {

@@ -26,15 +26,15 @@ import com.activision.chatbot.dto.ChatRequestv2;
 import com.activision.chatbot.dto.ChatResponsev2;
 import com.activision.chatbot.dto.FeedbackRequest;
 import com.activision.chatbot.dto.FeedbackResp;
-import com.activision.chatbot.dto.PlayerUserResponse;
 import com.activision.chatbot.dto.FeedbackResp.Answer;
+import com.activision.chatbot.dto.PlayerUserResponse;
 import com.activision.chatbot.entity.Case;
 import com.activision.chatbot.entity.Chat;
+import com.activision.chatbot.entity.Chat.ChatStatus;
 import com.activision.chatbot.entity.ChatMessage;
 import com.activision.chatbot.entity.Feedback;
-import com.activision.chatbot.entity.FeedbackContent;
-import com.activision.chatbot.entity.Chat.ChatStatus;
 import com.activision.chatbot.entity.Feedback.FeedbackCategory;
+import com.activision.chatbot.entity.FeedbackContent;
 import com.activision.chatbot.model.Message;
 import com.activision.chatbot.model.Message.Source;
 import com.activision.chatbot.repo.CaseRepository;
@@ -254,14 +254,15 @@ public class ChatService {
 			throws Exception {
 		try {
 			Feedback feedback = null;
-			Long totalScore = request.getQuestionAndAnswer().stream().mapToLong(FeedbackRequest.QuestionAndAnswerReq::getScore).sum();
+			Long averageScore = (long) (request.getQuestionAndAnswer().stream()
+					.mapToLong(FeedbackRequest.QuestionAndAnswerReq::getScore).average()).getAsDouble();
 
 			if (caseReq != null && caseReq.getId() != null) {
 				feedback = new Feedback(null, caseReq.getId(), FeedbackCategory.CASE, request.getQuestionAndAnswer(),
-						request.getIssueResolved(), request.getSatisfiedWithSupport(), totalScore);
+						request.getIssueResolved(), Math.round(averageScore));
 			} else if (chatReq != null && chatReq.getId() != null) {
 				feedback = new Feedback(chatReq.getId(), null, FeedbackCategory.CHAT, request.getQuestionAndAnswer(),
-						request.getIssueResolved(), request.getSatisfiedWithSupport(), totalScore);
+						request.getIssueResolved(), Math.round(averageScore));
 			} else {
 				LOG.warn("No valid caseReq or chatReq provided. Unable to create feedback.");
 				throw new IllegalArgumentException("Either caseReq or chatReq must be provided.");
@@ -276,11 +277,11 @@ public class ChatService {
 					+ "</td></tr>" + "<tr><td>chatId</td><td>" + response.getChatId() + "</td></tr>"
 					+ "<tr><td>caseId</td><td>" + response.getCaseId() + "</td></tr>"
 					+ "<tr><td>feedbackCategory ID</td><td>" + response.getFeedbackCategory() + "</td></tr>"
-					+ "<tr><td>request</td><td>" + response.getRequest() + "</td></tr>"
+					+ "<tr><td>description</td><td>" + response.getDescription() + "</td></tr>"
 					+ "<tr><td>issueResolved</td><td>" + response.getIssueResolved() + "</td></tr>"
-					+ "<tr><td>satisfiedWithSupport</td><td>" + response.getSatisfiedWithSupport() + "</td></tr>"
-					+ "<tr><td>score</td><td>" + response.getScore() + "</td></tr>" + "<tr><td>createdOn</td><td>"
-					+ response.getCreatedOn() + "</td></tr>" + "</table>" + "</body></html>";
+					+ "<tr><td>averageScore</td><td>" + response.getAverageScore() + "</td></tr>"
+					+ "<tr><td>createdOn</td><td>" + response.getCreatedOn() + "</td></tr>" + "</table>"
+					+ "</body></html>";
 			// Send email notification
 			MimeMessage mailMessage = javaMailSender.createMimeMessage();
 			MimeMessageHelper helper = new MimeMessageHelper(mailMessage, true);

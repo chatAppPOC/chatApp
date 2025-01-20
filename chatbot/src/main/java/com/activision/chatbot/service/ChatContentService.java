@@ -211,8 +211,8 @@ public class ChatContentService {
 					.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
 							"The content with " + id + " does not exist"));
             Boolean nameExists = contentRepository.existsByLanguageIdAndName(existingContent.getLanguageId(), name);
-            if(nameExists) {
-            	throw  new UniqueConstraintViolationException();
+            if(nameExists && !name.equals(existingContent.getName())) {
+            	throw new UniqueConstraintViolationException();
             }
             else {
             	existingContent.setContent(content);

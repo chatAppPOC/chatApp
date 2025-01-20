@@ -85,7 +85,7 @@ public class UserManagementController {
 	}
 
 	@GetMapping("/user/{userId}")
-	@PreAuthorize("hasAuthority('ADMIN')")
+	@PreAuthorize("hasAuthority('ADMIN','USER')")
 	public User getUser(@PathVariable Long userId) throws Exception {
 		try {
 			Optional<User> mayBeUser = userRepo.findById(userId);
@@ -189,7 +189,6 @@ public class UserManagementController {
 	}
 
 	@GetMapping("/users")
-	@PreAuthorize("hasAuthority('ADMIN')")
 	public List<User> getUsers() {
 		try {
 			List<User> response = userRepo.fetchUsers();
