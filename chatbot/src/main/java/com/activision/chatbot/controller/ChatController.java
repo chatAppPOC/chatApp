@@ -3,6 +3,7 @@ package com.activision.chatbot.controller;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -194,7 +195,7 @@ public class ChatController {
 	}
 
 	@GetMapping("/case")
-	@PreAuthorize("hasAuthority('ADMIN','USER')")
+	//@PreAuthorize("hasAuthority('ADMIN','USER')")
 	public List<Case> getCaseDataByCaseId(@RequestParam(required = false) Long caseId) {
 		try {
 			List<Case> response = caseRepository.findById(caseId).stream().toList();
@@ -220,12 +221,14 @@ public class ChatController {
 	}
 
 	@GetMapping("/allCases")
-	@PreAuthorize("hasAuthority('ADMIN','USER')")
+	//@PreAuthorize("hasAuthority('ADMIN','USER')")
 	public List<Case> getAllCases() {
 		try {
 			List<Case> response = caseRepository.findAll();
+			List<Case> sortedResponse = response.stream().sorted((c1, c2) -> c1.getId().compareTo(c2.getId()))
+					.collect(Collectors.toList());
 			LOG.info("Api.getAllCases() => {}", response);
-			return response;
+			return sortedResponse;
 		} catch (Exception e) {
 			LOG.error("Api.getAllCases() => error!!!", e);
 			throw e;
