@@ -234,4 +234,17 @@ public class ChatController {
 			throw e;
 		}
 	}
+	
+	@GetMapping("v2/chat/player/{playerId}")
+	public Chat getLastChatByPlayerId(@PathVariable Long playerId) {
+		try{
+			Chat chat = chatRepository.getLastChatByPlayerId(playerId);
+			LOG.info("Api.getLastChatByPlayerId({}) => {}", playerId, chat);
+		    return chat;
+		}
+		catch(Exception e) {
+			LOG.error("Api.getLastChatByPlayerId({}, {}) => error!!!", playerId, e);
+			throw e;
+		}
+	}
 }
