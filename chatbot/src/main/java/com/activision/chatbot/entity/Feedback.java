@@ -28,24 +28,25 @@ public class Feedback {
 	@Enumerated(EnumType.STRING)
 	private FeedbackCategory feedbackCategory;
 	@JdbcTypeCode(SqlTypes.JSON)
-	private List<QuestionAndAnswerReq> description;
+	private List<QuestionAndAnswerReq> feedback;
 	private Boolean issueResolved;
 	private int averageScore;
 	private Instant createdOn;
-	private String feedback;
+	private String description;
 	
 	public Feedback() {
 
 	}
 
-	public Feedback(Long chatId, Long caseId, FeedbackCategory feedbackCategory, List<QuestionAndAnswerReq> description,
-			Boolean issueResolved, int averageScore) {
+	public Feedback(Long chatId, Long caseId, FeedbackCategory feedbackCategory, List<QuestionAndAnswerReq> feedback,
+			Boolean issueResolved, int averageScore, String description) {
 		this.chatId = chatId;
 		this.caseId = caseId;
 		this.feedbackCategory = feedbackCategory;
-		this.description = description;
+		this.feedback = feedback;
 		this.issueResolved = issueResolved;
 		this.averageScore = averageScore;
+		this.description = description;
 		this.createdOn = Instant.now();
 	}
 
@@ -85,14 +86,6 @@ public class Feedback {
 		this.feedbackCategory = feedbackCategory;
 	}
 
-	public List<QuestionAndAnswerReq> getDescription() {
-		return description;
-	}
-
-	public void setDescription(List<QuestionAndAnswerReq> description) {
-		this.description = description;
-	}
-
 	public Boolean getIssueResolved() {
 		return issueResolved;
 	}
@@ -117,18 +110,26 @@ public class Feedback {
 		this.createdOn = createdOn;
 	}
 	
-	public String getFeedback() {
+	public List<QuestionAndAnswerReq> getFeedback() {
 		return feedback;
 	}
 
-	public void setFeedback(String feedback) {
+	public void setFeedback(List<QuestionAndAnswerReq> feedback) {
 		this.feedback = feedback;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
 	}
 
 	@Override
 	public String toString() {
 		return "Feedback [id=" + id + ", chatId=" + chatId + ", caseId=" + caseId + ", feedbackCategory="
-				+ feedbackCategory + ", description=" + description + ", issueResolved=" + issueResolved
-				+ ", averageScore=" + averageScore + ", createdOn=" + createdOn + "]";
+				+ feedbackCategory + ", feedback=" + feedback + ", issueResolved=" + issueResolved + ", averageScore="
+				+ averageScore + ", createdOn=" + createdOn + ", description=" + description + "]";
 	}
 }

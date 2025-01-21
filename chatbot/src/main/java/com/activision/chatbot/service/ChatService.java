@@ -265,25 +265,30 @@ public class ChatService {
 	}
 
 	@Transactional
-	public Feedback providePostResolutionFeedback(FeedbackRequest request, Case caseReq, Chat chatReq)
-			throws Exception {
+	public Feedback providePostResolutionFeedback(FeedbackRequest request, Case caseReq, Chat chatReq,
+			Feedback existingFeedback) throws Exception {
 		try {
-			Feedback feedback = null;
 			Long averageScore = (long) (request.getQuestionAndAnswer().stream()
-					.mapToLong(FeedbackRequest.QuestionAndAnswerReq::getScore).average()).getAsDouble();
-
+					.mapToLong(FeedbackRequest.QuestionAndAnswerReq::getScore).average()).orElse(0);
+			Feedback feedback = (existingFeedback != null) ? existingFeedback : saveFeedback(request, caseReq, chatReq, Math.round(averageScore));
 			if (caseReq != null && caseReq.getId() != null) {
-				feedback = new Feedback(null, caseReq.getId(), FeedbackCategory.CASE, request.getQuestionAndAnswer(),
-						request.getIssueResolved(), Math.round(averageScore));
+				feedback.setCaseId(caseReq.getId());
+				feedback.setFeedbackCategory(FeedbackCategory.CASE);
 			} else if (chatReq != null && chatReq.getId() != null) {
-				feedback = new Feedback(chatReq.getId(), null, FeedbackCategory.CHAT, request.getQuestionAndAnswer(),
-						request.getIssueResolved(), Math.round(averageScore));
+				feedback.setChatId(chatReq.getId());
+				feedback.setFeedbackCategory(FeedbackCategory.CHAT);
 			} else {
 				LOG.warn("No valid caseReq or chatReq provided. Unable to create feedback.");
 				throw new IllegalArgumentException("Either caseReq or chatReq must be provided.");
 			}
 
-			// Save feedback to the repository
+			// Update feedback fields
+			feedback.setFeedback(request.getQuestionAndAnswer());
+			feedback.setIssueResolved(request.getIssueResolved());
+			feedback.setAverageScore(Math.round(averageScore));
+			feedback.setDescription(request.getPlayerFeedbackComments());
+
+			// Save or update feedback in the repository
 			Feedback response = feedbackRepo.save(feedback);
 
 			String tableHtml = "<html><body>" + "<h3>Feedback Details</h3>"
@@ -293,6 +298,7 @@ public class ChatService {
 					+ "<tr><td>caseId</td><td>" + response.getCaseId() + "</td></tr>"
 					+ "<tr><td>feedbackCategory ID</td><td>" + response.getFeedbackCategory() + "</td></tr>"
 					+ "<tr><td>description</td><td>" + response.getDescription() + "</td></tr>"
+					+ "<tr><td>feedback</td><td>" + response.getFeedback() + "</td></tr>"
 					+ "<tr><td>issueResolved</td><td>" + response.getIssueResolved() + "</td></tr>"
 					+ "<tr><td>averageScore</td><td>" + response.getAverageScore() + "</td></tr>"
 					+ "<tr><td>createdOn</td><td>" + response.getCreatedOn() + "</td></tr>" + "</table>"
@@ -311,6 +317,27 @@ public class ChatService {
 					response);
 			return response;
 
+		} catch (Exception e) {
+			LOG.error("ChatService.providePostResolutionFeedback({}, {}, {}) => error!!!", request, caseReq, chatReq,
+					e);
+			throw e;
+		}
+	}
+	
+	private Feedback saveFeedback(FeedbackRequest request, Case caseReq, Chat chatReq, int averageScore) {
+		try {
+			Feedback feedback = null;
+			if (caseReq != null && caseReq.getId() != null) {
+				feedback = new Feedback(null, caseReq.getId(), FeedbackCategory.CASE, request.getQuestionAndAnswer(),
+						request.getIssueResolved(), Math.round(averageScore), request.getPlayerFeedbackComments());
+			} else if (chatReq != null && chatReq.getId() != null) {
+				feedback = new Feedback(chatReq.getId(), null, FeedbackCategory.CHAT, request.getQuestionAndAnswer(),
+						request.getIssueResolved(), Math.round(averageScore), request.getPlayerFeedbackComments());
+			} else {
+				LOG.warn("No valid caseReq or chatReq provided. Unable to create feedback.");
+				throw new IllegalArgumentException("Either caseReq or chatReq must be provided.");
+			}
+			return feedback;
 		} catch (Exception e) {
 			LOG.error("ChatService.providePostResolutionFeedback({}, {}, {}) => error!!!", request, caseReq, chatReq,
 					e);

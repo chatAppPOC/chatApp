@@ -163,22 +163,34 @@ public class ChatController {
 			Optional<Case> caseResp = Optional.empty();
 			Optional<Chat> chatResp = Optional.empty();
 			Feedback response = null;
+
 			if (FeedbackCategory.valueOf(contentType) == FeedbackCategory.CASE) {
 				caseResp = caseRepository.findById(contentId);
 				if (caseResp.isEmpty()) {
 					LOG.warn("Case not found for contentId: {}", contentId);
 					throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Case not found");
 				}
-			} else {
+				Feedback existingFeedback = feedbackRepo.findByCaseId(contentId);
+				// Update or create feedback for CASE
+				response = chatService.providePostResolutionFeedback(request, caseResp.orElse(null), null,
+						existingFeedback);
+			} else if (FeedbackCategory.valueOf(contentType) == FeedbackCategory.CHAT) {
 				chatResp = chatRepository.findById(contentId);
 				if (chatResp.isEmpty()) {
 					LOG.warn("Chat not found for contentId: {}", contentId);
 					throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Chat not found");
 				}
+				Feedback existingFeedback = feedbackRepo.findByChatId(contentId);
+				// Update or create feedback for CHAT
+				response = chatService.providePostResolutionFeedback(request, null, chatResp.orElse(null),
+						existingFeedback);
+			} else {
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid content type");
 			}
-			response = chatService.providePostResolutionFeedback(request, caseResp.orElse(null), chatResp.orElse(null));
+
 			LOG.info("Api.saveFeedback({}, {}, {}) => {}", contentId, contentType, request, response);
 			return response;
+
 		} catch (Exception e) {
 			LOG.error("Api.saveFeedback({}, {}, {}) => error!!!", contentId, contentType, request, e);
 			throw e;
@@ -253,14 +265,19 @@ public class ChatController {
 	}
 	
 	@GetMapping("/{contentType}/feedback/{id}")
-	public List<Feedback> getFeedbackByCategoryAndId(@PathVariable("contentType") Feedback.FeedbackCategory contentType,
+	public Feedback getFeedbackByCategoryAndId(@PathVariable("contentType") Feedback.FeedbackCategory contentType,
 			@PathVariable("id") Long id) {
 		try {
-			List<Feedback> feedback = null;
+			Feedback feedback = null;
 			if (contentType == Feedback.FeedbackCategory.CASE) {
 				feedback = feedbackRepo.findByCaseId(id);
-			} else {
+			} else if (contentType == Feedback.FeedbackCategory.CHAT) {
 				feedback = feedbackRepo.findByChatId(id);
+			}
+			if (feedback == null) {
+				// If feedback is found for the specified content type, return 404
+				throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+						"Feedback does not exists for the specified content");
 			}
 			LOG.info("Api.getFeedbackByCategoryAndId({}, {}) => {}", contentType, id, feedback);
 			return feedback;
