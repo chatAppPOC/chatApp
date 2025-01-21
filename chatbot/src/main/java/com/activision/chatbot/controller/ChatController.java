@@ -34,6 +34,7 @@ import com.activision.chatbot.entity.Feedback.FeedbackCategory;
 import com.activision.chatbot.entity.User;
 import com.activision.chatbot.repo.CaseRepository;
 import com.activision.chatbot.repo.ChatRepository;
+import com.activision.chatbot.repo.FeedbackRepository;
 import com.activision.chatbot.repo.UserRepository;
 import com.activision.chatbot.service.ChatService;
 
@@ -54,6 +55,9 @@ public class ChatController {
 
 	@Autowired
 	private ChatRepository chatRepository;
+	
+	@Autowired
+	FeedbackRepository feedbackRepo;
 
 	@PostMapping("v2/chat")
 	public ChatResponsev2 performChatv2(@RequestBody ChatRequestv2 request) throws Exception {
@@ -244,6 +248,24 @@ public class ChatController {
 		}
 		catch(Exception e) {
 			LOG.error("Api.getLastChatByPlayerId({}, {}) => error!!!", playerId, e);
+			throw e;
+		}
+	}
+	
+	@GetMapping("/{contentType}/feedback/{id}")
+	public List<Feedback> getFeedbackByCategoryAndId(@PathVariable("contentType") Feedback.FeedbackCategory contentType,
+			@PathVariable("id") Long id) {
+		try {
+			List<Feedback> feedback = null;
+			if (contentType == Feedback.FeedbackCategory.CASE) {
+				feedback = feedbackRepo.findByCaseId(id);
+			} else {
+				feedback = feedbackRepo.findByChatId(id);
+			}
+			LOG.info("Api.getFeedbackByCategoryAndId({}, {}) => {}", contentType, id, feedback);
+			return feedback;
+		} catch (Exception e) {
+			LOG.error("Api.getFeedbackByCategoryAndId({}, {}) => error!!!", e);
 			throw e;
 		}
 	}

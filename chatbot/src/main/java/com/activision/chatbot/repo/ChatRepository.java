@@ -25,7 +25,7 @@ public interface ChatRepository extends JpaRepository<Chat, Long>{
     Page<Chat>findAllByPlayerId(Long playerId, Pageable pageable);
 	
 	@Query("""
-			SELECT c FROM Chat c WHERE c.playerId = :playerId ORDER BY DESC LIMIT 1
+			SELECT c FROM Chat c WHERE c.playerId = :playerId ORDER BY c.id DESC LIMIT 1
 					""")
 	Chat getLastChatByPlayerId(Long playerId);
 
