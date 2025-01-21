@@ -18,4 +18,11 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler{
 	    body.put("message", "A content with the same name and language already exists. Please try with a different name or language.");
 	    return new ResponseEntity<>(body, HttpStatus.CONFLICT);
 	}
+	
+	@ExceptionHandler(PlayerNotFoundException.class)
+	public ResponseEntity<Object> handlePlayerNotFound(PlayerNotFoundException ex) {
+		Map<String, Object> body = new LinkedHashMap<>();
+		body.put("message", ex.getAdditionalInfo());
+	    return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
+	}
 }
