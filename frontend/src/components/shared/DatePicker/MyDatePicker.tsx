@@ -4,35 +4,33 @@ import "react-datepicker/dist/react-datepicker.css";
 
 interface MyDatePickerProps {
   completedOn: Date | null;
+  startedDt: Date | null;
+  onChange: (selectedDate: Date | null) => void;
 }
 
-const MyDatePicker: React.FC<MyDatePickerProps> = ({ completedOn }) => {
-  const [selectedDate, setSelectedDate] = useState<Date | null>(completedOn);
-
-  /*************  ✨ Codeium Command ⭐  *************/
-  /**
- * Updates the selected date state with the provided date.
- * 
-
-/******  0be76657-bfbb-4533-86de-5687f1c9db18  *******/
+const MyDatePicker: React.FC<MyDatePickerProps> = ({
+  completedOn,
+  startedDt,
+  onChange,
+}) => {
+  const [selectedDate, setSelectedDate] = useState<Date | null>(startedDt);
+  const [selectedCompltedDate, setSelectedCompletedDate] =
+    useState<Date | null>(completedOn);
   const handleDateChange = (date: Date | null) => {
-    setSelectedDate(date ? date : null);
-    if (date) {
-      const formattedDate = date.toISOString().split("T")[0];
-      console.log("Formatted Date:", formattedDate);
-    }
-
-    console.log("completed on changed date", date);
+    setSelectedDate(date);
+    setSelectedCompletedDate(date);
+    onChange(date);
   };
 
   useEffect(() => {
-    setSelectedDate(completedOn);
-  }, [completedOn]);
+    setSelectedDate(startedDt);
+    setSelectedCompletedDate(completedOn);
+  }, [startedDt, completedOn]);
 
   return (
     <div className="childc">
       <DatePicker
-        selected={selectedDate}
+        selected={selectedDate ? selectedDate : completedOn}
         onChange={handleDateChange}
         showYearDropdown
         yearDropdownItemNumber={100}

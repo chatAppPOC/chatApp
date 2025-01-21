@@ -39,12 +39,20 @@ const Layout: React.FC = () => {
 
             <li>
               <Link
-                to="/case-deatils-grid"
+                to="/case-Details-grid"
                 className="block px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 transition"
               >
-                Case Deatils Grid
+                Case Details Grid
               </Link>
             </li>
+            {/* <li>
+              <Link
+                to="/feedback"
+                className="block px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 transition"
+              >
+                Feedback
+              </Link>
+            </li> */}
           </ul>
         </nav>
       </div>
