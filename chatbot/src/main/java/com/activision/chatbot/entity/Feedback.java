@@ -32,6 +32,7 @@ public class Feedback {
 	private Boolean issueResolved;
 	private int averageScore;
 	private Instant createdOn;
+	private String feedback;
 	
 	public Feedback() {
 
@@ -114,6 +115,14 @@ public class Feedback {
 
 	public void setCreatedOn(Instant createdOn) {
 		this.createdOn = createdOn;
+	}
+	
+	public String getFeedback() {
+		return feedback;
+	}
+
+	public void setFeedback(String feedback) {
+		this.feedback = feedback;
 	}
 
 	@Override
