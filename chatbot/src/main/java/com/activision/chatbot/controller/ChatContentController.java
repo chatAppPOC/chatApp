@@ -138,7 +138,7 @@ public class ChatContentController {
 	}
 	
 	@GetMapping("v2/content")
-	@PreAuthorize("hasAuthority('ADMIN')")
+	@PreAuthorize("hasAnyAuthority('ADMIN','USER','PLAYER')")
 	public Content getContentv2(@RequestParam Long contentId) {
 		try {
 			Content content = chatContentService.getContentv2(contentId);
@@ -151,7 +151,7 @@ public class ChatContentController {
 	}
 	
 	@GetMapping("v2/contents")
-	@PreAuthorize("hasAuthority('ADMIN')")
+	@PreAuthorize("hasAnyAuthority('ADMIN','USER','PLAYER')")
 	public List<ContentResponse> getContents() {
 		try {
 			List<ContentResponse> contents = chatContentService.getContents();
