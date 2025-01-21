@@ -34,6 +34,7 @@ import com.activision.chatbot.entity.Feedback.FeedbackCategory;
 import com.activision.chatbot.entity.User;
 import com.activision.chatbot.repo.CaseRepository;
 import com.activision.chatbot.repo.ChatRepository;
+import com.activision.chatbot.repo.FeedbackRepository;
 import com.activision.chatbot.repo.UserRepository;
 import com.activision.chatbot.service.ChatService;
 
@@ -54,6 +55,9 @@ public class ChatController {
 
 	@Autowired
 	private ChatRepository chatRepository;
+	
+	@Autowired
+	FeedbackRepository feedbackRepo;
 
 	@PostMapping("v2/chat")
 	public ChatResponsev2 performChatv2(@RequestBody ChatRequestv2 request) throws Exception {
@@ -98,7 +102,7 @@ public class ChatController {
 	}
 
 	@PutMapping("/case/re-assign")
-	@PreAuthorize("hasAuthority('ADMIN','USER')")
+	@PreAuthorize("hasAnyAuthority('ADMIN','USER')")
 	public Case updateTicket(@RequestBody Case input) {
 		try {
 			Optional<Case> caseResp = caseRepository.findById(input.getId());
@@ -182,7 +186,7 @@ public class ChatController {
 	}
 
 	@PostMapping("/case/{contentId}/{description}")
-	@PreAuthorize("hasAuthority('ADMIN','USER')")
+	@PreAuthorize("hasAnyAuthority('ADMIN','USER')")
 	public Case createCase(@PathVariable Long contentId, @PathVariable String description) throws Exception {
 		try {
 			Case response = chatService.createSupportCaseByChatId(contentId, description);
@@ -195,7 +199,7 @@ public class ChatController {
 	}
 
 	@GetMapping("/case")
-	//@PreAuthorize("hasAuthority('ADMIN','USER')")
+	@PreAuthorize("hasAnyAuthority('ADMIN','USER')")
 	public List<Case> getCaseDataByCaseId(@RequestParam(required = false) Long caseId) {
 		try {
 			List<Case> response = caseRepository.findById(caseId).stream().toList();
@@ -221,7 +225,7 @@ public class ChatController {
 	}
 
 	@GetMapping("/allCases")
-	//@PreAuthorize("hasAuthority('ADMIN','USER')")
+	@PreAuthorize("hasAnyAuthority('ADMIN','USER')")
 	public List<Case> getAllCases() {
 		try {
 			List<Case> response = caseRepository.findAll();
@@ -231,6 +235,37 @@ public class ChatController {
 			return sortedResponse;
 		} catch (Exception e) {
 			LOG.error("Api.getAllCases() => error!!!", e);
+			throw e;
+		}
+	}
+	
+	@GetMapping("v2/chat/player/{playerId}")
+	public Chat getLastChatByPlayerId(@PathVariable Long playerId) {
+		try{
+			Chat chat = chatRepository.getLastChatByPlayerId(playerId);
+			LOG.info("Api.getLastChatByPlayerId({}) => {}", playerId, chat);
+		    return chat;
+		}
+		catch(Exception e) {
+			LOG.error("Api.getLastChatByPlayerId({}, {}) => error!!!", playerId, e);
+			throw e;
+		}
+	}
+	
+	@GetMapping("/{contentType}/feedback/{id}")
+	public List<Feedback> getFeedbackByCategoryAndId(@PathVariable("contentType") Feedback.FeedbackCategory contentType,
+			@PathVariable("id") Long id) {
+		try {
+			List<Feedback> feedback = null;
+			if (contentType == Feedback.FeedbackCategory.CASE) {
+				feedback = feedbackRepo.findByCaseId(id);
+			} else {
+				feedback = feedbackRepo.findByChatId(id);
+			}
+			LOG.info("Api.getFeedbackByCategoryAndId({}, {}) => {}", contentType, id, feedback);
+			return feedback;
+		} catch (Exception e) {
+			LOG.error("Api.getFeedbackByCategoryAndId({}, {}) => error!!!", e);
 			throw e;
 		}
 	}

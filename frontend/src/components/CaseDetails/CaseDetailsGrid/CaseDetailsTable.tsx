@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
-import CaseDeatilsPage from "../../CaseDetails/CaseDeatilsPage/CaseDeatilsPage";
+import CaseDetailsPage from "../../CaseDetails/CaseDetailsPage/CaseDetailsPage";
 import "./CaseDetailsTable.css";
-import Modal from "react-modal";
 import moment from "moment-timezone";
 
 interface CaseContent {
@@ -13,12 +12,19 @@ interface CaseContent {
   createdOn: string;
 }
 
+interface User {
+  id: number;
+  firstName: string;
+  LastName: string;
+}
+
 const CaseDetailsTable = () => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [selectedCaseId, setSelectedCaseId] = useState<number | null>(null);
   const [caseContent, setCaseContent] = useState<CaseContent[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [fetchUsers, setFetchUsers] = useState<User[]>([]);
 
   const handleRowClick = (id: number) => {
     setSelectedCaseId(id);
@@ -34,6 +40,7 @@ const CaseDetailsTable = () => {
 
   const handleCloseModal = () => {
     setModalIsOpen(false);
+    fetchCaseContent();
   };
 
   function getFormattedDate(date: string) {
@@ -51,6 +58,10 @@ const CaseDetailsTable = () => {
 
   useEffect(() => {
     fetchCaseContent();
+  }, []);
+
+  useEffect(() => {
+    fetchAllUsers();
   }, []);
 
   const fetchCaseContent = async () => {
@@ -88,6 +99,25 @@ const CaseDetailsTable = () => {
     }
   };
 
+  const fetchAllUsers = async () => {
+    try {
+      const response = await fetch("http://localhost:8080/api/users", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Basic " + btoa(`admin@test.com:admin123`),
+        },
+      });
+      if (!response.ok) {
+        throw new Error("Failed to fetch users");
+      }
+      const data = await response.json();
+      console.log("Fetched users:", data);
+      setFetchUsers(data);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }
+  };
   return (
     <div>
       <table className="table-auto w-full border-collapse border border-gray-200">
@@ -138,36 +168,12 @@ const CaseDetailsTable = () => {
         //       ×
         //     </button>
         //   </div>
-        <CaseDeatilsPage
+        <CaseDetailsPage
           caseId={selectedCaseId}
           isModalOpen={modalIsOpen}
           closeModal={handleCloseModal}
         />
-        //</div>
       )}
-      {/* <Modal
-        isOpen={modalIsOpen}
-        onRequestClose={() => setModalIsOpen(false)}
-        // className="w-1/4 bg-gradient-to-br from-blue-500 to-blue-700"
-        style={{
-          overlay: {
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
-          },
-          content: {
-            width: "630px",
-            height: "560px",
-            margin: "50px auto",
-            padding: "20px",
-            //backgroundColor: "#000000",
-            background: "linear-gradient(to bottom, #000000, #333333)",
-            //border: "1px solid #ddd",
-            borderRadius: "10px",
-            // boxShadow: "0 0 10px rgba(0, 0, 0, 0.2)",
-          },
-        }}
-      >
-        
-      </Modal> */}
     </div>
   );
 };
