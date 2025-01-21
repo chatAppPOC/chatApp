@@ -102,7 +102,7 @@ public class ChatController {
 	}
 
 	@PutMapping("/case/re-assign")
-	@PreAuthorize("hasAuthority('ADMIN','USER')")
+	@PreAuthorize("hasAnyAuthority('ADMIN','USER')")
 	public Case updateTicket(@RequestBody Case input) {
 		try {
 			Optional<Case> caseResp = caseRepository.findById(input.getId());
@@ -186,7 +186,7 @@ public class ChatController {
 	}
 
 	@PostMapping("/case/{contentId}/{description}")
-	@PreAuthorize("hasAuthority('ADMIN','USER')")
+	@PreAuthorize("hasAnyAuthority('ADMIN','USER')")
 	public Case createCase(@PathVariable Long contentId, @PathVariable String description) throws Exception {
 		try {
 			Case response = chatService.createSupportCaseByChatId(contentId, description);
@@ -199,7 +199,7 @@ public class ChatController {
 	}
 
 	@GetMapping("/case")
-	//@PreAuthorize("hasAuthority('ADMIN','USER')")
+	@PreAuthorize("hasAnyAuthority('ADMIN','USER')")
 	public List<Case> getCaseDataByCaseId(@RequestParam(required = false) Long caseId) {
 		try {
 			List<Case> response = caseRepository.findById(caseId).stream().toList();
@@ -225,7 +225,7 @@ public class ChatController {
 	}
 
 	@GetMapping("/allCases")
-	//@PreAuthorize("hasAuthority('ADMIN','USER')")
+	@PreAuthorize("hasAnyAuthority('ADMIN','USER')")
 	public List<Case> getAllCases() {
 		try {
 			List<Case> response = caseRepository.findAll();

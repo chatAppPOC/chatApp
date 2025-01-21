@@ -21,7 +21,6 @@ public class Case {
 	private Long id;
 	private Long chatId;
 	private Long userId;
-	private String feedback;
 	private Instant createdOn;
 	@Enumerated(EnumType.STRING)
 	private CaseStatus status;
@@ -68,14 +67,6 @@ public class Case {
 
 	public void setUserId(Long userId) {
 		this.userId = userId;
-	}
-
-	public String getFeedback() {
-		return feedback;
-	}
-
-	public void setFeedback(String feedback) {
-		this.feedback = feedback;
 	}
 
 	public Instant getCreatedOn() {
@@ -128,8 +119,8 @@ public class Case {
 
 	@Override
 	public String toString() {
-		return "Case [id=" + id + ", chatId=" + chatId + ", userId=" + userId + ", feedback=" + feedback
-				+ ", createdOn=" + createdOn + ", status=" + status + ", caseType=" + caseType + ", completedOn="
-				+ completedOn + ", gameName=" + gameName + ", startedOn=" + startedOn + "]";
+		return "Case [id=" + id + ", chatId=" + chatId + ", userId=" + userId + ", createdOn=" + createdOn + ", status="
+				+ status + ", caseType=" + caseType + ", completedOn=" + completedOn + ", gameName=" + gameName
+				+ ", startedOn=" + startedOn + "]";
 	}
 }
