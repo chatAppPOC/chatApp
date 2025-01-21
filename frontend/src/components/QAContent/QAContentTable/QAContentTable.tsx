@@ -21,7 +21,6 @@ const QAContentTable: React.FC = () => {
   useEffect(() => {
     const fetchQAContent = async () => {
       try {
-        // const response = await fetch("./public/qaContent.json");
         const response = await fetch(`http://localhost:8080/api/v2/contents`, {
           headers: {
             "Content-Type": "application/json",
@@ -108,8 +107,7 @@ const QAContentTable: React.FC = () => {
         </button>
       </div>
 
-      {/* Table Wrapper with Overflow Hidden for Rounded Borders */}
-      {/* <div className="overflow-hidden rounded-lg border border-gray-300 shadow-lg"> */}
+      {/* Table Wrapper */}
       <div className="overflow-hidden rounded-lg border border-gray-300">
         <table className="table-auto w-full border-collapse">
           <thead>

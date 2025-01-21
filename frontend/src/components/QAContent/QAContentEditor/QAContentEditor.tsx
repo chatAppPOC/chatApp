@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate, useLocation } from "react-router-dom"; // For routing and getting URL params
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 
 interface QASection {
   id: string;
@@ -63,12 +63,7 @@ const QAContentEditor: React.FC = () => {
         },
       });
       const data = await response.json();
-      setLanguages(data); // Store languages
-
-      //   // Set language for create mode
-      //   if (!id) {
-      //     setLanguage(data[0]?.id || 1); // Default to the first language
-      //   }
+      setLanguages(data);
 
       // Respect selectedLanguage or fallback to the first language
       setLanguage(selectedLanguageId || data[0]?.id || 1);
@@ -135,7 +130,6 @@ const QAContentEditor: React.FC = () => {
     setLanguage(Number(e.target.value));
   };
 
-  // Function to handle adding a new answer
   // Recursive function to handle adding a new answer
   const handleAddAnswer = (questionId: string) => {
     const addAnswerRecursively = (sections: QASection[]): QASection[] =>
@@ -184,7 +178,6 @@ const QAContentEditor: React.FC = () => {
     setQASections((prev) => addSolutionRecursively(prev));
   };
 
-  // Function to handle adding a new question
   // Recursive function to handle adding a new question
   const handleAddQuestion = (answerId: string) => {
     const addQuestionRecursively = (sections: QASection[]): QASection[] =>
@@ -352,7 +345,7 @@ const QAContentEditor: React.FC = () => {
                 : null,
             }))
           : null,
-    }))[0]; // Assuming there's only one root question for the questionare
+    }))[0]; // There's only one root question for the questionare
   };
 
   // Function to copy and assign new IDs recursively
@@ -369,49 +362,6 @@ const QAContentEditor: React.FC = () => {
           : undefined,
       })),
     }));
-  };
-
-  // Handle Copy Button Click
-  const handleCopyAll = async () => {
-    if (!contentName) {
-      alert("Content name not available.");
-      return;
-    }
-
-    const copiedSections = deepCopyWithNewIds(qaSections);
-    console.log("copiedSections", copiedSections, contentName);
-
-    const dataToSubmit = {
-      language,
-      questionare: { questions: copiedSections },
-    };
-
-    try {
-      const response = await fetch(
-        `http://localhost:8080/api/v2/content/copy?srcContentId=${id}&&name=${encodeURIComponent(
-          contentName
-        )}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*",
-            Authorization: "Basic " + btoa(`admin@test.com:admin123`),
-          },
-          body: JSON.stringify(dataToSubmit),
-        }
-      );
-
-      if (response.ok) {
-        alert("Content copied and saved successfully!");
-        setQASections(copiedSections);
-      } else {
-        alert("Failed to copy content.");
-      }
-    } catch (error) {
-      console.error("Error copying content:", error);
-      alert("An error occurred while copying content.");
-    }
   };
 
   const validateFields = (): string | null => {
@@ -481,7 +431,7 @@ const QAContentEditor: React.FC = () => {
     return null;
   };
 
-  //Handle submit button click
+  // Handle submit button click
   const handleSubmit = async () => {
     const validationError = validateFields();
     if (validationError) {
@@ -543,7 +493,7 @@ const QAContentEditor: React.FC = () => {
             ? "Q/A data updated successfully!"
             : "Q/A data created successfully!"
         );
-        navigate("/"); // Navigate back to the listing page
+        navigate("/"); // Navigate back to the home page
       } else {
         // Handle specific error responses from the API
         if (response.status === 409) {
@@ -576,14 +526,8 @@ const QAContentEditor: React.FC = () => {
             handleInputChange(section.id, "question", e.target.value)
           }
           className="w-full border p-2 mb-2 rounded-lg"
-          // className={`w-full border p-2 mb-2 rounded-lg ${
-          //   !section.question.trim() ? "border-red-500" : "border-gray-300"
-          // }`}
           placeholder="Enter question"
         />
-        {/* {!section.question.trim() && (
-          <p className="text-red-500">This question is required.</p>
-        )} */}
         {section.answers.map((answer) => (
           <div
             key={answer.id}
@@ -612,14 +556,6 @@ const QAContentEditor: React.FC = () => {
               </div>
             )}
             <div className="flex gap-4 items-center mb-2">
-              {/* <button
-                onClick={() => handleAddQuestion(answer.id)}
-                className="bg-blue-500 text-white px-4 py-2 rounded-lg"
-                disabled={!!answer.solution}
-              >
-                + Add Question
-              </button> */}
-              {/* Add Question Button */}
               <button
                 onClick={() => handleAddQuestion(answer.id)}
                 className={`px-4 py-2 rounded-lg ${
@@ -654,14 +590,6 @@ const QAContentEditor: React.FC = () => {
                   Delete Solution
                 </button>
               )}
-              {/* <button
-                onClick={() => handleAddSolution(answer.id)}
-                className="bg-green-500 text-white px-4 py-2 rounded-lg"
-                disabled={!!answer.solution}
-              >
-                Add Solution
-              </button> */}
-              {/* Add Solution Button */}
               <button
                 onClick={() => handleAddSolution(answer.id)}
                 className={`px-4 py-2 rounded-lg ${
@@ -679,14 +607,6 @@ const QAContentEditor: React.FC = () => {
             )}
           </div>
         ))}
-        {/* <button
-          onClick={() => handleAddAnswer(section.id)}
-          className="bg-blue-500 text-white px-4 py-2 mt-4 rounded-lg"
-          disabled={section.answers.some((ans) => ans.solution)}
-        >
-          + Add Answer
-        </button> */}
-        {/* Add Answer Button */}
         <button
           onClick={() => handleAddAnswer(section.id)}
           className={`px-4 py-2 mt-4 rounded-lg ${
@@ -710,13 +630,9 @@ const QAContentEditor: React.FC = () => {
           type="text"
           value={contentName}
           onChange={(e) => setContentName(e.target.value)}
-          // className={`border p-2 rounded-lg w-full ${
-          //   !contentName.trim() ? "border-red-500" : "border-gray-300"
-          // }`}
           className="border p-2 rounded-lg w-full"
           placeholder="Enter Q/A Content Title"
         />
-        {/* {!contentName.trim() && <p className="text-red-500">Content name is required.</p>} */}
       </h1>
 
       <div className="mb-4 flex justify-between">
@@ -750,13 +666,6 @@ const QAContentEditor: React.FC = () => {
             </div>
           )}
         </div>
-        {/* Copy Button at the Top */}
-        {/* <button
-          onClick={handleCopyAll}
-          className="bg-blue-500 text-white px-4 py-2 rounded-lg"
-        >
-          Copy All
-        </button> */}
       </div>
       {qaSections.map(renderSection)}
       <button
