@@ -29,7 +29,7 @@ const Layout: React.FC = () => {
   return (
     <div className="flex min-h-screen">
         {/* Sidebar */}
-        <div className="w-1/4 bg-gradient-to-br from-blue-500 to-blue-700 text-white p-8 hidden md:flex flex-col">
+     {localStorage.getItem("role") !== "PLAYER" &&    <div className="w-1/4 bg-gradient-to-br from-blue-500 to-blue-700 text-white p-8 hidden md:flex flex-col">
             <div className="flex flex-col items-center">
                 <img
                     src="/atvilogo-wht.png"
@@ -53,7 +53,7 @@ const Layout: React.FC = () => {
     ))}
   </ul>
 </nav>   
-        </div>
+        </div>}
 
         {/* Main Content Area */}
         <div className="flex-1 p-4 bg-gray-100">

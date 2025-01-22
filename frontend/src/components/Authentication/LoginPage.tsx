@@ -51,16 +51,18 @@ const LoginPage: React.FC = () => {
       if(response.status==200){
         const role= results.roles[0].name??""; 
         const roleId= results.roles[0].id??""; 
-    localStorage.setItem("username", userName); 
-    localStorage.setItem("password", password);
-    localStorage.setItem("role",role);
-    localStorage.setItem("roleId",roleId);
-    localStorage.setItem("id",results.id);
+    await localStorage.setItem("username", userName); 
+    await sessionStorage.setItem("username", userName); 
+    await localStorage.setItem("password", password);
+    await sessionStorage.setItem("role",role);
+    await localStorage.setItem("role",role);
+    await localStorage.setItem("roleId",roleId);
+    await localStorage.setItem("id",results.id);
     
  
         
         if (role === "ADMIN") {
-            navigate("/");
+            navigate("/qa-content-grid");
           } else if (role === "USER") {
             navigate("/case-details-grid");
           } else if (role === "PLAYER") {
@@ -73,7 +75,7 @@ const LoginPage: React.FC = () => {
       setError("Invalid Userame/Password.");
     }
   }
-console.log();
+
   return (
     <div className="bg-gradient-to-br from-blue-500 to-blue-700 text-white p-10 hidden md:flex flex-col">
       <div className="flex items-center justify-center min-h-screen">

@@ -315,12 +315,13 @@ const request: ChatRequest = {
       }:null;
 
 
+
       if(ticketMessage?.content) {
-        setMessages([...messages, {...request?.message, ...ticketMessage}])
+       await setMessages((prevMessages) => [...prevMessages, { ...ticketMessage}])
       }
-
-
-     
+      
+      
+      
 
       const questionMessage: Message | null = content[0]?. trim()? {
         id: Date.now().toString(),
@@ -354,7 +355,6 @@ const request: ChatRequest = {
       setMessages((prevMessages) => [
         ...prevMessages,
         ...newMessages,
-        ticketMessage
       ]);
      
       setIsLoading(false);
@@ -364,6 +364,17 @@ const request: ChatRequest = {
       setIsLoading(false);
     }
   };
+
+  const setSendQuestion = async (message: string) => {
+    const response = await fetch("http://localhost:8080/api/v2/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...generateBasicAuthHeader(),
+      },
+      body: JSON.stringify(request),
+    });
+  }
 
   // questions and answers
   const setQuestionsResponse = async () => {
@@ -510,6 +521,7 @@ const request: ChatRequest = {
       const nextQuestion = answer.questions;
       if (nextQuestion) {
         setCurrentQuestion(nextQuestion);
+        setSendQuestion(nextQuestion.question)
         setMessages((prevMessages :any) => [
           ...prevMessages,
           {
