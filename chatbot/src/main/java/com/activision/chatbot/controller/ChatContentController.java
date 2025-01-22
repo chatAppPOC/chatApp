@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.activision.chatbot.dto.ContentResponse;
-import com.activision.chatbot.entity.ChatContent;
 import com.activision.chatbot.entity.Content;
 import com.activision.chatbot.service.ChatContentService;
 
@@ -32,58 +31,6 @@ public class ChatContentController {
 
 	@Autowired
 	private ChatContentService chatContentService;
-
-	@PutMapping("v1/content")
-	@PreAuthorize("hasAuthority('ADMIN')")
-	public ChatContent updateContent(@RequestParam Long contentId, @RequestBody ChatContent chatContent) {
-		try {
-			ChatContent updatedContent = chatContentService.updateContent(contentId, chatContent);
-	    	LOG.info("Api.updateContent({}) => {}", chatContent, updatedContent);
-			return updatedContent;
-		} catch (Exception e) {
-    		LOG.error("Api.updateContent({}) => error!!!", chatContent, e);
-			throw e;
-		}
-	}
-	
-	@DeleteMapping("v1/content")
-	@PreAuthorize("hasAuthority('ADMIN')")
-	public ChatContent deleteContent(@RequestParam Long contentId) {
-		try {
-			ChatContent deletedContent = chatContentService.deleteContent(contentId);
-	    	LOG.info("Api.deleteContent({}) => {}", contentId, deletedContent);
-			return deletedContent;
-		} catch (Exception e) {
-    		LOG.error("Api.deleteContent({}) => error!!!", contentId, e);
-			throw e;
-		}
-	}
-	
-	@PostMapping("v1/content")
-	@PreAuthorize("hasAuthority('ADMIN')")
-	public ChatContent createContent(@RequestParam Long contentId, @RequestBody ChatContent chatContent) {
-		try {
-			ChatContent createdContent = chatContentService.createContent(contentId,chatContent);
-	    	LOG.info("Api.createContent({}) => {}", chatContent, createdContent);
-			return createdContent;
-		} catch (Exception e) {
-    		LOG.error("Api.createContent({}) => error!!!", chatContent, e);
-			throw e;
-		}
-	}
-	
-	@PostMapping("v1/content/copy")
-	@PreAuthorize("hasAuthority('ADMIN')")
-	public boolean copyContent(@RequestParam Long modelId) {
-		try {
-			boolean createdContent = chatContentService.copyContent(modelId);
-	    	LOG.info("Api.copyContent({}) => {}", modelId);
-			return createdContent;
-		} catch (Exception e) {
-    		LOG.error("Api.copyContent() => error!!!", e);
-			throw e;
-		}
-	}
 	
 	@PutMapping("v2/content")
 	@PreAuthorize("hasAuthority('ADMIN')")
