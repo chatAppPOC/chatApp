@@ -73,7 +73,7 @@ const LoginPage: React.FC = () => {
       setError("Invalid Userame/Password.");
     }
   }
-
+console.log();
   return (
     <div className="bg-gradient-to-br from-blue-500 to-blue-700 text-white p-10 hidden md:flex flex-col">
       <div className="flex items-center justify-center min-h-screen">
