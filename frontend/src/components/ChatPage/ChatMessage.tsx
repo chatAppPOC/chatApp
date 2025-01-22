@@ -17,21 +17,12 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
 }) => {
   return (
     <div
-      className={`flex ${isOwn ? "justify-end" : "justify-start"} mb-4 px-4 ${
+      className={`flex ${isOwn ? "justify-end" : "justify-end"} mb-4 px-4 ${
         !isOwn &&
         disabled &&
         "pointer-events-none cursor-not-allowed opacity-75"
       }`}
     >
-      {!isOwn && (
-        <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center overflow-hidden mr-2 flex-shrink-0 shadow-md  ">
-          <img
-            src="https://img.freepik.com/free-vector/cartoon-style-robot-vectorart_78370-4103.jpg"
-            alt="Bot"
-            className="w-full h-full object-cover"
-          />
-        </div>
-      )}
       <div
         className={`max-w-[80%] rounded-lg px-4 py-2 shadow-md transition-all duration-200 hover:shadow-lg ${
           isOwn
@@ -55,6 +46,15 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
           <div className={`flex flex-col gap-2 `}>{content}</div>
         )}
       </div>
+      {!isOwn && (
+        <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center overflow-hidden ml-2 flex-shrink-0 shadow-md  ">
+          <img
+            src="https://img.freepik.com/free-vector/cartoon-style-robot-vectorart_78370-4103.jpg"
+            alt="Bot"
+            className="w-full h-full object-cover"
+          />
+        </div>
+      )}
     </div>
   );
 };

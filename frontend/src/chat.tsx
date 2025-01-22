@@ -4,6 +4,8 @@ import i18n from "./i18n";
 import ChatWindow from "./components/ChatPage/ChatWindow";
 import ChatInput from "./components/ChatPage/ChatInput";
 import { LANGUAGES } from "./constants/LANGUAGES";
+import { timeStamp } from "console";
+import { generateBasicAuthHeader } from "./utils/basicAuth";
 
 interface Message {
   id: string;
@@ -12,6 +14,15 @@ interface Message {
   timestamp: string;
   isOwn: boolean;
 }
+
+type ChatRequest = {
+  playerId: number;
+  chatId?: number;
+  message: {
+    content: string;
+    source: "PLAYER" | "BOT" ; 
+  };
+};
 
 const ChatPage: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -26,107 +37,363 @@ const ChatPage: React.FC = () => {
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [isFirstMessage, setIsFirstMessage] = useState(true);
-  const [isText, setIsText] = useState(null);
+  const [isText, setIsText] = useState<string | null>(null);
   const chatId = useRef<string | null>(null);
-  const [caseId, setCaseId] = useState(null);
+  const [caseId, setCaseId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [chatHistory, setChatHistory] = useState<Message[]>([]);
+  const [showContinuePrompt, setShowContinuePrompt] = useState(false);
+  const [createContentId, setCreateContentId] = useState(false);
 
-  useEffect(() => {});
+  
+  const [questionnaire, setQuestionnaire] = useState<any | null>(null);
+  const [currentQuestion, setCurrentQuestion] = useState<any>(null);
+  const [waitingForDescription, setWaitingForDescription] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
+  const playersId = Number(localStorage.getItem("Id"))??0;
+
+  const formatDate = () => {
+    const date = new Date();
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+
+    const hours = date.getHours();
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    const seconds = String(date.getSeconds()).padStart(2, "0");
+
+    const formattedHours = hours % 12 || 12;
+    const ampm = hours >= 12 ? "PM" : "AM";
+
+    return `${day}/${month}/${year} ${formattedHours}:${minutes}:${seconds} ${ampm}`;
+  };
+
+  
+  const id = Number(localStorage.getItem("id"))
+
+  useEffect(() => {
+    const fetchChatHistory = async (page: number) => {
+      setIsLoading(true);
+      try {
+        const response = await fetch(
+          `http://localhost:8080/api/chat/history/${id}?page=0&size=200`,{
+          method: "GET",
+          headers: {
+            ...generateBasicAuthHeader(),
+              "Content-Type": "application/json",
+            },
+          }
+
+        );
+        const data = await response.json();
+
+        const latestUpdatedOn = await data.reduce((latest: any, current: any) => {
+          return latest?.id >current?.id
+            ? latest
+            : current;
+        });
+
+
+
+        const messagesFromHistory = await latestUpdatedOn?.messages?.map(
+          (msg: any) => ({
+            id: latestUpdatedOn?.id,
+            playerId: latestUpdatedOn?.playerId??0,
+            content: msg?.content,
+            description: latestUpdatedOn?.description
+              ? latestUpdatedOn?.description?.toString()
+              : "",
+            sender: msg?.source,
+            timestamp: msg?.timestamp,
+            isOwn: msg?.source === "PLAYER",
+          })        
+        );
+
+        setMessages(messagesFromHistory);
+        if (data?.length==0) {
+          setShowContinuePrompt(false)
+          setWaitingForDescription(false)
+      }else{
+        setShowContinuePrompt(true)
+        setWaitingForDescription(true)
+      }
+      } catch (error) {
+        console.error("Error fetching chat history:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchChatHistory(currentPage);
+  }, [currentPage]);
+
+  
+
+const handleContinueChat = async (shouldContinue: boolean) => {
+  setIsLoading(true); 
+  try {
+    if (shouldContinue) {
+      const response = await fetch(
+        `http://localhost:8080/api/chat/history/${id}?page=0&size=200`, {
+          headers: {
+            ...generateBasicAuthHeader(),
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const data = await response.json();
+
+      const latestUpdatedOn = data.reduce((latest: any, current: any) =>
+        latest?.id > current?.id ? latest : current
+      );
+
+      const messagesFromHistory = latestUpdatedOn?.messages?.map((msg: any) => ({
+        id: latestUpdatedOn?.id,
+        playerId: latestUpdatedOn?.playerId ?? 0,
+        content: msg?.content,
+        description: latestUpdatedOn?.description?.toString() || "",
+        sender: msg?.source,
+        timestamp: msg?.timestamp,
+        isOwn: msg?.source === "PLAYER",
+      }));
+
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        ...(messagesFromHistory || []),
+      ]);
+      localStorage.setItem("chatId", latestUpdatedOn?.id);
+      setWaitingForDescription(false);
+
+      await getResponse({
+        playerId: latestUpdatedOn?.playerId ?? 0,
+        message: { content: "Support Bot" },
+      });
+    } else {
+      setMessages([]);
+      setCurrentPage(0);
+      localStorage.removeItem("chatId");
+      setWaitingForDescription(false);
+    }
+  } catch (error) {
+    console.error("Error fetching chat history:", error);
+  } finally {
+    setShowContinuePrompt(false);
+    setIsLoading(false);
+  }
+};
+
 
   const handleSendMessage = async (
     message: string,
     questionId: any,
-    answerId: any
+    answerId: any,
+    isDescription: boolean,
   ) => {
     setIsLoading(true);
-    const newMessage: Message = {
+    const userMessage: Message = {
       id: Date.now().toString(),
       content: message,
       sender: "You",
-      timestamp: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
+      timestamp: formatDate(),
       isOwn: true,
     };
+    
 
-    setMessages((prevMessages) => [...prevMessages, newMessage]);
+    setMessages((prevMessages) => [...prevMessages, userMessage]);
 
-    const request = {
-      playerId: 445566,
-      chatId: chatId.current,
-      languageId: 1,
-      questionId: isText ? isText : questionId,
-      answerId,
-      description: isText ? message : null,
+    const chatIdValue = Number(localStorage.getItem("chatId"));
+
+const request: ChatRequest = {
+  playerId: Number(localStorage.getItem("id"))??0,
+  message: {
+    content: message,
+    source: "PLAYER",
+    ...(createContentId === true ? { contentType: "Description" } : {}), 
+  },
+  ...(chatIdValue ? { chatId: chatIdValue } : {}), 
+};
+
+    if (isFirstMessage && !createContentId) {
+      await getResponse(request);
+      
+      await setQuestionsResponse();
+    } else if (createContentId) {
+      await getResponse(request);
+    }
+  };
+
+   
+  const convertData = (input :any) => {
+    const transformedData = JSON.parse(JSON.stringify(input));
+
+    const transformQuestions = (questions :any) => {
+      questions.forEach((q :any) => {
+        if (q.questions) {
+          if (q.questions.answers) {
+            q.questions.answers.forEach((ans :any) => {
+              if (ans.questions && ans.questions.answers) {
+                ans.questions.answers.forEach((subAns :any) => {
+                  if (subAns.questions && subAns.questions.answers === null) {
+                    delete subAns.answers;
+                  }
+                });
+              }
+            });
+          }
+
+        
+          if (!q.questions.answers) {
+            if (q.questions.questions) {
+              q.questions = {
+                question: q.questions.question,
+                answers: q.questions.questions,
+              };
+            }
+          }
+
+          
+          transformQuestions(q.questions.answers);
+        }
+      });
     };
 
-    if (isFirstMessage) {
-      setIsFirstMessage(false);
-    }
-    getResponse(request);
+    
+    transformQuestions(transformedData.questionare.questions.answers);
+
+    return transformedData;
   };
 
-  const filterMessages = (data: any, types: string[]) => {
-    return data.options.filter((item: any) => types.includes(item.contentType));
-  };
-
-  const renderQuestion = (data: any) => {
-    const messages = filterMessages(data, ["Question"]);
-    return messages.map((message: any) => (
-      <p key={message.id}>{message.content}</p>
-    ));
-  };
-
-  const renderOptions = (data: any) => {
-    const options = filterMessages(data, ["Answer"]);
-    const ques = filterMessages(data, ["Question"])[0];
-    console.log(options, "options");
-    console.log(ques, "ques");
-
-    return (
-      <div className="flex py-2 gap-5">
-        {options.map((option: any) => (
-          <div
-            key={option.id}
-            className="text-blue-600 border border-blue-200 p-3 rounded-lg bg-white shadow-sm hover:shadow-md hover:bg-blue-50 transition-all duration-300 cursor-pointer text-sm font-medium"
-            onClick={() =>
-              handleSendMessage(option.content, ques.id, option.id)
-            }
-          >
-            {option.content}
-          </div>
-        ))}
-      </div>
-    );
-  };
-
-  const getResponse = async (request: any) => {
+  const getResponse = async (request: ChatRequest) => {
     setIsText(null);
     try {
       const response = await fetch("http://localhost:8080/api/v2/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          ...generateBasicAuthHeader(),
         },
         body: JSON.stringify(request),
       });
+
       const data = await response.json();
 
       if (data?.chatId) {
+        localStorage.setItem("chatId",data?.chatId)
         chatId.current = data.chatId;
         setCaseId(data.chatId);
       }
 
-      const text =
-        data.options.length === 1 ? filterMessages(data, ["Question"]) : [];
+      const text = data?.options?.length === 1 ? data.options : [];
       if (text.length > 0) {
         setIsText(text[0].id);
       }
 
-      let content: any;
-      content = [renderQuestion(data), renderOptions(data)];
-      if (data.options.length === 0) {
+      let content: any = [
+        renderQuestion(currentQuestion?.question),
+        renderOptions(currentQuestion?.answers),
+      ];
+      if (data?.options?.length === 0) {
+         content = t("thankYou");
+        chatId.current = null;
+        setIsFirstMessage(true);
+      }
+
+      if (isText) {
+        content = t("caseCreated", { caseId: caseId });
+        setIsFirstMessage(true);
+        chatId.current = null;
+      }
+
+      const ticketMessage: any | null = data?.message !== "" ? {
+        id: Date.now().toString(),
+        content: data?.message,
+        playerId: request?.playerId??0,
+        description:  "",
+        sender: "Support Bot",
+        timestamp: formatDate(),
+        isOwn: false,
+      }:null;
+
+
+      if(ticketMessage?.content) {
+        setMessages([...messages, {...request?.message, ...ticketMessage}])
+      }
+
+
+     
+
+      const questionMessage: Message | null = content[0]?. trim()? {
+        id: Date.now().toString(),
+        content: content[0],
+        sender: "Support Bot",
+        timestamp: formatDate(),
+        isOwn: false,
+      }:null;
+
+      const answerMessage: Message| null = content[1]?. trim()? {
+        id: Date.now().toString(),
+        content: content[1],
+        sender: "Support Bot",
+        timestamp: formatDate(),
+        isOwn: false,
+      }:null;
+
+
+        const message: Message = {
+          id: Date.now().toString(),
+          content: `Support case has been created with ID :${data?.id}`,
+          sender: "Support Bot",
+          timestamp: formatDate(),
+          isOwn: false,
+       };
+      
+      const newMessages:Message[]=[];
+      if(questionMessage) newMessages.push(questionMessage);
+      if(answerMessage) newMessages.push(answerMessage);
+
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        ...newMessages,
+        ticketMessage
+      ]);
+     
+      setIsLoading(false);
+      return data;
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+      setIsLoading(false);
+    }
+  };
+
+  // questions and answers
+  const setQuestionsResponse = async () => {
+    setIsText(null);
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/v2/content?contentId=4`,{
+          
+          headers: {
+            "Content-Type": "application/json",
+            ...generateBasicAuthHeader(),
+          },
+        }
+      );
+      const data = await response.json();
+      const questionnaireData = data.content.questionare;
+      setQuestionnaire(questionnaireData);
+      // Set the initial question if available
+      if (questionnaireData?.questions?.length > 0) {
+        setCurrentQuestion(questionnaireData.questions[0]); // Start with the first question
+        await getResponse({message:{content:questionnaireData.questions[0],source:"BOT"},playerId:Number(localStorage.getItem("id"))??0,chatId:Number(localStorage.getItem("chatId"))??0})
+      }
+      setIsLoading(false);
+
+      let content: any = [
+        renderQuestion(questionnaireData.questions?.question),
+         renderOptions(questionnaireData.questions?.answers)
+      ];
+
+      if (data?.options?.length === 0) {
         content = t("thankYou");
         chatId.current = null;
         setIsFirstMessage(true);
@@ -138,19 +405,39 @@ const ChatPage: React.FC = () => {
         chatId.current = null;
       }
 
-      const newMessage: Message = {
+      // Construct the question and answer messages
+      const qestionMessage: Message = {
         id: Date.now().toString(),
-        content,
+        content: content[0],
         sender: "Support Bot",
-        timestamp: new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
+        timestamp: formatDate(),
         isOwn: false,
       };
 
-      setMessages((prevMessages) => [...prevMessages, newMessage]);
+      const answerMessage: Message = {
+        id: Date.now().toString(),
+        content: content[1],
+        sender: "Support Bot",
+        timestamp: formatDate(),
+        isOwn: false,
+      };
+      const message: Message = {
+        id: Date.now().toString(),
+        content: `Support case has been created with ID :${data?.id}`,
+        sender: "Support Bot",
+        timestamp: formatDate(),
+        isOwn: false,
+     };
+
+      // Update the messages with the question and answer
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        qestionMessage,
+        answerMessage,
+      ]);
+
       setIsLoading(false);
+
       return data;
     } catch (error) {
       console.error("Error fetching messages:", error);
@@ -158,30 +445,133 @@ const ChatPage: React.FC = () => {
     }
   };
 
+  const renderQuestion = (question: string) => {
+    return <p>{question}</p>; // Render the question text
+  };
+
+  const renderOptions = (answers: Array<any>) => {
+    return answers?.map((answer, index) => {
+      return (
+        <button key={index} onClick={() => handleAnswerClick(answer)}>
+          {answer.answer}
+        </button>
+      );
+    });
+  };
+
+  const handleAnswerClick = async (answer: any) => {
+    if (!answer) {
+      return;
+    }
+
+    const selectedMessage: Message = {
+      id: Date.now().toString(),
+      content: answer.answer,
+      sender: "You",
+      timestamp: formatDate(),
+      isOwn: true,
+    };
+
+    setMessages((prevMessages) => [...prevMessages, selectedMessage]);
+
+    await getResponse({message:{content:answer.answer??"",source:"PLAYER"},playerId:Number(localStorage.getItem("id"))??0,chatId:Number(localStorage.getItem("chatId"))??0})
+    
+    if (answer.solution) {
+      const solutionMessage: Message = {
+        id: Date.now().toString(),
+        content: answer.solution,
+        sender: "Support Bot",
+        timestamp: formatDate(),
+        isOwn: false,
+      };
+
+      const thankYouMessage: Message = {
+        id: Date.now().toString(),
+        content: t("thankYou"),
+        sender: "Support Bot",
+        timestamp: formatDate(),
+        isOwn: false,
+      };
+
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        solutionMessage,
+       thankYouMessage,
+      ]);
+
+      // Disable input after showing solution
+      setWaitingForDescription(false); // Disable input // true
+      if (answer.questions.answers === null) {
+        setCreateContentId(true);
+        return setWaitingForDescription(false);
+      }
+      setWaitingForDescription(true);
+    } else if (answer.questions) {
+      const nextQuestion = answer.questions;
+      if (nextQuestion) {
+        setCurrentQuestion(nextQuestion);
+        setMessages((prevMessages :any) => [
+          ...prevMessages,
+          {
+            id: Date.now().toString(),
+            content: renderQuestion(nextQuestion.question),
+            sender: "Support Bot",
+            timestamp: formatDate(),
+            isOwn: false,
+          },
+          ...(nextQuestion.answers?.length
+            ? [
+                {
+                  id: Date.now().toString(),
+                  content: renderOptions(nextQuestion.answers),
+                  sender: "Support Bot",
+                  timestamp: formatDate(),
+                  isOwn: false,
+                },
+              ]
+            : []),
+        ]);
+
+        // Disable input unless it requires a description
+        if (answer.questions.answers === null) {
+          setCreateContentId(true);
+          return setWaitingForDescription(false);
+        }
+        setWaitingForDescription(true); //false
+      }
+    } else if (answer.description) {
+      // Enable input for describing an issue
+      const descriptionPrompt: Message = {
+        id: Date.now().toString(),
+        content: t("Can you please describe the issue below?"),
+        sender: "Support Bot",
+        timestamp: formatDate(),
+        isOwn: false,
+      };
+
+      setMessages((prevMessages) => [...prevMessages, descriptionPrompt]);
+      setWaitingForDescription(true); // Enable input
+    } else {
+      setWaitingForDescription(false); // Default to disable input   ture
+    }
+  };
+
+  <ChatInput
+    onSendMessage={(message: string) =>{ handleSendMessage(message, null, null, false)}}
+    disabled={isLoading || !waitingForDescription} // Disable input box based on the condition
+  />;
+
+  const allMessages = messages.concat(chatHistory);
+
   const navigateToQAContentGrid = () => {
     window.location.href = "/qa-content-grid"; // or use React Router
   };
 
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-100 via-blue-50 to-blue-200">
       <div className="w-full max-w-7xl h-[96vh] bg-white rounded-2xl shadow-2xl flex overflow-hidden relative">
-        {/* Sidebar with Bot Info */}
-        {/* <div className="hidden w-1/3 bg-gradient-to-br from-blue-500 to-blue-700 text-white p-8 md:flex flex-col justify-center items-center">
-          <div className="">
-            <img
-              src="/atvilogo-wht.png"
-              alt="Activision Logo"
-              className="h-30 w-auto opacity-80"
-            />
-          </div>
-          <p className="text-center text-blue-100 ">{t("welcome")}</p>
-          <button
-            className="mt-8 bg-white text-blue-700 px-4 py-2 rounded-lg hover:bg-gray-100 transition"
-            onClick={() => navigateToQAContentGrid()}
-          >
-            Q/A Content Grid
-          </button>
-        </div> */}
+        
 
         {/* Chat Area */}
         <div className="w-full flex flex-col">
@@ -224,8 +614,7 @@ const ChatPage: React.FC = () => {
                     <button
                       key={language.code}
                       onClick={() => changeLanguage(language.code)}
-                      className={`w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center space-x-2 ${
-                        currentLanguage === language.code ? "bg-gray-100" : ""
+                      className={`w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center space-x-2 ${currentLanguage === language.code ? "bg-gray-100" : ""
                       }`}
                     >
                       <span>{language.flag}</span>
@@ -239,15 +628,35 @@ const ChatPage: React.FC = () => {
 
           {/* Existing Chat Components */}
           <div className="flex-1 flex flex-col overflow-hidden">
-            <ChatWindow messages={messages} />
+            <ChatWindow messages={allMessages} />
+            {/* <ChatWindow messages={messages} /> */}
           </div>
+
+          {/* Continue Chat Prompt */}
+          {showContinuePrompt && (
+            <div className="p-4 bg-gray-100 flex items-center justify-center">
+              <p className="text-gray-700 mr-4">
+                {t("Would you like to continue with your previous chat?")}
+              </p>
+              <button
+                className="px-4 py-2 bg-blue-500 text-white rounded-md mr-2"
+                onClick={() => handleContinueChat(true)}
+              >
+                {t("Yes")}
+              </button>
+              <button
+                className="px-4 py-2 bg-gray-500 text-white rounded-md"
+                onClick={() => handleContinueChat(false)}
+              >
+                {t("No")}
+              </button>
+            </div>
+          )}
+
           <div className="border-t border-gray-200">
-            <ChatInput
-              onSendMessage={(message: string) =>
-                handleSendMessage(message, null, null)
-              }
-              disabled={isLoading}
+            <ChatInput onSendMessage={(message: string) => handleSendMessage(message, null, null, false)}disabled={isLoading || waitingForDescription}
             />
+            {/* Disable the input box when waiting for a solution or question  */}
           </div>
         </div>
       </div>
@@ -255,4 +664,5 @@ const ChatPage: React.FC = () => {
   );
 };
 
-export default ChatPage;
+export default ChatPage; 
+
