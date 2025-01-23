@@ -1,95 +1,121 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Push Notification Demo</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.2/sockjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-        .notification-row {
-            padding: 10px;
-            background-color: lightblue;
-            margin: 10px;
-            border-radius: 5px;
-            display: flex;
-            flex-direction: column;
-        }
-        .notification-row h4 {
-            margin: 0;
-        }
-        .notification-details {
-            margin-top: 5px;
-        }
-    </style>
-</head>
-<body>
-    <h1>WebSocket Push Notification Demo</h1>
-    <div id="notifications-container"></div> <!-- Container to hold all notifications -->
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100 h-screen flex flex-col items-center justify-center">
+    <h1 class="text-2xl font-bold mb-4">WebSocket Push Notification Demo</h1>
+
+    <div
+      id="notifications-container"
+      class="fixed top-0 left-0 right-0 h-[170px] m-4 mr-4 p-4 bg-gray-900 bg-opacity-50 rounded-lg border border-gray-700 shadow-lg flex overflow-hidden space-x-4"
+    >
+      <!-- Notifications will appear here -->
+    </div>
 
     <script>
-        const socketUrl = 'http://localhost:8080/ws';
-        var socket = new SockJS(socketUrl);
-        var stompClient = Stomp.over(socket);
-        
-        stompClient.connect({}, function(frame) {
-            var notificationsQueue = []; // Queue to store notifications
+      const socketUrl = "http://localhost:8080/ws";
+      const socket = new SockJS(socketUrl);
+      const stompClient = Stomp.over(socket);
 
-            stompClient.subscribe('/topic/notifications', function(notification) {
-                var payload = JSON.parse(notification.body);
-                var content = payload.content || 'No message content';
-                var sentCount = payload.sentCount || 'No count';
-                var playerId = payload.playerId || 'Unknown player ID';
+      const notificationsQueue = []; // Queue to store notifications
 
-                // Create a new notification object
-                var notificationRow = {
-                    playerId: playerId,
-                    content: content,
-                    sentCount: sentCount,
-                    id: payload.id
-                };
+      stompClient.connect({}, function (frame) {
+        stompClient.subscribe("/topic/notifications", function (notification) {
+          const payload = JSON.parse(notification.body);
+          const content = payload.content || "No message content";
+          const sentCount = payload.sentCount || "No count";
+          const playerId = payload.playerId || "Unknown player ID";
 
-                // Add the notification to the queue
-                notificationsQueue.push(notificationRow);
+          // Create a new notification object
+          const notificationRow = {
+            id: payload.id,
+            playerId: playerId,
+            content: content,
+            sentCount: sentCount,
+          };
 
-                // Process the notifications with a 1-second delay between each
-                if (notificationsQueue.length === 1) { // Start the timer only if the queue has a notification
-                    processNotifications();
-                }
+          // Add the notification to the queue
+          notificationsQueue.push(notificationRow);
 
-                function processNotifications() {
-                    if (notificationsQueue.length > 0) {
-                        var currentNotification = notificationsQueue.shift(); // Get and remove the first notification in the queue
-                        
-                        // Create a new div element for the notification
-                        var notificationDiv = document.createElement('div');
-                        notificationDiv.className = 'notification-row';
-                        
-                        // Add notification content
-                        var notificationHeader = document.createElement('h4');
-                        notificationHeader.innerText = `Notification ID: ${currentNotification.id}`;
-                        notificationDiv.appendChild(notificationHeader);
-                        
-                        // Add player ID and sent count details
-                        var notificationDetails = document.createElement('div');
-                        notificationDetails.className = 'notification-details';
-                        notificationDetails.innerHTML = `Player ID: ${currentNotification.playerId}<br>Message: ${currentNotification.content}<br>Sent Count: ${currentNotification.sentCount}`;
-                        notificationDiv.appendChild(notificationDetails);
-                        
-                        // Append the notification to the container
-                        document.getElementById('notifications-container').appendChild(notificationDiv);
-                        
-                        // Wait 1 second before processing the next notification in the queue
-                        // setTimeout(processNotifications, 2000); // 1000 ms = 1 second delay
-                    }
-                }
-            });
+          // Process the notifications with a delay
+          if (notificationsQueue.length === 1) {
+            processNotifications();
+          }
         });
+      });
+
+      function processNotifications() {
+        if (notificationsQueue.length > 0) {
+          const currentNotification = notificationsQueue.shift(); // Get first notification
+
+          // Create a notification element
+          const notificationDiv = document.createElement("div");
+          notificationDiv.className =
+            "bg-blue-500 text-white p-4 rounded-lg shadow-lg w-80 fixed top-8 right-8 animate-slide-in";
+
+          // Add notification content
+          notificationDiv.innerHTML = `
+Notification ID: ${currentNotification.id}</h4>
+            <div class="mt-2">
+                <p><span class="font-semibold">Player ID:</span> ${currentNotification.playerId}</p>
+                <p><span class="font-semibold">Message:</span> ${currentNotification.content}</p>
+                <p><span class="font-semibold">Sent Count:</span> ${currentNotification.sentCount}</p>
+            </div>
+        `;
+
+          // Append the notification to the container
+          const container = document.getElementById("notifications-container");
+          container.appendChild(notificationDiv);
+
+          // Start marquee effect after slide-in animation completes
+          setTimeout(() => {
+            notificationDiv.classList.add("animate-marquee");
+          }, 2000); // Wait for slide-in animation
+
+          // Remove notification after it moves off screen
+          setTimeout(() => {
+            container.removeChild(notificationDiv);
+            processNotifications(); // Process next notification
+          }, 5500); // 5s for marquee + 0.5s delay
+        }
+      }
     </script>
-</body>
+
+    <style>
+      /* Tailwind animation for sliding in notifications */
+      @keyframes slide-in-right {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+
+      @keyframes marquee-left {
+        from {
+          transform: translateX(0);
+        }
+        to {
+          transform: translateX(-100vw); /* Move completely off screen */
+        }
+      }
+
+      .animate-slide-in {
+        animation: slide-in-right 0.5s ease-out;
+      }
+
+      .animate-marquee {
+        animation: marquee-left 5s linear forwards; /* Moves left over 5 seconds */
+      }
+    </style>
+  </body>
 </html>
