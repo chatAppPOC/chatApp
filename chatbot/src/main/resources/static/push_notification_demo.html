@@ -17,6 +17,7 @@
     >
       <!-- Notifications will appear here -->
     </div>
+
     <script>
       const socketUrl = "http://localhost:8080/ws";
       const socket = new SockJS(socketUrl);
@@ -60,29 +61,29 @@
 
           // Add notification content
           notificationDiv.innerHTML = `
-          <p class="text-xl whitespace-pre-wrap break-words">${currentNotification.content}</p>
-    `;
+<p class="text-xl whitespace-pre-wrap break-words">${currentNotification.content}</p>
+        `;
 
           // Append the notification to the container
           const container = document.getElementById("notifications-container");
           container.appendChild(notificationDiv);
 
-          // Keep it visible for 4s before moving left
+          // Start marquee effect after slide-in animation completes
           setTimeout(() => {
             notificationDiv.classList.add("animate-marquee");
-          }, 4000); // Wait 4 seconds before moving left
+          }, 2000); // Wait for slide-in animation
 
-          // Remove notification after full transition
+          // Remove notification after it moves off screen
           setTimeout(() => {
             container.removeChild(notificationDiv);
             processNotifications(); // Process next notification
-          }, 8000); // 4s stay + 4s move left
+          }, 5500); // 5s for marquee + 0.5s delay
         }
       }
     </script>
 
     <style>
-      /* Slide in from the right */
+      /* Tailwind animation for sliding in notifications */
       @keyframes slide-in-right {
         from {
           transform: translateX(100%);
@@ -94,7 +95,6 @@
         }
       }
 
-      /* Move left like a marquee */
       @keyframes marquee-left {
         from {
           transform: translateX(0);
@@ -109,7 +109,7 @@
       }
 
       .animate-marquee {
-        animation: marquee-left 4s linear forwards; /* Moves left over 4 seconds */
+        animation: marquee-left 5s linear forwards; /* Moves left over 5 seconds */
       }
     </style>
   </body>
