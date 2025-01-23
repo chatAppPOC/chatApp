@@ -9,15 +9,14 @@
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
   <body class="bg-gray-100 h-screen flex flex-col items-center justify-center">
-    <h1 class="text-2xl font-bold mb-4">WebSocket Push Notification Demo</h1>
+    <!-- <h1 class="text-2xl font-bold mb-4">WebSocket Push Notification Demo</h1> -->
 
     <div
       id="notifications-container"
-      class="fixed top-0 left-0 right-0 h-[170px] m-4 mr-4 p-4 bg-gray-400 bg-opacity-50 rounded-lg border border-gray-700 shadow-lg flex overflow-hidden space-x-4"
+      class="fixed top-4 left-0 right-0 m-4 p-4 bg-gray-400 bg-opacity-50 rounded-lg border border-gray-700 shadow-lg flex flex-col space-y-2 min-h-[100px] items-end"
     >
       <!-- Notifications will appear here -->
     </div>
-
     <script>
       const socketUrl = "http://localhost:8080/ws";
       const socket = new SockJS(socketUrl);
@@ -57,38 +56,33 @@
           // Create a notification element
           const notificationDiv = document.createElement("div");
           notificationDiv.className =
-            "bg-blue-500 text-white p-4 rounded-lg shadow-lg w-80 fixed top-8 right-8 animate-slide-in";
+            "bg-blue-500 text-white p-4 rounded-lg shadow-lg min-w-[200px] max-w-[300px] animate-slide-in break-words";
 
           // Add notification content
           notificationDiv.innerHTML = `
-Notification ID: ${currentNotification.id}</h4>
-            <div class="mt-2">
-                <p><span class="font-semibold">Player ID:</span> ${currentNotification.playerId}</p>
-                <p><span class="font-semibold">Message:</span> ${currentNotification.content}</p>
-                <p><span class="font-semibold">Sent Count:</span> ${currentNotification.sentCount}</p>
-            </div>
-        `;
+          <p class="text-xl whitespace-pre-wrap break-words">${currentNotification.content}</p>
+    `;
 
           // Append the notification to the container
           const container = document.getElementById("notifications-container");
           container.appendChild(notificationDiv);
 
-          // Start marquee effect after slide-in animation completes
+          // Keep it visible for 4s before moving left
           setTimeout(() => {
             notificationDiv.classList.add("animate-marquee");
-          }, 2000); // Wait for slide-in animation
+          }, 4000); // Wait 4 seconds before moving left
 
-          // Remove notification after it moves off screen
+          // Remove notification after full transition
           setTimeout(() => {
             container.removeChild(notificationDiv);
             processNotifications(); // Process next notification
-          }, 5500); // 5s for marquee + 0.5s delay
+          }, 8000); // 4s stay + 4s move left
         }
       }
     </script>
 
     <style>
-      /* Tailwind animation for sliding in notifications */
+      /* Slide in from the right */
       @keyframes slide-in-right {
         from {
           transform: translateX(100%);
@@ -100,6 +94,7 @@ Notification ID: ${currentNotification.id}</h4>
         }
       }
 
+      /* Move left like a marquee */
       @keyframes marquee-left {
         from {
           transform: translateX(0);
@@ -114,7 +109,7 @@ Notification ID: ${currentNotification.id}</h4>
       }
 
       .animate-marquee {
-        animation: marquee-left 5s linear forwards; /* Moves left over 5 seconds */
+        animation: marquee-left 4s linear forwards; /* Moves left over 4 seconds */
       }
     </style>
   </body>
