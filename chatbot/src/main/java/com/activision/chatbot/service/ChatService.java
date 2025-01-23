@@ -35,6 +35,8 @@ import com.activision.chatbot.entity.ChatMessage;
 import com.activision.chatbot.entity.Feedback;
 import com.activision.chatbot.entity.Feedback.FeedbackCategory;
 import com.activision.chatbot.entity.FeedbackContent;
+import com.activision.chatbot.entity.Player;
+import com.activision.chatbot.exception.PlayerNotFoundException;
 import com.activision.chatbot.model.Message;
 import com.activision.chatbot.model.Message.Source;
 import com.activision.chatbot.repo.CaseRepository;
@@ -88,55 +90,63 @@ public class ChatService {
 	@Transactional
 	public ChatResponsev2 performChatv2(ChatRequestv2 request) throws Exception {
 		try {
-			Chat chat = null;
-			Case newCase = null;
-			ChatResponsev2 chatMessages = new ChatResponsev2();
 			
-			boolean contentTypeExists = request.getMessage() != null && request.getMessage().getContentType() != null;
-            boolean isDescription = contentTypeExists && request.getMessage().getContentType().equals("Description");
-            boolean isSolution = contentTypeExists && request.getMessage().getContentType().equals("Solution");
-            
-			if (request.getChatId() == null) {
-				chat = new Chat(request.getPlayerId());
-			} else {
-				chat = chatRepository.getExistingChatInProgress(request.getPlayerId(), request.getChatId());
-				if(contentTypeExists) {
-					if (isDescription) {
-						chat.setDescription(request.getMessage().getContent());
-						newCase = createSupportCaseByChatId(request.getChatId(), request.getMessage().getContent());
-						if (newCase != null) {
-							chatMessages.setMessage(CASE_MESSAGE + newCase.getId());
+			Optional<Player> player = playerRepository.findById(request.getPlayerId());
+			if(!player.isPresent()) {
+				throw new PlayerNotFoundException("The player with id : "+ request.getPlayerId() +" is not found");
+			}
+			else {
+				Chat chat = null;
+				Case newCase = null;
+				ChatResponsev2 chatMessages = new ChatResponsev2();
+				
+				boolean contentTypeExists = request.getMessage() != null && request.getMessage().getContentType() != null;
+	            boolean isDescription = contentTypeExists && request.getMessage().getContentType().equals("Description");
+	            boolean isSolution = contentTypeExists && request.getMessage().getContentType().equals("Solution");
+	            
+				if (request.getChatId() == null) {
+					chat = new Chat(request.getPlayerId());
+				} else {
+					chat = chatRepository.getExistingChatInProgress(request.getPlayerId(), request.getChatId());
+					if(contentTypeExists) {
+						if (isDescription) {
+							chat.setDescription(request.getMessage().getContent());
+							newCase = createSupportCaseByChatId(request.getChatId(), request.getMessage().getContent());
+							if (newCase != null) {
+								chatMessages.setMessage(CASE_MESSAGE + newCase.getId());
+							}
+							chat.setStatus(ChatStatus.CASE_CREATED);
 						}
-						chat.setStatus(ChatStatus.CASE_CREATED);
-					}
 
-					if (isSolution) {
-						chat.setStatus(ChatStatus.COMPLETE);
-						chatMessages.setMessage(GREETINGS);
+						if (isSolution) {
+							chat.setStatus(ChatStatus.COMPLETE);
+							chatMessages.setMessage(GREETINGS);
+						}
 					}
+					chat.setUpdatedOn(Instant.now());
 				}
-				chat.setUpdatedOn(Instant.now());
+				
+				Message msg = request.getMessage();
+				msg.setTimestamp(Instant.now());
+				chat.getMessages().add(msg);
+				
+				if(contentTypeExists) {
+					Message lastMsg = new Message();
+					if(isDescription)
+						lastMsg.setContent(CASE_MESSAGE + newCase.getId());
+					if(isSolution)
+						lastMsg.setContent(GREETINGS);
+					lastMsg.setTimestamp(Instant.now());
+					lastMsg.setSource(Source.BOT);
+					chat.getMessages().add(lastMsg);
+				}
+				
+				Chat savedChat = chatRepository.save(chat);
+				chatMessages.setChatId(savedChat.getId());
+				LOG.debug("ChatService.performChatv2({}) => {}", request, chatMessages);
+				return chatMessages;
 			}
 			
-			Message msg = request.getMessage();
-			msg.setTimestamp(Instant.now());
-			chat.getMessages().add(msg);
-			
-			if(contentTypeExists) {
-				Message lastMsg = new Message();
-				if(isDescription)
-					lastMsg.setContent(CASE_MESSAGE + newCase.getId());
-				if(isSolution)
-					lastMsg.setContent(GREETINGS);
-				lastMsg.setTimestamp(Instant.now());
-				lastMsg.setSource(Source.BOT);
-				chat.getMessages().add(lastMsg);
-			}
-			
-			Chat savedChat = chatRepository.save(chat);
-			chatMessages.setChatId(savedChat.getId());
-			LOG.debug("ChatService.performChatv2({}) => {}", request, chatMessages);
-			return chatMessages;
 		} catch (Exception e) {
 			LOG.error("ChatService.performChatv2({}) => error!!!", request);
 			throw e;
@@ -188,6 +198,11 @@ public class ChatService {
 				if (assignedUser != null) {
 					newCase = new Case(assignedUser.getUserId(), chat.get().getId(), caseType,
 							assignedUser.getGameName());
+				}
+				else {
+					Optional<Player> player = playerRepository.findById(chat.get().getPlayerId());
+					String playerTitle = playerRepository.getPlayerTitleName(player.get().getTitle());
+					newCase = new Case(chat.get().getId(), caseType, playerTitle);
 				}
 			} else {
 				LOG.warn("ChatService.createSupportCaseByChatId({}) => ChatId does not exist", chatId);
@@ -250,25 +265,30 @@ public class ChatService {
 	}
 
 	@Transactional
-	public Feedback providePostResolutionFeedback(FeedbackRequest request, Case caseReq, Chat chatReq)
-			throws Exception {
+	public Feedback providePostResolutionFeedback(FeedbackRequest request, Case caseReq, Chat chatReq,
+			Feedback existingFeedback) throws Exception {
 		try {
-			Feedback feedback = null;
 			Long averageScore = (long) (request.getQuestionAndAnswer().stream()
-					.mapToLong(FeedbackRequest.QuestionAndAnswerReq::getScore).average()).getAsDouble();
-
+					.mapToLong(FeedbackRequest.QuestionAndAnswerReq::getScore).average()).orElse(0);
+			Feedback feedback = (existingFeedback != null) ? existingFeedback : saveFeedback(request, caseReq, chatReq, Math.round(averageScore));
 			if (caseReq != null && caseReq.getId() != null) {
-				feedback = new Feedback(null, caseReq.getId(), FeedbackCategory.CASE, request.getQuestionAndAnswer(),
-						request.getIssueResolved(), Math.round(averageScore));
+				feedback.setCaseId(caseReq.getId());
+				feedback.setFeedbackCategory(FeedbackCategory.CASE);
 			} else if (chatReq != null && chatReq.getId() != null) {
-				feedback = new Feedback(chatReq.getId(), null, FeedbackCategory.CHAT, request.getQuestionAndAnswer(),
-						request.getIssueResolved(), Math.round(averageScore));
+				feedback.setChatId(chatReq.getId());
+				feedback.setFeedbackCategory(FeedbackCategory.CHAT);
 			} else {
 				LOG.warn("No valid caseReq or chatReq provided. Unable to create feedback.");
 				throw new IllegalArgumentException("Either caseReq or chatReq must be provided.");
 			}
 
-			// Save feedback to the repository
+			// Update feedback fields
+			feedback.setFeedback(request.getQuestionAndAnswer());
+			feedback.setIssueResolved(request.getIssueResolved());
+			feedback.setAverageScore(Math.round(averageScore));
+			feedback.setDescription(request.getPlayerFeedbackComments());
+
+			// Save or update feedback in the repository
 			Feedback response = feedbackRepo.save(feedback);
 
 			String tableHtml = "<html><body>" + "<h3>Feedback Details</h3>"
@@ -278,6 +298,7 @@ public class ChatService {
 					+ "<tr><td>caseId</td><td>" + response.getCaseId() + "</td></tr>"
 					+ "<tr><td>feedbackCategory ID</td><td>" + response.getFeedbackCategory() + "</td></tr>"
 					+ "<tr><td>description</td><td>" + response.getDescription() + "</td></tr>"
+					+ "<tr><td>feedback</td><td>" + response.getFeedback() + "</td></tr>"
 					+ "<tr><td>issueResolved</td><td>" + response.getIssueResolved() + "</td></tr>"
 					+ "<tr><td>averageScore</td><td>" + response.getAverageScore() + "</td></tr>"
 					+ "<tr><td>createdOn</td><td>" + response.getCreatedOn() + "</td></tr>" + "</table>"
@@ -296,6 +317,27 @@ public class ChatService {
 					response);
 			return response;
 
+		} catch (Exception e) {
+			LOG.error("ChatService.providePostResolutionFeedback({}, {}, {}) => error!!!", request, caseReq, chatReq,
+					e);
+			throw e;
+		}
+	}
+	
+	private Feedback saveFeedback(FeedbackRequest request, Case caseReq, Chat chatReq, int averageScore) {
+		try {
+			Feedback feedback = null;
+			if (caseReq != null && caseReq.getId() != null) {
+				feedback = new Feedback(null, caseReq.getId(), FeedbackCategory.CASE, request.getQuestionAndAnswer(),
+						request.getIssueResolved(), Math.round(averageScore), request.getPlayerFeedbackComments());
+			} else if (chatReq != null && chatReq.getId() != null) {
+				feedback = new Feedback(chatReq.getId(), null, FeedbackCategory.CHAT, request.getQuestionAndAnswer(),
+						request.getIssueResolved(), Math.round(averageScore), request.getPlayerFeedbackComments());
+			} else {
+				LOG.warn("No valid caseReq or chatReq provided. Unable to create feedback.");
+				throw new IllegalArgumentException("Either caseReq or chatReq must be provided.");
+			}
+			return feedback;
 		} catch (Exception e) {
 			LOG.error("ChatService.providePostResolutionFeedback({}, {}, {}) => error!!!", request, caseReq, chatReq,
 					e);

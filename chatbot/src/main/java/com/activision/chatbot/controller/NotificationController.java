@@ -25,97 +25,91 @@ import java.util.Optional; // Make sure this import is correct
 @RequestMapping("/api/notifications")
 public class NotificationController {
 
-    @Autowired
-    private NotificationService notificationService;
-    @Autowired
-private PlayerRepository playerRepository;
+	@Autowired
+	private NotificationService notificationService;
+	@Autowired
+	private PlayerRepository playerRepository;
 
-@PostMapping("/add")
-@PreAuthorize("hasAuthority('ADMIN')")
-public ResponseEntity<?> addNotification(@RequestBody NotificationRequest notificationRequest) {
-    try {
-        List<NotificationSource> sources = notificationRequest.getSource();
-        List<Notification> savedNotifications = new ArrayList<>();
-        
-        // Iterate over sources and create notifications
-        for (NotificationSource source : sources) {
-            Notification notification = new Notification();
-            notification.setContent(notificationRequest.getContent());
+	@PostMapping("/add")
+	@PreAuthorize("hasAuthority('ADMIN')")
+	public ResponseEntity<?> addNotification(@RequestBody NotificationRequest notificationRequest) {
+		try {
+			List<NotificationSource> sources = notificationRequest.getSource();
+			List<Notification> savedNotifications = new ArrayList<>();
 
-            // Directly set the source
-            notification.setSource(source);
-            notification.setPlayerId(notificationRequest.getPlayerId());
+			// Iterate over sources and create notifications
+			for (NotificationSource source : sources) {
+				Notification notification = new Notification();
+				notification.setContent(notificationRequest.getContent());
 
-            // Check if player exists
-            Optional<Player> playerOptional = playerRepository.findById(notificationRequest.getPlayerId());  
-            if (!playerOptional.isPresent()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Player with ID " + notificationRequest.getPlayerId() + " not found.");
-            }
+				// Directly set the source
+				notification.setSource(source);
+				notification.setPlayerId(notificationRequest.getPlayerId());
 
-            // Convert scheduleTime and expireTime to Instant
-            Instant scheduleTimeInstant = notificationRequest.getScheduleTime().toInstant(ZoneOffset.UTC);
-            Instant expireTimeInstant = notificationRequest.getExpireTime().toInstant(ZoneOffset.UTC);
-            notification.setScheduleTime(scheduleTimeInstant);
-            notification.setExpireTime(expireTimeInstant);
+				// Check if player exists
+				Optional<Player> playerOptional = playerRepository.findById(notificationRequest.getPlayerId());
+				if (!playerOptional.isPresent()) {
+					return ResponseEntity.status(HttpStatus.NOT_FOUND)
+							.body("Player with ID " + notificationRequest.getPlayerId() + " not found.");
+				}
 
-            // Set notification sentCount and static count
-            notification.setSentCount(notificationRequest.getSentCount() != null 
-                    ? notificationRequest.getSentCount() 
-                    : 1); // Default to 1 if not provided
-            notification.setCount(notificationRequest.getCount());
+				// Convert scheduleTime and expireTime to Instant
+				Instant scheduleTimeInstant = notificationRequest.getScheduleTime().toInstant(ZoneOffset.UTC);
+				Instant expireTimeInstant = notificationRequest.getExpireTime().toInstant(ZoneOffset.UTC);
+				notification.setScheduleTime(scheduleTimeInstant);
+				notification.setExpireTime(expireTimeInstant);
 
-            // Save the notification
-            Notification savedNotification = notificationService.addNotification(notification);
-            savedNotifications.add(savedNotification);
-        }
-        
-        // Return success response with saved notifications
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedNotifications);
-        
-    } catch (IllegalArgumentException e) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid request: " + e.getMessage());
-    } catch (Exception e) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
-    }
-}
-    @GetMapping("/source")
-    @PreAuthorize("hasAuthority('PLAYER')")
-    public ResponseEntity<?> getNotificationsBySources(
-            @RequestParam List<NotificationSource> sources,
-            @RequestParam(required = false) Long playerId) {
-    
-        List<Notification> notifications;
-        if (playerId != null) {
-            notifications = notificationService.getNotificationsBySourcesAndPlayerId(sources, playerId);
-        } else {
-            notifications = notificationService.getNotificationsBySources(sources);
-        }
-    
-        Map<String, Object> response = new HashMap<>();
-        response.put("notifications", notifications);
-    
-        return ResponseEntity.ok(response);
-    }
-    
+				// Set notification sentCount and static count
+				notification.setSentCount(
+						notificationRequest.getSentCount() != null ? notificationRequest.getSentCount() : 1); // Default to 1 if not provided																								
+				notification.setCount(notificationRequest.getCount());
 
-    @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<Notification> updateNotification(
-        @PathVariable Long id,
-        @RequestBody NotificationRequest notificationRequest) {
-    Notification updatedNotification = notificationService.updateNotification(
-            id,
-            notificationRequest
-    );
+				// Save the notification
+				Notification savedNotification = notificationService.addNotification(notification);
+				savedNotifications.add(savedNotification);
+			}
 
-    return ResponseEntity.ok(updatedNotification);
-}
+			// Return success response with saved notifications
+			return ResponseEntity.status(HttpStatus.CREATED).body(savedNotifications);
 
+		} catch (IllegalArgumentException e) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid request: " + e.getMessage());
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
+		}
+	}
 
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<Void> deleteNotification(@PathVariable Long id) {
-        notificationService.deleteNotification(id);
-        return ResponseEntity.noContent().build();
-    }
+	@GetMapping("/source")
+	@PreAuthorize("hasAuthority('PLAYER')")
+	public ResponseEntity<?> getNotificationsBySources(@RequestParam List<NotificationSource> sources,
+			@RequestParam(required = false) Long playerId) {
+
+		List<Notification> notifications;
+		if (playerId != null) {
+			notifications = notificationService.getNotificationsBySourcesAndPlayerId(sources, playerId);
+		} else {
+			notifications = notificationService.getNotificationsBySources(sources);
+		}
+
+		Map<String, Object> response = new HashMap<>();
+		response.put("notifications", notifications);
+
+		return ResponseEntity.ok(response);
+	}
+
+	@PutMapping("/{id}")
+	@PreAuthorize("hasAuthority('ADMIN')")
+	public ResponseEntity<Notification> updateNotification(@PathVariable Long id,
+			@RequestBody NotificationRequest notificationRequest) {
+		Notification updatedNotification = notificationService.updateNotification(id, notificationRequest);
+
+		return ResponseEntity.ok(updatedNotification);
+	}
+
+	@DeleteMapping("/{id}")
+	@PreAuthorize("hasAuthority('ADMIN')")
+	public ResponseEntity<Void> deleteNotification(@PathVariable Long id) {
+		notificationService.deleteNotification(id);
+		return ResponseEntity.noContent().build();
+	}
 }

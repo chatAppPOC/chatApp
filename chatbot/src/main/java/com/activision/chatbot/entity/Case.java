@@ -35,7 +35,15 @@ public class Case {
 
 	public Case() {
 	}
-
+    
+	public Case(Long chatId, String caseType, String gameName) {
+		this.chatId = chatId;
+		this.caseType = caseType;
+		this.gameName = gameName;
+		this.createdOn = Instant.now();
+		this.status = CaseStatus.OPEN;
+	}
+	
 	public Case(Long userId, Long chatId, String caseType, String gameName) {
 		this.userId = userId;
 		this.chatId = chatId;
