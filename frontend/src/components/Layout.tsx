@@ -20,10 +20,15 @@ const roleLinks: Record<Role, { to: string; label: string }[]> = {
 
 const Layout: React.FC = () => {
   const navigate= useNavigate();
-  const location = useLocation();
-  const role = (localStorage.getItem("role") as Role) || "PLAYER"; 
-    const links = roleLinks[role] || [];;
+  const role = (sessionStorage.getItem("role") as Role) || ""; 
+    const links = role? roleLinks[role] || [] : [];
   const { t, i18n } = useTranslation();
+
+  useEffect(()=>{
+    if(!role){
+      navigate("/login");
+    }
+  },[role, navigate]);
 
 
   return (
