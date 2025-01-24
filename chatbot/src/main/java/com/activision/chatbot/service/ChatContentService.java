@@ -17,16 +17,12 @@ import org.springframework.web.server.ResponseStatusException;
 import com.activision.chatbot.dto.ContentResponse;
 import com.activision.chatbot.entity.Content;
 import com.activision.chatbot.exception.UniqueConstraintViolationException;
-import com.activision.chatbot.repo.ChatContentRepository;
 import com.activision.chatbot.repo.ContentRepository;
 
 @Service
 public class ChatContentService {
 	private static final Logger LOG = LoggerFactory.getLogger(ChatContentService.class);
 	private static final String ADMIN_USER = "ADMIN";
-
-	@Autowired
-	private ChatContentRepository chatContentRepository;
 
 	@Autowired
 	private ContentRepository contentRepository;
