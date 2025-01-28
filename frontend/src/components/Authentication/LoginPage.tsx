@@ -33,7 +33,7 @@ const LoginPage: React.FC = () => {
 
     try {
         const credentials = btoa(`${userName}:${password}`);
-        const response = await fetch(`http://localhost:8080/api/users/@me?/roles`,
+        const response = await fetch(`http://localhost:8080/api/users/@me`,
           {
             method: "GET",
             headers: {
@@ -47,31 +47,52 @@ const LoginPage: React.FC = () => {
 
 
       if(response.status==200){
-        const role= results.roles[0].name??""; 
-        const roleId= results.roles[0].id??""; 
+        //const role= results[0]; 
      await localStorage.setItem("username", userName); 
      await sessionStorage.setItem("username", userName); 
     await localStorage.setItem("password", password);
-     await sessionStorage.setItem("role",role);
-    await localStorage.setItem("role",role);
-    await localStorage.setItem("roleId",roleId);
     await localStorage.setItem("id",results.id);  
     
-    
-        
-        if (role === "ADMIN") {
-            navigate("/case-details-grid");
-          } else if (role === "USER") {
-            navigate("/case-details-grid");
-          } else if (role === "PLAYER") {
-            navigate("/chat");
-          } else {
-            setError("Unable to connect to the server. Please try again later.");
-          }
         }
     } catch (error) {
       setError("Invalid Userame/Password.");
     }
+
+    try {
+      const credentials = btoa(`${userName}:${password}`);
+      const response = await fetch(`http://localhost:8080/api/users/@me/roles`,
+        {
+          method: "GET",
+          headers: {
+          'Authorization': `Basic ${credentials}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+    const results = await response.json();
+
+
+    if(response.status==200){
+      const role= results[0];  
+      await sessionStorage.setItem("role",role);
+      await localStorage.setItem("role",role);
+  
+  
+      
+      if (role === "ADMIN") {
+          navigate("/case-details-grid");
+        } else if (role === "USER") {
+          navigate("/case-details-grid");
+        } else if (role === "PLAYER") {
+          navigate("/chat");
+        } else {
+          setError("Unable to connect to the server. Please try again later.");
+        }
+      }
+  } catch (error) {
+    setError("Roles not found");
+  }
   }
 
   return (
