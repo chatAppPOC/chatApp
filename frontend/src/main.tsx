@@ -58,6 +58,14 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
           }
         />
         <Route
+          path="chat/:caseId"
+          element={
+        //  <PrivateRoute allowedRole="">
+            <ChatPage  />
+            //  </PrivateRoute>
+            }
+          />
+        <Route
           path="chat"
           element={
             <PrivateRoute allowedRole="PLAYER">

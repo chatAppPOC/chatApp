@@ -6,6 +6,10 @@ import ChatInput from "./components/ChatPage/ChatInput";
 import { LANGUAGES } from "./constants/LANGUAGES";
 import { timeStamp } from "console";
 import { generateBasicAuthHeader } from "./utils/basicAuth";
+import { connectWebSocket } from "./services/webSocketservices";
+import { useLocation, useParams } from "react-router-dom";
+import { c } from "node_modules/vite/dist/node/types.d-aGj9QkWt";
+
 
 interface Message {
   id: string;
@@ -20,7 +24,8 @@ type ChatRequest = {
   chatId?: number;
   message: {
     content: string;
-    source: "PLAYER" | "BOT" ; 
+    source: "PLAYER" | "BOT";
+    contentType?: "Description";
   };
 };
 
@@ -45,12 +50,118 @@ const ChatPage: React.FC = () => {
   const [showContinuePrompt, setShowContinuePrompt] = useState(false);
   const [createContentId, setCreateContentId] = useState(false);
 
-  
   const [questionnaire, setQuestionnaire] = useState<any | null>(null);
   const [currentQuestion, setCurrentQuestion] = useState<any>(null);
   const [waitingForDescription, setWaitingForDescription] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
-  const playersId = Number(localStorage.getItem("Id"))??0;
+  const [latestChatId, setLatestChatId] = useState<number | null>(null);
+  
+
+  const isAdmin = localStorage.getItem("role");
+  const chat = Number(localStorage.getItem("chatId"))??0;
+
+  const useQuery = () => new URLSearchParams(useLocation().search);
+  const query = useQuery();
+   const caseno = Number(localStorage.getItem("caseno"));
+  const isUser = localStorage.getItem("role");
+  const params = useParams() ;
+ const  isParams = params?.caseId ? true : false;
+ 
+  
+
+  useEffect(() => {
+    const fetchLatestCaseId = async () => {
+      if ((isUser === "USER" || isUser === "ADMIN")  && isParams) {
+      
+      // Only user need to fetch the chat based on caseid 
+      try {   
+        // Fetch the latest chat ID from the backend
+        const response = await fetch(`http://localhost:8080/api/case?caseId=${Number(params.caseId)}`, {
+          method: "GET",
+          headers: {
+            ...generateBasicAuthHeader(),
+            "Content-Type": "application/json",
+          },
+        });
+        
+        const data = await response.json();
+
+        const response1 = await fetch(`http://localhost:8080/api/v2/chat/${data[0]?.chatId}`, {
+          method: "GET",
+          headers: {
+            ...generateBasicAuthHeader(),
+            "Content-Type": "application/json",
+          },
+        });
+        setLatestChatId(data.chatId);
+        const data1 = await response1.json();
+
+        const messagesFromHistory = await data1.messages?.map(
+          (msg: any) => ({
+            id: data?.id,
+            playerId: data?.playerId ?? 0,
+            content: msg?.content,
+            description: data?.description
+              ? data?.description?.toString()
+              : "",
+            sender: msg?.source,
+            timestamp: msg?.timestamp,
+            isOwn: msg?.source === "PLAYER",
+          })
+        );
+
+        setMessages(messagesFromHistory);
+        setLatestChatId(data.caseno); // Store the latest chat ID
+      } catch (error) {
+        console.error("Error fetching latest chat ID:", error);
+      }
+    }
+  }
+    fetchLatestCaseId();
+    setWaitingForDescription(true);
+}, []);
+
+  //  admin chat history
+  useEffect(() => {
+    const fetchLatestChatId = async () => {
+      if (isUser=== "ADMIN") { 
+      try {
+        // Fetch the latest chat ID 
+        const response = await fetch(`http://localhost:8080/api/v2/chat/${chat}`, {
+          method: "GET",
+          headers: {
+            ...generateBasicAuthHeader(),
+            "Content-Type": "application/json",
+          },
+        });
+        const data = await response.json();
+        
+        setLatestChatId(data.chatId); // Store the latest chat ID
+        const messagesFromHistory = await data.messages?.map(
+          (msg: any) => ({
+            id: data?.id,
+            playerId: data?.playerId ?? 0,
+            content: msg?.content,
+            description: data?.description
+              ? data?.description?.toString()
+              : "",
+            sender: msg?.source,
+            timestamp: msg?.timestamp,
+            isOwn: msg?.source === "PLAYER",
+          })
+        );
+        setMessages(messagesFromHistory)
+      } catch (error) {
+        console.error("Error fetching latest chat ID:", error);
+      }
+    };
+  }
+
+    fetchLatestChatId();
+    setWaitingForDescription(true);
+  }, [isAdmin]);
+
+
 
   const formatDate = () => {
     const date = new Date();
@@ -67,38 +178,37 @@ const ChatPage: React.FC = () => {
 
     return `${day}/${month}/${year} ${formattedHours}:${minutes}:${seconds} ${ampm}`;
   };
-
   
-  const id = Number(localStorage.getItem("id"))
+  
 
+  const id = Number(localStorage.getItem("id"));
+  
   useEffect(() => {
     const fetchChatHistory = async (page: number) => {
       setIsLoading(true);
       try {
         const response = await fetch(
-          `http://localhost:8080/api/chat/history/${id}?page=0&size=200`,{
-          method: "GET",
-          headers: {
-            ...generateBasicAuthHeader(),
+          `http://localhost:8080/api/chat/history/${id}?page=0&size=300`,
+          {
+            method: "GET",
+            headers: {
+              ...generateBasicAuthHeader(),
               "Content-Type": "application/json",
             },
           }
-
         );
         const data = await response.json();
 
-        const latestUpdatedOn = await data.reduce((latest: any, current: any) => {
-          return latest?.id >current?.id
-            ? latest
-            : current;
-        });
-
-
+        const latestUpdatedOn = await data.reduce(
+          (latest: any, current: any) => {
+            return latest?.id > current?.id ? latest : current;
+          }
+        );
 
         const messagesFromHistory = await latestUpdatedOn?.messages?.map(
           (msg: any) => ({
             id: latestUpdatedOn?.id,
-            playerId: latestUpdatedOn?.playerId??0,
+            playerId: latestUpdatedOn?.playerId ?? 0,
             content: msg?.content,
             description: latestUpdatedOn?.description
               ? latestUpdatedOn?.description?.toString()
@@ -106,88 +216,103 @@ const ChatPage: React.FC = () => {
             sender: msg?.source,
             timestamp: msg?.timestamp,
             isOwn: msg?.source === "PLAYER",
-          })        
+          })
         );
 
         setMessages(messagesFromHistory);
-        if (data?.length==0) {
-          setShowContinuePrompt(false)
-          setWaitingForDescription(false)
-      }else{
-        setShowContinuePrompt(true)
-        setWaitingForDescription(true)
-      }
+        if (data?.length == 0) {
+          setShowContinuePrompt(false);
+          setWaitingForDescription(false);
+        } else {
+          setShowContinuePrompt(true);
+          setWaitingForDescription(true);
+        }
       } catch (error) {
         console.error("Error fetching chat history:", error);
       } finally {
         setIsLoading(false);
       }
-    };
-
+    }; 
     fetchChatHistory(currentPage);
-  }, [currentPage]);
+  }, [currentPage,id,latestChatId]);
 
-  
 
-const handleContinueChat = async (shouldContinue: boolean) => {
-  setIsLoading(true); 
-  try {
-    if (shouldContinue) {
-      const response = await fetch(
-        `http://localhost:8080/api/chat/history/${id}?page=0&size=200`, {
-          headers: {
-            ...generateBasicAuthHeader(),
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      const data = await response.json();
+ 
 
-      const latestUpdatedOn = data.reduce((latest: any, current: any) =>
-        latest?.id > current?.id ? latest : current
-      );
+  const handleContinueChat = async (shouldContinue: boolean) => {
+    setIsLoading(true);
+    try {
+      if (shouldContinue) {
+        const response = await fetch(
+          `http://localhost:8080/api/chat/history/${id}?page=0&size=300`,
+          {
+            headers: {
+              ...generateBasicAuthHeader(),
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        const data = await response.json();
 
-      const messagesFromHistory = latestUpdatedOn?.messages?.map((msg: any) => ({
-        id: latestUpdatedOn?.id,
-        playerId: latestUpdatedOn?.playerId ?? 0,
-        content: msg?.content,
-        description: latestUpdatedOn?.description?.toString() || "",
-        sender: msg?.source,
-        timestamp: msg?.timestamp,
-        isOwn: msg?.source === "PLAYER",
-      }));
+        const latestUpdatedOn = data.reduce((latest: any, current: any) =>
+          latest?.id > current?.id ? latest : current
+        );
 
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        ...(messagesFromHistory || []),
-      ]);
-      localStorage.setItem("chatId", latestUpdatedOn?.id);
-      setWaitingForDescription(false);
+        const messagesFromHistory = latestUpdatedOn?.messages?.map(
+          (msg: any) => ({
+            id: latestUpdatedOn?.id,
+            playerId: latestUpdatedOn?.playerId ?? 0,
+            content: msg?.content,
+            description: latestUpdatedOn?.description?.toString() || "",
+            sender: msg?.source,
+            timestamp: msg?.timestamp,
+            isOwn: msg?.source === "PLAYER",
+          })
+        );
 
-      await getResponse({
-        playerId: latestUpdatedOn?.playerId ?? 0,
-        message: { content: "Support Bot" },
-      });
-    } else {
-      setMessages([]);
-      setCurrentPage(0);
-      localStorage.removeItem("chatId");
-      setWaitingForDescription(false);
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          ...(messagesFromHistory || []),
+        ]);
+        localStorage.setItem("chatId", latestUpdatedOn?.id);
+        setWaitingForDescription(false);
+        await getResponse({
+          message: { content: '', source: "PLAYER" },
+          playerId: Number(localStorage.getItem("id")) ?? 0,
+        });
+        
+        const request: ChatRequest = {   
+          playerId : latestUpdatedOn?.playerId ?? 0,
+          chatId: Number(localStorage.getItem("chatId")) ?? 0,
+          message:  
+          {
+                  content: "This is the description given by the player in the desc box",
+                  source: "PLAYER",
+                  contentType : "Description"
+              }
+      }
+
+
+      } else {
+        setMessages([]);
+        setCurrentPage(0);
+        localStorage.removeItem("chatId");
+        setWaitingForDescription(false);
+      }
+    } catch (error) {
+      console.error("Error fetching chat history:", error);
+    } finally {
+      setShowContinuePrompt(false);
+      setIsLoading(false);
     }
-  } catch (error) {
-    console.error("Error fetching chat history:", error);
-  } finally {
-    setShowContinuePrompt(false);
-    setIsLoading(false);
-  }
-};
+  };
 
 
   const handleSendMessage = async (
     message: string,
     questionId: any,
     answerId: any,
-    isDescription: boolean,
+    isDescription: boolean
   ) => {
     setIsLoading(true);
     const userMessage: Message = {
@@ -197,42 +322,50 @@ const handleContinueChat = async (shouldContinue: boolean) => {
       timestamp: formatDate(),
       isOwn: true,
     };
-    
 
     setMessages((prevMessages) => [...prevMessages, userMessage]);
 
     const chatIdValue = Number(localStorage.getItem("chatId"));
 
-const request: ChatRequest = {
-  playerId: Number(localStorage.getItem("id"))??0,
-  message: {
-    content: message,
-    source: "PLAYER",
-    ...(createContentId === true ? { contentType: "Description" } : {}), 
-  },
-  ...(chatIdValue ? { chatId: chatIdValue } : {}), 
-};
-
+    
+    
+    
     if (isFirstMessage && !createContentId) {
-      await getResponse(request);
-      
-      await setQuestionsResponse();
+        const request: ChatRequest = {
+          playerId: Number(localStorage.getItem("id")) ?? 0,
+          message: {
+            content: message,
+            source: "PLAYER",
+            ...(createContentId === true ? { contentType: "Description" } : {}),
+          },
+        };
+        await getResponse(request);
+        
+        await setQuestionsResponse();
     } else if (createContentId) {
+        const request: ChatRequest = {
+          playerId: Number(localStorage.getItem("id")) ?? 0,
+          message: {
+            content: message,
+            source: "PLAYER",
+            ...(createContentId === true ? { contentType: "Description" } : {}),
+          },
+          ...(chatIdValue ? { chatId: chatIdValue } : {}),
+        };
       await getResponse(request);
     }
   };
 
-   
-  const convertData = (input :any) => {
+  const convertData = (input: any) => {
     const transformedData = JSON.parse(JSON.stringify(input));
 
-    const transformQuestions = (questions :any) => {
-      questions.forEach((q :any) => {
+    const transformQuestions = (questions: any) => {
+      questions.forEach((q: any) => {
         if (q.questions) {
           if (q.questions.answers) {
-            q.questions.answers.forEach((ans :any) => {
+            q.questions.answers.forEach((ans: any) => {
               if (ans.questions && ans.questions.answers) {
-                ans.questions.answers.forEach((subAns :any) => {
+                ans.questions.answers.forEach((subAns: any) => {
                   if (subAns.questions && subAns.questions.answers === null) {
                     delete subAns.answers;
                   }
@@ -241,7 +374,6 @@ const request: ChatRequest = {
             });
           }
 
-        
           if (!q.questions.answers) {
             if (q.questions.questions) {
               q.questions = {
@@ -251,13 +383,11 @@ const request: ChatRequest = {
             }
           }
 
-          
           transformQuestions(q.questions.answers);
         }
       });
     };
 
-    
     transformQuestions(transformedData.questionare.questions.answers);
 
     return transformedData;
@@ -275,14 +405,14 @@ const request: ChatRequest = {
         body: JSON.stringify(request),
       });
 
+      
       const data = await response.json();
 
       if (data?.chatId) {
-        localStorage.setItem("chatId",data?.chatId)
+        localStorage.setItem("chatId", data?.chatId);
         chatId.current = data.chatId;
         setCaseId(data.chatId);
       }
-
       const text = data?.options?.length === 1 ? data.options : [];
       if (text.length > 0) {
         setIsText(text[0].id);
@@ -293,7 +423,7 @@ const request: ChatRequest = {
         renderOptions(currentQuestion?.answers),
       ];
       if (data?.options?.length === 0) {
-         content = t("thankYou");
+        content = t("thankYou");
         chatId.current = null;
         setIsFirstMessage(true);
       }
@@ -304,59 +434,60 @@ const request: ChatRequest = {
         chatId.current = null;
       }
 
-      const ticketMessage: any | null = data?.message !== "" ? {
-        id: Date.now().toString(),
-        content: data?.message,
-        playerId: request?.playerId??0,
-        description:  "",
-        sender: "Support Bot",
-        timestamp: formatDate(),
-        isOwn: false,
-      }:null;
+      const ticketMessage: any | null =
+        data?.message !== ""
+          ? {
+              id: Date.now().toString(),
+              content: data?.message,
+              playerId: request?.playerId ?? 0,
+              description: "",
+              sender: "Support Bot",
+              timestamp: formatDate(),
+              isOwn: false,
+            }
+          : null;
 
-
-
-      if(ticketMessage?.content) {
-       await setMessages((prevMessages) => [...prevMessages, { ...ticketMessage}])
+      if (ticketMessage?.content) {
+        await setMessages((prevMessages) => [
+          ...prevMessages,
+          { ...ticketMessage },
+        ]);
       }
-      
-      
-      
 
-      const questionMessage: Message | null = content[0]?. trim()? {
+      const questionMessage: Message | null = content[0]?.trim()
+        ? {
+            id: Date.now().toString(),
+            content: content[0],
+            sender: "Support Bot",
+            timestamp: formatDate(),
+            isOwn: false,
+          }
+        : null;
+
+      const answerMessage: Message | null = content[1]?.trim()
+        ? {
+            id: Date.now().toString(),
+            content: content[1],
+            sender: "Support Bot",
+            timestamp: formatDate(),
+            isOwn: false,
+          }
+        : null;
+
+      const message: Message = {
         id: Date.now().toString(),
-        content: content[0],
+        content: `Support case has been created with ID :${data?.id}`,
         sender: "Support Bot",
         timestamp: formatDate(),
         isOwn: false,
-      }:null;
+      };
 
-      const answerMessage: Message| null = content[1]?. trim()? {
-        id: Date.now().toString(),
-        content: content[1],
-        sender: "Support Bot",
-        timestamp: formatDate(),
-        isOwn: false,
-      }:null;
+      const newMessages: Message[] = [];
+      if (questionMessage) newMessages.push(questionMessage);
+      if (answerMessage) newMessages.push(answerMessage);
 
+      setMessages((prevMessages) => [...prevMessages, ...newMessages]);
 
-        const message: Message = {
-          id: Date.now().toString(),
-          content: `Support case has been created with ID :${data?.id}`,
-          sender: "Support Bot",
-          timestamp: formatDate(),
-          isOwn: false,
-       };
-      
-      const newMessages:Message[]=[];
-      if(questionMessage) newMessages.push(questionMessage);
-      if(answerMessage) newMessages.push(answerMessage);
-
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        ...newMessages,
-      ]);
-     
       setIsLoading(false);
       return data;
     } catch (error) {
@@ -374,15 +505,15 @@ const request: ChatRequest = {
       },
       body: JSON.stringify(request),
     });
-  }
+  };
 
   // questions and answers
   const setQuestionsResponse = async () => {
     setIsText(null);
     try {
       const response = await fetch(
-        `http://localhost:8080/api/v2/content?contentId=4`,{
-          
+        `http://localhost:8080/api/v2/content?contentId=4`,
+        {
           headers: {
             "Content-Type": "application/json",
             ...generateBasicAuthHeader(),
@@ -393,15 +524,20 @@ const request: ChatRequest = {
       const questionnaireData = data.content.questionare;
       setQuestionnaire(questionnaireData);
       // Set the initial question if available
-      if (questionnaireData?.questions?.length > 0) {
-        setCurrentQuestion(questionnaireData.questions[0]); // Start with the first question
-        await getResponse({message:{content:questionnaireData.questions[0],source:"BOT"},playerId:Number(localStorage.getItem("id"))??0,chatId:Number(localStorage.getItem("chatId"))??0})
+     
+      if (questionnaireData.questions?.question) {
+        setCurrentQuestion(questionnaireData.questions?.question); // Start with the first question
+        await getResponse({
+          message: { content: questionnaireData.questions?.question, source: "BOT" },
+          playerId: Number(localStorage.getItem("id")) ?? 0,
+          chatId: Number(localStorage.getItem("chatId")) ?? 0,
+        });
       }
       setIsLoading(false);
 
       let content: any = [
         renderQuestion(questionnaireData.questions?.question),
-         renderOptions(questionnaireData.questions?.answers)
+        renderOptions(questionnaireData.questions?.answers),
       ];
 
       if (data?.options?.length === 0) {
@@ -438,7 +574,7 @@ const request: ChatRequest = {
         sender: "Support Bot",
         timestamp: formatDate(),
         isOwn: false,
-     };
+      };
 
       // Update the messages with the question and answer
       setMessages((prevMessages) => [
@@ -485,8 +621,10 @@ const request: ChatRequest = {
 
     setMessages((prevMessages) => [...prevMessages, selectedMessage]);
 
-    await getResponse({message:{content:answer.answer??"",source:"PLAYER"},playerId:Number(localStorage.getItem("id"))??0,chatId:Number(localStorage.getItem("chatId"))??0})
-    
+    // await getResponse({message:{content:answer.answer??"",source:"PLAYER"},playerId:Number(localStorage.getItem("id"))??0,chatId:Number(localStorage.getItem("chatId"))??0})
+    if (answer.answer) {
+      await getResponse({message:{content:answer.answer??"",source:"PLAYER"},playerId:Number(localStorage.getItem("id"))??0,chatId:Number(localStorage.getItem("chatId"))??0})
+  }
     if (answer.solution) {
       const solutionMessage: Message = {
         id: Date.now().toString(),
@@ -507,8 +645,19 @@ const request: ChatRequest = {
       setMessages((prevMessages) => [
         ...prevMessages,
         solutionMessage,
-       thankYouMessage,
+        thankYouMessage,
       ]);
+      await getResponse({
+        message: { content: answer.solution, source: "BOT" },
+        playerId: Number(localStorage.getItem("id")) ?? 0,
+        chatId: Number(localStorage.getItem("chatId")) ?? 0,
+      }).then(async()=>{
+          await getResponse({
+            message: { content: t("thankYou"), source: "BOT" },
+            playerId: Number(localStorage.getItem("id")) ?? 0,
+            chatId: Number(localStorage.getItem("chatId")) ?? 0,
+          });
+      })
 
       // Disable input after showing solution
       setWaitingForDescription(false); // Disable input // true
@@ -520,9 +669,16 @@ const request: ChatRequest = {
     } else if (answer.questions) {
       const nextQuestion = answer.questions;
       if (nextQuestion) {
+        if (nextQuestion?.question) {
+          await getResponse({
+            message: { content: nextQuestion?.question, source: "BOT" },
+            playerId: Number(localStorage.getItem("id")) ?? 0,
+            chatId: Number(localStorage.getItem("chatId")) ?? 0,
+          });
+        }
         setCurrentQuestion(nextQuestion);
-        setSendQuestion(nextQuestion.question)
-        setMessages((prevMessages :any) => [
+        setSendQuestion(nextQuestion.question);
+        setMessages((prevMessages: any) => [
           ...prevMessages,
           {
             id: Date.now().toString(),
@@ -569,7 +725,9 @@ const request: ChatRequest = {
   };
 
   <ChatInput
-    onSendMessage={(message: string) =>{ handleSendMessage(message, null, null, false)}}
+    onSendMessage={(message: string) => {
+      handleSendMessage(message, null, null, false);
+    }}
     disabled={isLoading || !waitingForDescription} // Disable input box based on the condition
   />;
 
@@ -579,12 +737,9 @@ const request: ChatRequest = {
     window.location.href = "/qa-content-grid"; // or use React Router
   };
 
-
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-100 via-blue-50 to-blue-200">
       <div className="w-full max-w-7xl h-[96vh] bg-white rounded-2xl shadow-2xl flex overflow-hidden relative">
-        
-
         {/* Chat Area */}
         <div className="w-full flex flex-col">
           {/* Chat Header with Language Selector */}
@@ -626,7 +781,8 @@ const request: ChatRequest = {
                     <button
                       key={language.code}
                       onClick={() => changeLanguage(language.code)}
-                      className={`w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center space-x-2 ${currentLanguage === language.code ? "bg-gray-100" : ""
+                      className={`w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center space-x-2 ${
+                        currentLanguage === language.code ? "bg-gray-100" : ""
                       }`}
                     >
                       <span>{language.flag}</span>
@@ -666,7 +822,11 @@ const request: ChatRequest = {
           )}
 
           <div className="border-t border-gray-200">
-            <ChatInput onSendMessage={(message: string) => handleSendMessage(message, null, null, false)}disabled={isLoading || waitingForDescription}
+            <ChatInput
+              onSendMessage={(message: string) =>
+                handleSendMessage(message, null, null, false)
+              }
+              disabled={isLoading || waitingForDescription}
             />
             {/* Disable the input box when waiting for a solution or question  */}
           </div>
@@ -676,5 +836,4 @@ const request: ChatRequest = {
   );
 };
 
-export default ChatPage; 
-
+export default ChatPage;

@@ -33,9 +33,7 @@ const LoginPage: React.FC = () => {
 
     try {
         const credentials = btoa(`${userName}:${password}`);
-
-        const response = await fetch(
-          `http://localhost:8080/api/users/@me?username=${userName}&password=$2a$12$VuWa..Y77mH1UeBwFUUYJuLDbqyRA22sZKfZzWdcA1Z7xOqe/cHge`,
+        const response = await fetch(`http://localhost:8080/api/users/@me?/roles`,
           {
             method: "GET",
             headers: {
@@ -47,22 +45,22 @@ const LoginPage: React.FC = () => {
 
       const results = await response.json();
 
-      
+
       if(response.status==200){
         const role= results.roles[0].name??""; 
         const roleId= results.roles[0].id??""; 
-    await localStorage.setItem("username", userName); 
-    await sessionStorage.setItem("username", userName); 
+     await localStorage.setItem("username", userName); 
+     await sessionStorage.setItem("username", userName); 
     await localStorage.setItem("password", password);
-    await sessionStorage.setItem("role",role);
+     await sessionStorage.setItem("role",role);
     await localStorage.setItem("role",role);
     await localStorage.setItem("roleId",roleId);
-    await localStorage.setItem("id",results.id);
+    await localStorage.setItem("id",results.id);  
     
- 
+    
         
         if (role === "ADMIN") {
-            navigate("/qa-content-grid");
+            navigate("/case-details-grid");
           } else if (role === "USER") {
             navigate("/case-details-grid");
           } else if (role === "PLAYER") {

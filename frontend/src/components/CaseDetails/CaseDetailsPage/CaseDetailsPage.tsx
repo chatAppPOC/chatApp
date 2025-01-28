@@ -6,6 +6,7 @@ import "../../CaseDetails/CaseDetailsGrid/CaseDetailsTable.css";
 import Modal from "react-modal";
 import userNameMapping from "../../../../public/userNameMapping.json";
 // import ChatPage from "src/chat";
+import { useNavigate } from "react-router-dom";
 
 interface CaseDetailsContent {
   id: number;
@@ -53,6 +54,11 @@ const CaseDetailsPage: React.FC<CaseDetailsPageProps> = ({
     { label: "RESOLVED", value: "RESOLVED" },
     { label: "IN_PROGRESS", value: "IN_PROGRESS" },
   ];
+
+  const navigate = useNavigate();
+  const handelGoToChat = () =>{
+    navigate(`/chat/${caseId}`);
+  }
 
   const handleCaseTypeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const updatedContent = { ...caseContent, caseType: event.target.value };
@@ -422,10 +428,7 @@ const CaseDetailsPage: React.FC<CaseDetailsPageProps> = ({
                 Submit
               </button>
               <button
-                onClick={() => {
-                  // Navigate to ChatPage component
-                  window.location.href = "/";
-                }}
+                onClick={handelGoToChat}
                 style={{
                   backgroundColor: "#007bff",
                   color: "#fff",

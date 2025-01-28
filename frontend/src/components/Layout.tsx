@@ -1,5 +1,5 @@
-import React, { useEffect,useState } from "react";
-import { Link, Outlet, useNavigate,useLocation } from "react-router-dom";
+import React, { useEffect} from "react";
+import { Link, Outlet, useNavigate,useLocation,Navigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 type Role = "ADMIN" | "USER" | "PLAYER";
@@ -20,15 +20,21 @@ const roleLinks: Record<Role, { to: string; label: string }[]> = {
 
 const Layout: React.FC = () => {
   const navigate= useNavigate();
+  const location =useLocation();
   const role = (sessionStorage.getItem("role") as Role) || ""; 
     const links = role? roleLinks[role] || [] : [];
   const { t, i18n } = useTranslation();
 
   useEffect(()=>{
     if(!role){
-      navigate("/login");
-    }
-  },[role, navigate]);
+      navigate("/login"); 
+   }
+   
+   else if(location.pathname ===  "/"){
+    const defaultPage = role ==="ADMIN" || role ==="USER" ? "/case-details-grid" : "/chat" ;
+    navigate(defaultPage);
+   }
+  },[role, navigate,location.pathname]);
 
 
   return (
