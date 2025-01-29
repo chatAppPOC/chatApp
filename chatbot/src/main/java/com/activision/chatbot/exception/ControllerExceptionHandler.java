@@ -15,7 +15,7 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler{
 	@ExceptionHandler(UniqueConstraintViolationException.class)
 	public ResponseEntity<Object> handleDuplicateNames(UniqueConstraintViolationException ex) {
 	    Map<String, Object> body = new LinkedHashMap<>();
-	    body.put("message", "A content with the same name and language already exists. Please try with a different name or language.");
+	    body.put("message", ex.getMessage());
 	    return new ResponseEntity<>(body, HttpStatus.CONFLICT);
 	}
 	
