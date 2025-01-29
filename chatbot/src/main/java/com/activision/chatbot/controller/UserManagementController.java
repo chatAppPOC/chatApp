@@ -19,8 +19,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.activision.chatbot.entity.Group;
+import com.activision.chatbot.entity.Title;
 import com.activision.chatbot.entity.User;
 import com.activision.chatbot.repo.GroupRepository;
+import com.activision.chatbot.repo.TitleRepository;
 import com.activision.chatbot.repo.UserRepository;
 
 @RestController
@@ -34,6 +36,9 @@ public class UserManagementController {
 	
 	@Autowired
 	GroupRepository groupRepo;
+	
+	@Autowired
+	TitleRepository titleRepo;
 
 	@PostMapping("/user")
 	@PreAuthorize("hasAuthority('ADMIN')")
@@ -199,4 +204,16 @@ public class UserManagementController {
 			throw e;
 		}
 	}	
+	
+	@GetMapping("/titles")
+	public List<Title> getTitles() {
+		try {
+			List<Title> response = titleRepo.findAll();
+			LOG.info("Api.getTitles() => {}", response);
+			return response;
+		} catch (Exception e) {
+			LOG.error("Api.getTitles() => error!!!", e);
+			throw e;
+		}
+	}
 }

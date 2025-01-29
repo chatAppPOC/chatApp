@@ -19,4 +19,7 @@ public interface ContentRepository extends JpaRepository<Content, Long>{
 	
 	@Query(value = "select exists(select * from content where language_id = ?1 and name = ?2)", nativeQuery = true) 
 	Boolean existsByLanguageIdAndName(Long id, String name);
+	
+	@Query(value = "select exists(select * from content where language_id = ?1 and title_id = ?2)", nativeQuery = true) 
+	Boolean existsByLanguageIdAndTitle(Long languageId, Long titleId);
 }

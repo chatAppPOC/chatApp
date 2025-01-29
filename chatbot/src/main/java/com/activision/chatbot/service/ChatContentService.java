@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.coyote.BadRequestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.HttpClientErrorException.BadRequest;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.activision.chatbot.dto.ContentResponse;
@@ -71,18 +73,23 @@ public class ChatContentService {
 	}
 
 	@Transactional
-	public Content updateContentv2(Long id, com.activision.chatbot.model.Content content, String name) {
+	public Content updateContentv2(Long id, com.activision.chatbot.model.Content content, String name, Long titleId) {
 		try {
 			Content existingContent = contentRepository.findById(id)
 					.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
 							"The content with " + id + " does not exist"));
             Boolean nameExists = contentRepository.existsByLanguageIdAndName(existingContent.getLanguageId(), name);
+            Boolean titleAndLanguage = contentRepository.existsByLanguageIdAndTitle(existingContent.getLanguageId(), titleId != null ? titleId : existingContent.getTitleId());
             if(nameExists && !name.equals(existingContent.getName())) {
+            	throw new UniqueConstraintViolationException();
+            }
+            if(titleAndLanguage) {
             	throw new UniqueConstraintViolationException();
             }
             else {
             	existingContent.setContent(content);
-    			existingContent.setName(name);
+    			if (name != null) existingContent.setName(name);
+    			existingContent.setTitleId(titleId);
     			existingContent.setUpdatedBy(ADMIN_USER);
     			existingContent.setUpdatedOn(Instant.now());
     			contentRepository.save(existingContent);
@@ -97,13 +104,19 @@ public class ChatContentService {
 	}
 
 	@Transactional
-	public Content createContentv2(com.activision.chatbot.model.Content content, Long languageId, String name) {
+	public Content createContentv2(com.activision.chatbot.model.Content content, Long languageId, String name, Long titleId) throws Exception {
 		try {
+			
+            Boolean titleAndLanguage = contentRepository.existsByLanguageIdAndTitle(languageId, titleId);
+            if(titleAndLanguage) {
+            	throw new BadRequestException("Content for same Language and TitleID already available");
+            }
 			Content newContent = new Content();
 			newContent.setContent(content);
 			newContent.setName(name);
 			newContent.setLanguageId(languageId);
 			newContent.setCreatedOn(Instant.now());
+			newContent.setTitleId(titleId);
 			newContent.setCreatedBy(ADMIN_USER);
 			contentRepository.save(newContent);
 			LOG.debug("ChatContentService.createContentv2({}, {}) => {}", content, languageId, newContent);
@@ -121,12 +134,12 @@ public class ChatContentService {
 	}
 
 	@Transactional
-	public Content copyContentv2(Long srcContentId, String name) {
+	public Content copyContentv2(Long srcContentId, String name, Long titleId) throws Exception {
 		try {
 			Optional<Content> srcContent = contentRepository.findById(srcContentId);
 			Content newContent = null;
 			if (srcContent.isPresent()) {
-				newContent = createContentv2(srcContent.get().getContent(), srcContent.get().getLanguageId(), name);
+				newContent = createContentv2(srcContent.get().getContent(), srcContent.get().getLanguageId(), name, titleId);
 			}
 			else {
 				throw new ResponseStatusException(HttpStatus.NOT_FOUND,"The content with " + srcContentId + " does not exist");
