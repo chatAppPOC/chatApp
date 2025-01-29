@@ -28,15 +28,14 @@ public class Content {
 	private com.activision.chatbot.model.Content content;
 	private String name;
 	private Long languageId;
+	private Long titleId;
 	private Instant createdOn;
 	private Instant updatedOn;
 	private String updatedBy;
 	private String createdBy;
 	
 	public Content() {
-		
 	}
-	
 	public Long getId() {
 		return id;
 	}
@@ -85,10 +84,18 @@ public class Content {
 	public void setCreatedBy(String createdBy) {
 		this.createdBy = createdBy;
 	}
+	public Long getTitleId() {
+		return titleId;
+	}
+	public void setTitleId(Long titleId) {
+		this.titleId = titleId;
+	}
+
 	@Override
 	public String toString() {
 		return "Content [id=" + id + ", content=" + content + ", name=" + name + ", languageId=" + languageId
-				+ ", createdOn=" + createdOn + ", updatedOn=" + updatedOn + ", updatedBy=" + updatedBy + ", createdBy="
-				+ createdBy + "]";
+				+ ", titleId=" + titleId + ", createdOn=" + createdOn + ", updatedOn=" + updatedOn + ", updatedBy="
+				+ updatedBy + ", createdBy=" + createdBy + "]";
 	}
+
 }
