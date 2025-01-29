@@ -78,26 +78,29 @@ public class ChatContentService {
 			Content existingContent = contentRepository.findById(id)
 					.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
 							"The content with " + id + " does not exist"));
-            Boolean nameExists = contentRepository.existsByLanguageIdAndName(existingContent.getLanguageId(), name);
-            Boolean titleAndLanguage = contentRepository.existsByLanguageIdAndTitle(existingContent.getLanguageId(), titleId != null ? titleId : existingContent.getTitleId());
-            if(nameExists && !name.equals(existingContent.getName())) {
-            	throw new UniqueConstraintViolationException();
-            }
-            if(titleAndLanguage) {
-            	throw new UniqueConstraintViolationException();
-            }
-            else {
-            	existingContent.setContent(content);
-    			if (name != null) existingContent.setName(name);
-    			existingContent.setTitleId(titleId);
-    			existingContent.setUpdatedBy(ADMIN_USER);
-    			existingContent.setUpdatedOn(Instant.now());
-    			contentRepository.save(existingContent);
-    			LOG.debug("ChatContentService.updateContentv2({}, {}) => {}", id, existingContent);
-    			return existingContent;
-            }
-		} 
-		catch (Exception e) {
+			if (name != null) {
+				Boolean nameExists = contentRepository.existsByLanguageIdAndName(existingContent.getLanguageId(), name);
+				if (nameExists && !name.equals(existingContent.getName())) {
+					throw new UniqueConstraintViolationException();
+				} else {
+					existingContent.setName(name);
+				}
+			}
+			Boolean titleAndLanguage = contentRepository.existsByLanguageIdAndTitle(existingContent.getLanguageId(),
+					titleId != null ? titleId : existingContent.getTitleId());
+
+			if (titleAndLanguage) {
+				throw new UniqueConstraintViolationException();
+			} else {
+				existingContent.setContent(content);
+				existingContent.setTitleId(titleId);
+				existingContent.setUpdatedBy(ADMIN_USER);
+				existingContent.setUpdatedOn(Instant.now());
+				contentRepository.save(existingContent);
+				LOG.debug("ChatContentService.updateContentv2({}, {}) => {}", id, existingContent);
+				return existingContent;
+			}
+		} catch (Exception e) {
 			LOG.error("ChatContentService.updateContentv2({}, {}) => error!!!", id, content);
 			throw e;
 		}

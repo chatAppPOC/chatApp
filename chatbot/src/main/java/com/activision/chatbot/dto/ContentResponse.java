@@ -10,4 +10,5 @@ public interface ContentResponse {
 	String getUpdatedBy();
 	String getCreatedBy();
 	String getLanguage();
+	String getTitleId();
 }
