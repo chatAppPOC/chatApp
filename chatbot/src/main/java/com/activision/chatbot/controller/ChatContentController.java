@@ -35,7 +35,7 @@ public class ChatContentController {
 	
 	@PutMapping("v2/content")
 	@PreAuthorize("hasAuthority('ADMIN')")
-	public ResponseEntity<?>  updateContentv2(@RequestParam Long titleId, @RequestParam Long contentId, @RequestParam String name, @RequestBody com.activision.chatbot.model.Content chatContent) {
+	public ResponseEntity<?>  updateContentv2(@RequestParam(required = false) Long titleId, @RequestParam Long contentId, @RequestParam(required = false) String name, @RequestBody com.activision.chatbot.model.Content chatContent) {
 		try {
 			Content updatedContent = chatContentService.updateContentv2(contentId, chatContent, name, titleId);
 	    	LOG.info("Api.updateContentv2({}, {}) => {}", contentId, chatContent, updatedContent);
