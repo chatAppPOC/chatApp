@@ -6,6 +6,7 @@ interface QAContent {
   id: number;
   language: string;
   name: string;
+  titleId: string;
   createdOn: string | null;
   updatedOn: string | null;
   updatedBy: string | null;
@@ -16,6 +17,37 @@ const QAContentTable: React.FC = () => {
   const [qaContents, setQAContents] = useState<QAContent[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [titles, setTitles] = useState<{ id: number; name: string }[]>([]);
+
+  // Fetch titles from API
+  useEffect(() => {
+    const fetchTitles = async () => {
+      try {
+        const response = await fetch("http://localhost:8080/api/titles", {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Basic " + btoa(`admin@test.com:admin123`),
+          },
+        });
+        if (!response.ok) {
+          throw new Error(`Failed to fetch titles: ${response.statusText}`);
+        }
+        const data = await response.json();
+        setTitles(data);
+      } catch (error) {
+        console.error("Error fetching titles:", error);
+      }
+    };
+    fetchTitles();
+  }, []);
+
+  // Get title name by titleId
+  const getTitleName = (titleId: string | null): string => {
+    if (!titleId) return "N/A"; // Handle cases where titleId is null
+    const title = titles.find((t) => String(t.id) === String(titleId));
+    // return title ? `${title.name} (${titleId})` : `Unknown (${titleId})`;
+    return title ? `${title.name}` : `Unknown (${titleId})`;
+  };
 
   // Fetch data from API
   useEffect(() => {
@@ -114,7 +146,8 @@ const QAContentTable: React.FC = () => {
             <tr className="bg-gray-100 first:rounded-t-lg">
               <th className="border border-gray-300 px-4 py-2">ID</th>
               <th className="border border-gray-300 px-4 py-2">Language</th>
-              <th className="border border-gray-300 px-4 py-2">Name</th>
+              <th className="border border-gray-300 px-4 py-2">Content Name</th>
+              <th className="border border-gray-300 px-4 py-2">Game Title</th>
               <th className="border border-gray-300 px-4 py-2">Created Date</th>
               <th className="border border-gray-300 px-4 py-2">Created By</th>
               <th className="border border-gray-300 px-4 py-2">Updated Date</th>
@@ -139,6 +172,9 @@ const QAContentTable: React.FC = () => {
                 </td>
                 <td className="border border-gray-300 px-4 py-2">
                   {content.name}
+                </td>
+                <td className="border border-gray-300 px-4 py-2">
+                  {getTitleName(content.titleId)}
                 </td>
                 <td className="border border-gray-300 px-4 py-2">
                   {content.createdOn

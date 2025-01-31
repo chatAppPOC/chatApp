@@ -38,6 +38,8 @@ const QAContentEditor: React.FC = () => {
   >([]);
   const [language, setLanguage] = useState<number>(1); // Default to first language ID
   const [selectedLanguageId, setSelectedLanguageId] = useState<number>(1);
+  const [titles, setTitles] = useState<{ id: number; name: string }[]>([]);
+  const [selectedTitleId, setSelectedTitleId] = useState<number | null>(null);
 
   // Fetch languages on component load
   useEffect(() => {
@@ -72,6 +74,26 @@ const QAContentEditor: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    fetchTitles();
+  }, []);
+
+  const fetchTitles = async () => {
+    try {
+      const response = await fetch("http://localhost:8080/api/titles", {
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+          Authorization: "Basic " + btoa(`admin@test.com:admin123`),
+        },
+      });
+      const data = await response.json();
+      setTitles(data);
+    } catch (error) {
+      console.error("Error fetching titles:", error);
+    }
+  };
+
   // Fetch content when the component loads or when 'id' changes
   useEffect(() => {
     if (id) {
@@ -98,6 +120,7 @@ const QAContentEditor: React.FC = () => {
       // Set the content name
       setContentName(data?.name || ""); // Use default value if name is not found
       setSelectedLanguageId(data?.languageId || "");
+      setSelectedTitleId(data?.titleId || null);
       console.log("selectedLanguageId", selectedLanguageId);
     } catch (error) {
       console.error("Error fetching Q/A data:", error);
@@ -373,6 +396,10 @@ const QAContentEditor: React.FC = () => {
       return "Please select a language.";
     }
 
+    if (!selectedTitleId) {
+      return "Please select a game title.";
+    }
+
     if (!qaSections.length) {
       return "At least one question is required.";
     }
@@ -454,7 +481,7 @@ const QAContentEditor: React.FC = () => {
       if (id) {
         // Update API call
         response = await fetch(
-          `http://localhost:8080/api/v2/content?contentId=${id}&name=${encodeURIComponent(
+          `http://localhost:8080/api/v2/content?contentId=${id}&titleId=${selectedTitleId}&name=${encodeURIComponent(
             contentName
           )}`,
           {
@@ -470,7 +497,7 @@ const QAContentEditor: React.FC = () => {
       } else {
         // Create API call
         response = await fetch(
-          `http://localhost:8080/api/v2/content?languageId=${language}&name=${encodeURIComponent(
+          `http://localhost:8080/api/v2/content?languageId=${language}&titleId=${selectedTitleId}&name=${encodeURIComponent(
             contentName
           )}`,
           {
@@ -493,7 +520,7 @@ const QAContentEditor: React.FC = () => {
             ? "Q/A data updated successfully!"
             : "Q/A data created successfully!"
         );
-        navigate("/"); // Navigate back to the home page
+        navigate("/qa-content-grid"); // Navigate back to the home page
       } else {
         // Handle specific error responses from the API
         if (response.status === 409) {
@@ -631,7 +658,7 @@ const QAContentEditor: React.FC = () => {
           value={contentName}
           onChange={(e) => setContentName(e.target.value)}
           className="border p-2 rounded-lg w-full"
-          placeholder="Enter Q/A Content Title"
+          placeholder="Enter Q/A Content Name"
         />
       </h1>
 
@@ -665,6 +692,37 @@ const QAContentEditor: React.FC = () => {
               </select>
             </div>
           )}
+        </div>
+        <div></div>
+      </div>
+
+      <div className="mb-4 flex justify-between">
+        <div className="mb-4">
+          <label htmlFor="title" className="mr-2 text-lg font-medium">
+            {" "}
+            Select Game Title:{" "}
+          </label>
+          <select
+            id="title"
+            value={selectedTitleId || ""}
+            onChange={(e) => setSelectedTitleId(Number(e.target.value))}
+            className="border px-4 py-2 rounded-lg"
+          >
+            {/* Default Option */}
+            <option value="" disabled={!id}>
+              {id
+                ? titles.find((t) => t.id === selectedTitleId)?.name ||
+                  "Loading..."
+                : "Select a Title"}
+            </option>
+
+            {/* Populate Titles */}
+            {titles.map((title) => (
+              <option key={title.id} value={title.id}>
+                {title.name}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
       {qaSections.map(renderSection)}
