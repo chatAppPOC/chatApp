@@ -197,12 +197,12 @@ public class ChatService {
 						.fetchUserByLanguageAndPlatformAndTitle(chat.get().getPlayerId());
 				if (assignedUser != null) {
 					newCase = new Case(assignedUser.getUserId(), chat.get().getId(), caseType,
-							assignedUser.getGameName());
+							assignedUser.getTitle());
 				}
 				else {
 					Optional<Player> player = playerRepository.findById(chat.get().getPlayerId());
 					String playerTitle = playerRepository.getPlayerTitleName(player.get().getTitle());
-					newCase = new Case(chat.get().getId(), caseType, playerTitle);
+					newCase = new Case(chat.get().getId(), caseType, Long.parseLong(playerTitle));
 				}
 			} else {
 				LOG.warn("ChatService.createSupportCaseByChatId({}) => ChatId does not exist", chatId);

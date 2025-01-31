@@ -6,6 +6,6 @@ public interface PlayerUserResponse {
     String getUserLastName();
     String getUserLanguage();
     String getUserPlatform();
-    String getUserTitle();
+    Long getTitle();
     String getGameName();
 }

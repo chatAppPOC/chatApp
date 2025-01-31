@@ -26,7 +26,7 @@ public class Case {
 	private CaseStatus status;
 	private String caseType;
 	private LocalDate completedOn;
-	private String gameName;
+	private Long title;
 	private LocalDate startedOn;
 
 	public enum CaseStatus {
@@ -36,19 +36,19 @@ public class Case {
 	public Case() {
 	}
     
-	public Case(Long chatId, String caseType, String gameName) {
+	public Case(Long chatId, String caseType, Long title) {
 		this.chatId = chatId;
 		this.caseType = caseType;
-		this.gameName = gameName;
+		this.title = title;
 		this.createdOn = Instant.now();
 		this.status = CaseStatus.OPEN;
 	}
 	
-	public Case(Long userId, Long chatId, String caseType, String gameName) {
+	public Case(Long userId, Long chatId, String caseType, Long titleId) {
 		this.userId = userId;
 		this.chatId = chatId;
 		this.caseType = caseType;
-		this.gameName = gameName;
+		this.title = titleId;
 		this.createdOn = Instant.now();
 		this.status = CaseStatus.OPEN;
 	}
@@ -101,12 +101,12 @@ public class Case {
 		this.caseType = caseType;
 	}
 
-	public String getGameName() {
-		return gameName;
+	public Long getTitle() {
+		return title;
 	}
 
-	public void setGameName(String gameName) {
-		this.gameName = gameName;
+	public void setTitle(Long title) {
+		this.title = title;
 	}
 
 	public LocalDate getCompletedOn() {
@@ -128,7 +128,7 @@ public class Case {
 	@Override
 	public String toString() {
 		return "Case [id=" + id + ", chatId=" + chatId + ", userId=" + userId + ", createdOn=" + createdOn + ", status="
-				+ status + ", caseType=" + caseType + ", completedOn=" + completedOn + ", gameName=" + gameName
+				+ status + ", caseType=" + caseType + ", completedOn=" + completedOn + ", title=" + title
 				+ ", startedOn=" + startedOn + "]";
 	}
 }
