@@ -55,7 +55,7 @@ const ChatPage: React.FC = () => {
   const [waitingForDescription, setWaitingForDescription] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const [latestChatId, setLatestChatId] = useState<number | null>(null);
-
+  const [continueWithChat,setContinueWithChat]=useState(false);
 
   const isAdmin = localStorage.getItem("role");
   const chat = Number(localStorage.getItem("chatId")) ?? 0;
@@ -242,6 +242,7 @@ const ChatPage: React.FC = () => {
   const handleContinueChat = async (shouldContinue: boolean) => {
     setIsLoading(true);
     try {
+      setContinueWithChat(shouldContinue);
       if (shouldContinue) {
         const response = await fetch(
           `http://localhost:8080/api/chat/history/${id}?page=0&size=300`,
@@ -270,20 +271,13 @@ const ChatPage: React.FC = () => {
             })
           );
 
-          setMessages((prevMessages) => [
-            ...prevMessages,
-            ...(messagesFromHistory || []),
-          ]);
+         
           localStorage.setItem("chatId", latestUpdatedOn?.id);
           setWaitingForDescription(false);
-          await getResponse({
-            message: { content: '', source: "PLAYER" },
-            playerId: Number(localStorage.getItem("id")) ?? 0,
-          });
-
+    
           const request: ChatRequest = {
             playerId: latestUpdatedOn?.playerId ?? 0,
-            chatId: Number(localStorage.getItem("chatId")) ?? 0,
+            chatId:latestUpdatedOn?.id,
             message:
             {
               content: "This is the description given by the player in the desc box",
@@ -343,6 +337,7 @@ const ChatPage: React.FC = () => {
           source: "PLAYER",
           ...(createContentId === true ? { contentType: "Description" } : {}),
         },
+        ...(continueWithChat ? { chatId: chatIdValue } : {}),
       };
       await getResponse(request);
 
