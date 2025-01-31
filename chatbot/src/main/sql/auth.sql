@@ -23,3 +23,18 @@ CREATE TABLE users_roles (
 insert into users_roles (user_id, role_id) values
 (100,1),
 (200,2)
+
+insert into title (id, name) values
+(5886,'MWII/WZ 2'),
+(6043,'MWIII'),
+(5895, 'WZ Mobile'),
+(5861, 'Call of Duty: Vanguard'),
+(5826, 'Call of Duty: Black Ops Cold War'),
+(5893, 'Call of Duty: Modern Warfare'),
+(6047, 'BO6')
+
+ALTER TABLE content
+ADD CONSTRAINT unique_name UNIQUE (name);
+
+ALTER TABLE content
+ADD CONSTRAINT unique_title_language UNIQUE (language_id, title_id);
