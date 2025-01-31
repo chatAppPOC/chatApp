@@ -15,14 +15,15 @@ public interface PlayerRepository extends JpaRepository<Player, Long>{
 			   	u.last_name AS userLastName,
 			   	u.preferred_language AS userLanguage,
 			   	u.platform AS userPlatform,
-			   	u.title AS userTitle,
-			   	t.name AS gameName
+			   	t.id AS title
 			FROM player p
 			JOIN title t ON p.title = t.id
 			JOIN users u ON p.preferred_language = ANY(u.preferred_language)
 			AND p.platform = ANY(u.platform)
 			AND p.title = ANY(u.title)
-			WHERE p.id = :playerId limit 1
+            JOIN users_roles ur ON ur.user_Id=u.id
+			JOIN roles r ON ur.role_Id= r.id
+			WHERE p.id = 3 And r.id=(select id from roles where name='USER') limit 1
 	        """, nativeQuery = true)
 	        PlayerUserResponse fetchUserByLanguageAndPlatformAndTitle(@Param("playerId") Long playerId);
 	
