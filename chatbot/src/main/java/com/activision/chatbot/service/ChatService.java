@@ -201,8 +201,7 @@ public class ChatService {
 				}
 				else {
 					Optional<Player> player = playerRepository.findById(chat.get().getPlayerId());
-					String playerTitle = playerRepository.getPlayerTitleName(player.get().getTitle());
-					newCase = new Case(chat.get().getId(), caseType, Long.parseLong(playerTitle));
+					newCase = new Case(chat.get().getId(), caseType, player.get().getTitle());
 				}
 			} else {
 				LOG.warn("ChatService.createSupportCaseByChatId({}) => ChatId does not exist", chatId);

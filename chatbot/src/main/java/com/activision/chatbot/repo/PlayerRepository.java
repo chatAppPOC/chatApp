@@ -29,7 +29,4 @@ public interface PlayerRepository extends JpaRepository<Player, Long>{
 	
 	@Query("SELECT p FROM Player p WHERE p.email = :email")
     public Player getPlayerByEmail(@Param("email") String email);
-	
-	@Query("SELECT t.name FROM Title t WHERE t.id = :title")
-    public String getPlayerTitleName(@Param("title") Long title);
 }
