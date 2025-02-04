@@ -1,6 +1,7 @@
 package com.activision.chatbot.service;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -283,7 +284,24 @@ public class ChatService {
 
 			// Update feedback fields
 			feedback.setFeedback(request.getQuestionAndAnswer());
+			if(request.getIssueResolved())
 			feedback.setIssueResolved(request.getIssueResolved());
+			else {
+				Optional<Case> caseResp = caseRepository.findById(caseReq.getId());
+				Case existingCase = caseResp.get();
+
+				// Update the existing case with the new values
+				existingCase.setUserId(caseReq.getUserId());
+				existingCase.setCaseType(caseReq.getCaseType());
+				existingCase.setCompletedOn(caseReq.getCompletedOn());
+				existingCase.setStatus(Case.CaseStatus.RE_OPENED);
+				existingCase.setReopenedOn(LocalDate.now());
+				existingCase.setTitle(caseReq.getTitle());
+
+				// Save the updated case
+				LOG.info("Api.updateTicket({}) => {}", existingCase);
+				caseRepository.save(existingCase); // Save the updated case object
+			}
 			feedback.setAverageScore(Math.round(averageScore));
 			feedback.setDescription(request.getPlayerFeedbackComments());
 
