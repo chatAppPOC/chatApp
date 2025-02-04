@@ -6,6 +6,7 @@ import QAContentTable from "./components/QAContent/QAContentTable/QAContentTable
 import QAContentEditor from "./components/QAContent/QAContentEditor/QAContentEditor";
 import CaseDetailsTable from "./components/CaseDetails/CaseDetailsGrid/CaseDetailsTable";
 import CaseDetailsPage from "./components/CaseDetails/CaseDetailsPage/CaseDetailsPage";
+import FeedBackHistoryByCaseId from "./components/FeedbackHistoryByCaseId/FeedBackHistoryByCaseId";
 import LoginPage from "./components/Authentication/LoginPage";
 import "./app.css";
 import "./i18n"; // Import the i18n configuration
@@ -18,12 +19,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <Routes>
       <Route path="/login" element={<LoginPage />} />
 
-      <Route
-        path="/"
-        element={
-            <Layout />
-        }
-      >
+      <Route path="/" element={<Layout />}>
         <Route index element={<ChatPage />} />
         <Route
           path="qa-content-grid"
@@ -57,14 +53,8 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
             </PrivateRoute>
           }
         />
-        <Route
-          path="chat/:caseId"
-          element={
-        //  <PrivateRoute allowedRole="">
-            <ChatPage  />
-            //  </PrivateRoute>
-            }
-          />
+
+        <Route path="feedbackHistory" element={<FeedBackHistoryByCaseId />} />
         <Route
           path="chat"
           element={

@@ -1,3 +1,4 @@
+import { s } from "node_modules/vite/dist/node/types.d-aGj9QkWt";
 import React, { useState, useEffect } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -17,25 +18,37 @@ const MyDatePicker: React.FC<MyDatePickerProps> = ({
   const [selectedCompltedDate, setSelectedCompletedDate] =
     useState<Date | null>(completedOn);
   const handleDateChange = (date: Date | null) => {
-    setSelectedDate(date);
-    setSelectedCompletedDate(date);
+    if (!date || !startedDt || date !== null || date > startedDt) {
+      setSelectedDate(date);
+      onChange(date);
+      setSelectedCompletedDate(date);
+    }
     onChange(date);
   };
 
   useEffect(() => {
-    setSelectedDate(startedDt);
-    setSelectedCompletedDate(completedOn);
+    if (!startedDt || completedOn !== null || completedOn > startedDt) {
+      setSelectedDate(startedDt);
+      setSelectedCompletedDate(completedOn);
+    }
   }, [startedDt, completedOn]);
 
   return (
-    <div className="childc">
-      <DatePicker
-        selected={selectedDate ? selectedDate : completedOn}
-        onChange={handleDateChange}
-        showYearDropdown
-        yearDropdownItemNumber={100}
-      />
-    </div>
+    <>
+      <div className="childs datePicker">
+        <DatePicker
+          selected={startedDt ? startedDt : completedOn}
+          // selected={
+          //   selectedCompltedDate !== null
+          //     ? selectedCompltedDate && selectedDate
+          //     : null
+          // }
+          onChange={handleDateChange}
+          showYearDropdown
+          yearDropdownItemNumber={100}
+        />
+      </div>
+    </>
   );
 };
 
