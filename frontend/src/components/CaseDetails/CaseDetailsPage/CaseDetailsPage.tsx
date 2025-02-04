@@ -13,6 +13,7 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 
 import userNameMapping from "../../../../public/userNameMapping.json";
+import { LuCaseUpper } from "react-icons/lu";
 // import ChatPage from "src/chat";
 interface CaseDetailsContent {
   id: number;
@@ -29,12 +30,14 @@ interface CaseDetailsPageProps {
   caseId: number;
   isModalOpen: boolean;
   closeModal: () => void;
+  status: string;
 }
 
 const CaseDetailsPage: React.FC<CaseDetailsPageProps> = ({
   caseId,
   isModalOpen,
   closeModal,
+  status,
 }) => {
   const [caseContent, setCaseContent] = useState<CaseDetailsContent>({
     id: 0,
@@ -66,6 +69,7 @@ const CaseDetailsPage: React.FC<CaseDetailsPageProps> = ({
   const [alertMsg, setAlertMsg] = useState<boolean>(true);
 
   const [errorMsg, setErrorMsg] = useState<boolean>(false);
+  const [SubmitButton, setSubmitButton] = useState<boolean>(false);
 
   const statusOptions = [
     { label: "OPEN", value: "OPEN" },
@@ -96,16 +100,23 @@ const CaseDetailsPage: React.FC<CaseDetailsPageProps> = ({
   const handleStatusChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const updatedContent = { ...caseContent, status: event.target.value };
     setCaseContent(updatedContent);
+    setSubmitButton(true);
   };
 
   const handleCloseModal = () => {
     closeModal();
   };
 
+  // useEffect(() => {
+  //   fetchCaseContent(caseId);
+  // }, []);
+
+  useEffect(() => {
+    LuCaseUpper;
+  });
+
   useEffect(() => {
     fetchCaseContent(caseId);
-  }, []);
-  useEffect(() => {
     checkIsFeedBackAvailable(caseId);
   }, [isModalOpen]);
 
@@ -136,6 +147,10 @@ const CaseDetailsPage: React.FC<CaseDetailsPageProps> = ({
     } else {
       setEstimatedDays(0); // or set a default message if needed
     }
+
+    if (caseContent.status !== "RESOLVED") {
+      setSubmitButton(true);
+    }
   }, [selectedDate, selectedCompltedDate]);
 
   const fetchCaseContent = async (caseno: number) => {
@@ -154,6 +169,9 @@ const CaseDetailsPage: React.FC<CaseDetailsPageProps> = ({
         }
       );
       const data = await response.json();
+      data[0].status !== "RESOLVED"
+        ? setSubmitButton(true)
+        : setSubmitButton(false);
       setCaseContent(data[0]);
       setSelectedDate(data[0].startedOn);
       setSelectedCompletedDate(data[0].completedOn);
@@ -480,7 +498,7 @@ const CaseDetailsPage: React.FC<CaseDetailsPageProps> = ({
               <button
                 onClick={() => {
                   // Navigate to ChatPage component
-                  window.location.href = "/";
+                  window.location.href = "/chat";
                 }}
                 style={{
                   backgroundColor: "#007bff",
@@ -495,7 +513,7 @@ const CaseDetailsPage: React.FC<CaseDetailsPageProps> = ({
               >
                 Go to Chat
               </button>
-              {caseContent.status !== "RESOLVED" ? (
+              {SubmitButton ? (
                 <button
                   onClick={submitDate}
                   style={{

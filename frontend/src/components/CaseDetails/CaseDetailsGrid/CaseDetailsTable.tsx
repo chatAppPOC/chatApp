@@ -65,7 +65,7 @@ const CaseDetailsTable = () => {
   const handleCloseModal = () => {
     setModalIsOpen(false);
     fetchCaseContent();
-    // window.location.reload();
+    //window.location.reload();
   };
 
   const getTitleName = (titleId: number | null): string => {
@@ -222,6 +222,7 @@ const CaseDetailsTable = () => {
           caseId={selectedCaseId}
           isModalOpen={modalIsOpen}
           closeModal={handleCloseModal}
+          status={status}
         />
       )}
     </div>
