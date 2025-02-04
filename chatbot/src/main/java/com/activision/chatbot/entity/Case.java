@@ -26,11 +26,12 @@ public class Case {
 	private CaseStatus status;
 	private String caseType;
 	private LocalDate completedOn;
+	private LocalDate reopenedOn;
 	private Long title;
 	private LocalDate startedOn;
 
 	public enum CaseStatus {
-		OPEN, RESOLVED, IN_PROGRESS
+		OPEN, RESOLVED, IN_PROGRESS, RE_OPENED
 	}
 
 	public Case() {
@@ -125,10 +126,18 @@ public class Case {
 		this.startedOn = startedOn;
 	}
 
+	public LocalDate getReopenedOn() {
+		return reopenedOn;
+	}
+
+	public void setReopenedOn(LocalDate reopenedOn) {
+		this.reopenedOn = reopenedOn;
+	}
+
 	@Override
 	public String toString() {
 		return "Case [id=" + id + ", chatId=" + chatId + ", userId=" + userId + ", createdOn=" + createdOn + ", status="
-				+ status + ", caseType=" + caseType + ", completedOn=" + completedOn + ", title=" + title
-				+ ", startedOn=" + startedOn + "]";
+				+ status + ", caseType=" + caseType + ", completedOn=" + completedOn + ", reopenedOn=" + reopenedOn
+				+ ", title=" + title + ", startedOn=" + startedOn + "]";
 	}
 }

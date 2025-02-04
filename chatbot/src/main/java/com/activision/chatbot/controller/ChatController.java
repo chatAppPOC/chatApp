@@ -116,6 +116,7 @@ public class ChatController {
 				existingCase.setCompletedOn(input.getCompletedOn());
 				existingCase.setStatus(input.getStatus());
 				existingCase.setStartedOn(input.getStartedOn());
+				existingCase.setReopenedOn(input.getReopenedOn());
 				existingCase.setTitle(input.getTitle());
 
 				// Save the updated case
