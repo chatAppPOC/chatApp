@@ -293,7 +293,7 @@ public class ChatService {
 				// Update the existing case with the new values
 				existingCase.setUserId(caseReq.getUserId());
 				existingCase.setCaseType(caseReq.getCaseType());
-				existingCase.setCompletedOn(caseReq.getCompletedOn());
+				existingCase.setCompletedOn(null);
 				existingCase.setStatus(Case.CaseStatus.RE_OPENED);
 				existingCase.setReopenedOn(LocalDate.now());
 				existingCase.setTitle(caseReq.getTitle());
@@ -301,6 +301,7 @@ public class ChatService {
 				// Save the updated case
 				LOG.info("Api.updateTicket({}) => {}", existingCase);
 				caseRepository.save(existingCase); // Save the updated case object
+				feedback.setIssueResolved(request.getIssueResolved());
 			}
 			feedback.setAverageScore(Math.round(averageScore));
 			feedback.setDescription(request.getPlayerFeedbackComments());
