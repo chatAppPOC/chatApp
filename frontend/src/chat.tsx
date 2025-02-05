@@ -10,7 +10,6 @@ import { connectWebSocket } from "./services/webSocketservices";
 import { useLocation, useParams } from "react-router-dom";
 import { c } from "node_modules/vite/dist/node/types.d-aGj9QkWt";
 
-
 interface Message {
   id: string;
   content: string | React.JSX.Element;
@@ -55,7 +54,8 @@ const ChatPage: React.FC = () => {
   const [waitingForDescription, setWaitingForDescription] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const [latestChatId, setLatestChatId] = useState<number | null>(null);
-  const [continueWithChat,setContinueWithChat]=useState(false);
+  const [continueWithChat, setContinueWithChat] = useState(false);
+  const [disableChatInput, setDisableChatInput] = useState(false);
 
   const isAdmin = localStorage.getItem("role");
   const chat = Number(localStorage.getItem("chatId")) ?? 0;
@@ -67,58 +67,58 @@ const ChatPage: React.FC = () => {
   const params = useParams();
   const isParams = params?.caseId ? true : false;
 
-
-
   useEffect(() => {
     const fetchLatestCaseId = async () => {
       if ((isUser === "USER" || isUser === "ADMIN") && isParams) {
-
-        // Only user need to fetch the chat based on caseid 
+        // Only user need to fetch the chat based on caseid
         try {
           // Fetch the latest chat ID from the backend
-          const response = await fetch(`http://localhost:8080/api/case?caseId=${Number(params.caseId)}`, {
-            method: "GET",
-            headers: {
-              ...generateBasicAuthHeader(),
-              "Content-Type": "application/json",
-            },
-          });
+          const response = await fetch(
+            `http://localhost:8080/api/case?caseId=${Number(params.caseId)}`,
+            {
+              method: "GET",
+              headers: {
+                ...generateBasicAuthHeader(),
+                "Content-Type": "application/json",
+              },
+            }
+          );
 
           const data = await response.json();
 
-          const response1 = await fetch(`http://localhost:8080/api/v2/chat/${data[0]?.chatId}`, {
-            method: "GET",
-            headers: {
-              ...generateBasicAuthHeader(),
-              "Content-Type": "application/json",
-            },
-          });
+          const response1 = await fetch(
+            `http://localhost:8080/api/v2/chat/${data[0]?.chatId}`,
+            {
+              method: "GET",
+              headers: {
+                ...generateBasicAuthHeader(),
+                "Content-Type": "application/json",
+              },
+            }
+          );
           setLatestChatId(data.chatId);
           const data1 = await response1.json();
 
-          const messagesFromHistory = await data1.messages?.map(
-            (msg: any) => ({
-              id: data?.id,
-              playerId: data?.playerId ?? 0,
-              content: msg?.content,
-              description: data?.description
-                ? data?.description?.toString()
-                : "",
-              sender: msg?.source,
-              timestamp: msg?.timestamp,
-              isOwn: msg?.source === "PLAYER",
-            })
-          );
+          const messagesFromHistory = await data1.messages?.map((msg: any) => ({
+            id: data?.id,
+            playerId: data?.playerId ?? 0,
+            content: msg?.content,
+            description: data?.description ? data?.description?.toString() : "",
+            sender: msg?.source,
+            timestamp: msg?.timestamp,
+            isOwn: msg?.source === "PLAYER",
+          }));
 
           setMessages(messagesFromHistory);
           setLatestChatId(data.caseno); // Store the latest chat ID
+          setDisableChatInput(true);
         } catch (error) {
           console.error("Error fetching latest chat ID:", error);
         }
       }
-    }
+    };
     fetchLatestCaseId();
-    setWaitingForDescription(true);
+    // setWaitingForDescription(false);
   }, []);
 
   //  admin chat history
@@ -126,42 +126,40 @@ const ChatPage: React.FC = () => {
     const fetchLatestChatId = async () => {
       if (isUser === "ADMIN") {
         try {
-          // Fetch the latest chat ID 
-          const response = await fetch(`http://localhost:8080/api/v2/chat/${chat}`, {
-            method: "GET",
-            headers: {
-              ...generateBasicAuthHeader(),
-              "Content-Type": "application/json",
-            },
-          });
+          // Fetch the latest chat ID
+          const response = await fetch(
+            `http://localhost:8080/api/v2/chat/${chat}`,
+            {
+              method: "GET",
+              headers: {
+                ...generateBasicAuthHeader(),
+                "Content-Type": "application/json",
+              },
+            }
+          );
           const data = await response.json();
 
           setLatestChatId(data.chatId); // Store the latest chat ID
-          const messagesFromHistory = await data.messages?.map(
-            (msg: any) => ({
-              id: data?.id,
-              playerId: data?.playerId ?? 0,
-              content: msg?.content,
-              description: data?.description
-                ? data?.description?.toString()
-                : "",
-              sender: msg?.source,
-              timestamp: msg?.timestamp,
-              isOwn: msg?.source === "PLAYER",
-            })
-          );
-          setMessages(messagesFromHistory)
+          const messagesFromHistory = await data.messages?.map((msg: any) => ({
+            id: data?.id,
+            playerId: data?.playerId ?? 0,
+            content: msg?.content,
+            description: data?.description ? data?.description?.toString() : "",
+            sender: msg?.source,
+            timestamp: msg?.timestamp,
+            isOwn: msg?.source === "PLAYER",
+          }));
+          setMessages(messagesFromHistory);
+          setDisableChatInput(true);
         } catch (error) {
           console.error("Error fetching latest chat ID:", error);
         }
-      };
-    }
+      }
+    };
 
     fetchLatestChatId();
     setWaitingForDescription(true);
   }, [isAdmin]);
-
-
 
   const formatDate = () => {
     const date = new Date();
@@ -178,8 +176,6 @@ const ChatPage: React.FC = () => {
 
     return `${day}/${month}/${year} ${formattedHours}:${minutes}:${seconds} ${ampm}`;
   };
-
-
 
   const id = Number(localStorage.getItem("id"));
 
@@ -224,7 +220,26 @@ const ChatPage: React.FC = () => {
 
           setMessages(messagesFromHistory);
 
-          setShowContinuePrompt(true);
+          // Fetch the latest chat ID
+          const response = await fetch(
+            `http://localhost:8080/api/v2/chat/${chat}`,
+            {
+              method: "GET",
+              headers: {
+                ...generateBasicAuthHeader(),
+                "Content-Type": "application/json",
+              },
+            }
+          );
+          const data2 = await response.json();
+          console.log("data", data2);
+          // setLatestChatId(data.chatId); // Store the latest chat ID
+          if (data2?.status === "CASE_CREATED") {
+            setShowContinuePrompt(false);
+          } else {
+            setShowContinuePrompt(true);
+          }
+
           setWaitingForDescription(true);
         }
       } catch (error) {
@@ -235,9 +250,6 @@ const ChatPage: React.FC = () => {
     };
     fetchChatHistory(currentPage);
   }, [currentPage, id, latestChatId]);
-
-
-
 
   const handleContinueChat = async (shouldContinue: boolean) => {
     setIsLoading(true);
@@ -271,27 +283,25 @@ const ChatPage: React.FC = () => {
             })
           );
 
-         
           localStorage.setItem("chatId", latestUpdatedOn?.id);
           setWaitingForDescription(false);
-    
+
           const request: ChatRequest = {
             playerId: latestUpdatedOn?.playerId ?? 0,
-            chatId:latestUpdatedOn?.id,
-            message:
-            {
-              content: "This is the description given by the player in the desc box",
+            chatId: latestUpdatedOn?.id,
+            message: {
+              content:
+                "This is the description given by the player in the desc box",
               source: "PLAYER",
-              contentType: "Description"
-            }
-          }
+              contentType: "Description",
+            },
+          };
         } else {
           setMessages([]);
           setCurrentPage(0);
           localStorage.removeItem("chatId");
           setWaitingForDescription(false);
         }
-
       } else {
         setMessages([]);
         setCurrentPage(0);
@@ -305,7 +315,6 @@ const ChatPage: React.FC = () => {
       setIsLoading(false);
     }
   };
-
 
   const handleSendMessage = async (
     message: string,
@@ -325,9 +334,6 @@ const ChatPage: React.FC = () => {
     setMessages((prevMessages) => [...prevMessages, userMessage]);
 
     const chatIdValue = Number(localStorage.getItem("chatId"));
-
-
-
 
     if (isFirstMessage && !createContentId) {
       const request: ChatRequest = {
@@ -405,8 +411,8 @@ const ChatPage: React.FC = () => {
         body: JSON.stringify(request),
       });
 
-
       const data = await response.json();
+      console.log("post data", data);
 
       if (data?.chatId) {
         localStorage.setItem("chatId", data?.chatId);
@@ -433,18 +439,38 @@ const ChatPage: React.FC = () => {
         setIsFirstMessage(true);
         chatId.current = null;
       }
+      setDisableChatInput(true);
+
+      // Fetch the latest chat ID
+      const response1 = await fetch(
+        `http://localhost:8080/api/v2/chat/${chat}`,
+        {
+          method: "GET",
+          headers: {
+            ...generateBasicAuthHeader(),
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const data2 = await response1.json();
+      console.log("data", data2);
+      // setLatestChatId(data.chatId); // Store the latest chat ID
+      if (data2?.status === "IN_PROGRESS") {
+        setShowContinuePrompt(false);
+        setDisableChatInput(false);
+      }
 
       const ticketMessage: any | null =
         data?.message !== ""
           ? {
-            id: Date.now().toString(),
-            content: data?.message,
-            playerId: request?.playerId ?? 0,
-            description: "",
-            sender: "Support Bot",
-            timestamp: formatDate(),
-            isOwn: false,
-          }
+              id: Date.now().toString(),
+              content: data?.message,
+              playerId: request?.playerId ?? 0,
+              description: "",
+              sender: "Support Bot",
+              timestamp: formatDate(),
+              isOwn: false,
+            }
           : null;
 
       if (ticketMessage?.content) {
@@ -456,22 +482,22 @@ const ChatPage: React.FC = () => {
 
       const questionMessage: Message | null = content[0]?.trim()
         ? {
-          id: Date.now().toString(),
-          content: content[0],
-          sender: "Support Bot",
-          timestamp: formatDate(),
-          isOwn: false,
-        }
+            id: Date.now().toString(),
+            content: content[0],
+            sender: "Support Bot",
+            timestamp: formatDate(),
+            isOwn: false,
+          }
         : null;
 
       const answerMessage: Message | null = content[1]?.trim()
         ? {
-          id: Date.now().toString(),
-          content: content[1],
-          sender: "Support Bot",
-          timestamp: formatDate(),
-          isOwn: false,
-        }
+            id: Date.now().toString(),
+            content: content[1],
+            sender: "Support Bot",
+            timestamp: formatDate(),
+            isOwn: false,
+          }
         : null;
 
       const message: Message = {
@@ -512,7 +538,7 @@ const ChatPage: React.FC = () => {
     setIsText(null);
     try {
       const response = await fetch(
-        `http://localhost:8080/api/v2/content?contentId=1`,
+        `http://localhost:8080/api/v2/content?contentId=32`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -528,7 +554,10 @@ const ChatPage: React.FC = () => {
       if (questionnaireData.questions?.question) {
         setCurrentQuestion(questionnaireData.questions?.question); // Start with the first question
         await getResponse({
-          message: { content: questionnaireData.questions?.question, source: "BOT" },
+          message: {
+            content: questionnaireData.questions?.question,
+            source: "BOT",
+          },
           playerId: Number(localStorage.getItem("id")) ?? 0,
           chatId: Number(localStorage.getItem("chatId")) ?? 0,
         });
@@ -623,7 +652,11 @@ const ChatPage: React.FC = () => {
 
     // await getResponse({message:{content:answer.answer??"",source:"PLAYER"},playerId:Number(localStorage.getItem("id"))??0,chatId:Number(localStorage.getItem("chatId"))??0})
     if (answer.answer) {
-      await getResponse({ message: { content: answer.answer ?? "", source: "PLAYER" }, playerId: Number(localStorage.getItem("id")) ?? 0, chatId: Number(localStorage.getItem("chatId")) ?? 0 })
+      await getResponse({
+        message: { content: answer.answer ?? "", source: "PLAYER" },
+        playerId: Number(localStorage.getItem("id")) ?? 0,
+        chatId: Number(localStorage.getItem("chatId")) ?? 0,
+      });
     }
     if (answer.solution) {
       const solutionMessage: Message = {
@@ -657,7 +690,7 @@ const ChatPage: React.FC = () => {
           playerId: Number(localStorage.getItem("id")) ?? 0,
           chatId: Number(localStorage.getItem("chatId")) ?? 0,
         });
-      })
+      });
 
       // Disable input after showing solution
       setWaitingForDescription(false); // Disable input // true
@@ -689,14 +722,14 @@ const ChatPage: React.FC = () => {
           },
           ...(nextQuestion.answers?.length
             ? [
-              {
-                id: Date.now().toString(),
-                content: renderOptions(nextQuestion.answers),
-                sender: "Support Bot",
-                timestamp: formatDate(),
-                isOwn: false,
-              },
-            ]
+                {
+                  id: Date.now().toString(),
+                  content: renderOptions(nextQuestion.answers),
+                  sender: "Support Bot",
+                  timestamp: formatDate(),
+                  isOwn: false,
+                },
+              ]
             : []),
         ]);
 
@@ -781,8 +814,9 @@ const ChatPage: React.FC = () => {
                     <button
                       key={language.code}
                       onClick={() => changeLanguage(language.code)}
-                      className={`w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center space-x-2 ${currentLanguage === language.code ? "bg-gray-100" : ""
-                        }`}
+                      className={`w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center space-x-2 ${
+                        currentLanguage === language.code ? "bg-gray-100" : ""
+                      }`}
                     >
                       <span>{language.flag}</span>
                       <span>{language.name}</span>
@@ -825,7 +859,7 @@ const ChatPage: React.FC = () => {
               onSendMessage={(message: string) =>
                 handleSendMessage(message, null, null, false)
               }
-              disabled={isLoading || waitingForDescription}
+              disabled={isLoading || waitingForDescription || disableChatInput}
             />
             {/* Disable the input box when waiting for a solution or question  */}
           </div>
