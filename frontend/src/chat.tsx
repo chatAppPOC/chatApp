@@ -67,6 +67,8 @@ const ChatPage: React.FC = () => {
   const params = useParams();
   const isParams = params?.caseId ? true : false;
 
+  console.log("isParams", isParams, params.caseId)
+
   useEffect(() => {
     const fetchLatestCaseId = async () => {
       if ((isUser === "USER" || isUser === "ADMIN") && isParams) {

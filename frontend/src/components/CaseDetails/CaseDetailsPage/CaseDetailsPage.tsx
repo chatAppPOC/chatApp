@@ -14,6 +14,7 @@ import Col from "react-bootstrap/Col";
 
 import userNameMapping from "../../../../public/userNameMapping.json";
 import { LuCaseUpper } from "react-icons/lu";
+import { useNavigate } from "react-router-dom";
 // import ChatPage from "src/chat";
 interface CaseDetailsContent {
   id: number;
@@ -77,10 +78,10 @@ const CaseDetailsPage: React.FC<CaseDetailsPageProps> = ({
     { label: "IN_PROGRESS", value: "IN_PROGRESS" },
   ];
 
-  // const navigate = useNavigate();
-  // const handelGoToChat = () => {
-  //   navigate(`/chat/${caseId}`);
-  // };
+  const navigate = useNavigate();
+  const handelGoToChat = () => {
+    navigate(`/chat/${caseId}`);
+  };
 
   const handleCaseTypeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const updatedContent = { ...caseContent, caseType: event.target.value };
@@ -496,10 +497,8 @@ const CaseDetailsPage: React.FC<CaseDetailsPageProps> = ({
               ) : null}
 
               <button
-                onClick={() => {
-                  // Navigate to ChatPage component
-                  window.location.href = "/chat";
-                }}
+                onClick={handelGoToChat}
+               
                 style={{
                   backgroundColor: "#007bff",
                   color: "#fff",

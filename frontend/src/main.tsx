@@ -13,12 +13,12 @@ import "./i18n"; // Import the i18n configuration
 import Layout from "./components/Layout";
 import FeedBack from "./components/FeedBack/FeedBack"; // Import the FeedBack component
 import PrivateRoute from "./components/Authentication/PrivateRoutes";
-
+ 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <Router>
     <Routes>
       <Route path="/login" element={<LoginPage />} />
-
+ 
       <Route path="/" element={<Layout />}>
         <Route index element={<ChatPage />} />
         <Route
@@ -53,8 +53,16 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
             </PrivateRoute>
           }
         />
-
+ 
         <Route path="feedbackHistory" element={<FeedBackHistoryByCaseId />} />
+        <Route
+          path="chat/:caseId"
+          element={
+         <PrivateRoute allowedRole={ "USER" }>
+            <ChatPage  />
+             </PrivateRoute>
+            }
+          />
         <Route
           path="chat"
           element={
