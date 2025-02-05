@@ -29,7 +29,7 @@ public class JobController {
 	@PreAuthorize("hasAuthority('ADMIN')")
 	public String sendEmailJob(@RequestBody Notification notification) throws Exception {
 		try {	
-			if(notification.getScheduleTime() == null && notification.getExpireTime() == null) {
+			if(notification.getScheduledTime() == null && notification.getExpireTime() == null) {
 				notification.setNotificationStatus(NotificationStatus.SENT);
 				notification.setSource(NotificationSource.EMAIL);
 				LOG.info("JobController.sendEmailJob({}) => Email sent sucessfully for player !!!!!!  " + notification.getPlayerId());

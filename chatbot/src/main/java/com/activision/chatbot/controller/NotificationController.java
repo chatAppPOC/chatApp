@@ -56,7 +56,7 @@ public class NotificationController {
 				// Convert scheduleTime and expireTime to Instant
 				Instant scheduleTimeInstant = notificationRequest.getScheduleTime().toInstant(ZoneOffset.UTC);
 				Instant expireTimeInstant = notificationRequest.getExpireTime().toInstant(ZoneOffset.UTC);
-				notification.setScheduleTime(scheduleTimeInstant);
+				notification.setScheduledTime(scheduleTimeInstant);
 				notification.setExpireTime(expireTimeInstant);
 
 				// Set notification sentCount and static count

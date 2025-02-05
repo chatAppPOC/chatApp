@@ -48,8 +48,8 @@ public class NotificationService {
     
         for (Notification notification : notifications) {
             try {
-                if (notification.getScheduleTime() != null) {
-                    Instant scheduleInstant = notification.getScheduleTime().atZone(ZoneOffset.UTC).toInstant();
+                if (notification.getScheduledTime() != null) {
+                    Instant scheduleInstant = notification.getScheduledTime().atZone(ZoneOffset.UTC).toInstant();
     
                     if (scheduleInstant.isAfter(Instant.now())) {
                         notification.setNotificationStatus(Notification.NotificationStatus.PENDING);
@@ -78,7 +78,7 @@ public class NotificationService {
                         Thread.sleep(3000);
                     } else if (notification.getSentCount() >= notification.getCount()) {
                         notification.setNotificationStatus(Notification.NotificationStatus.SENT);
-                        LOG.info("All notifications for ID {} have been sent.", notification.getId());
+                        //LOG.info("All notifications for ID {} have been sent.", notification.getId());
                     }
                 }
             } catch (Exception e) {
@@ -96,7 +96,7 @@ public class NotificationService {
         
             notifications.forEach(notification -> {
                 if (notification.getSentCount() < notification.getCount()) {
-                    Instant scheduleInstant = notification.getScheduleTime().atZone(ZoneOffset.UTC).toInstant();
+                    Instant scheduleInstant = notification.getScheduledTime().atZone(ZoneOffset.UTC).toInstant();
                     if (scheduleInstant.isBefore(Instant.now()) && notification.getSource()!=null) {
                         try {
                             Map<String, String> payload = new HashMap<>();
@@ -160,7 +160,7 @@ public class NotificationService {
     
             Instant scheduleTimeInstant = notificationRequest.getScheduleTime().toInstant(ZoneOffset.UTC);
             Instant expireTimeInstant = notificationRequest.getExpireTime().toInstant(ZoneOffset.UTC);
-            existingNotification.setScheduleTime(scheduleTimeInstant);
+            existingNotification.setScheduledTime(scheduleTimeInstant);
             existingNotification.setExpireTime(expireTimeInstant);
     
             int sentCount = notificationRequest.getSentCount() != null

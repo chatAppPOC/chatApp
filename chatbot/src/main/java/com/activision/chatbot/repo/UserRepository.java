@@ -23,7 +23,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	@Query(value = """
 		    select u.* from users u inner join users_roles ur ON u.id = ur.user_id
 			inner join roles r ON ur.role_id = r.id
-			where r.name in ('USER') and u.enabled = true
+			where r.name in ('USER', 'ADMIN') and u.enabled = true
 			""", nativeQuery = true)
 	List<User> fetchUsers();
 }

@@ -35,7 +35,7 @@ public class EmailJob extends QuartzJobBean {
 			List<Notification> notifications = notificationRepo.findNotificationsToSend(Instant.now());		
 			for(Notification notify : notifications) {
                     Instant now = Instant.now();
-                    if (now.isAfter(notify.getScheduleTime()) && now.isBefore(notify.getExpireTime())) {
+                    if (now.isAfter(notify.getScheduledTime()) && now.isBefore(notify.getExpireTime())) {
                     	emailService.processNotification(notify);
                     
                 } else {
