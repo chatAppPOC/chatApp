@@ -75,6 +75,7 @@ const CaseDetailsPage: React.FC<CaseDetailsPageProps> = ({
     { label: "OPEN", value: "OPEN" },
     { label: "RESOLVED", value: "RESOLVED" },
     { label: "IN_PROGRESS", value: "IN_PROGRESS" },
+    { label: "RE_OPENED", value: "RE_OPENED" },
   ];
 
   // const navigate = useNavigate();
