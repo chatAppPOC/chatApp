@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -194,9 +195,9 @@ public class UserManagementController {
 	}
 
 	@GetMapping("/users")
-	public List<User> getUsers() {
+	public List<User> getUsers(@RequestParam(required = false) String role) {
 		try {
-			List<User> response = userRepo.fetchUsers();
+			List<User> response = userRepo.fetchUsers(role);
 			LOG.info("Api.getUsers() => {}", response);
 			return response;
 		} catch (Exception e) {
