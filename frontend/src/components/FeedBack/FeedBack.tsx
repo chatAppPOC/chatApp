@@ -40,7 +40,8 @@ const FeedBack: React.FC = () => {
             headers: {
               "Content-Type": "application/json",
               "Access-Control-Allow-Origin": "*",
-              Authorization: "Basic " + btoa(`admin@test.com:admin123`),
+              // Authorization: "Basic " + btoa(`admin@test.com:admin123`),
+              Authorization: "Basic " + btoa(`player@test.com:player123`),
             },
           }
         );
