@@ -171,20 +171,20 @@ public class ChatController {
 					LOG.warn("Case not found for contentId: {}", contentId);
 					throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Case not found");
 				}
-				Feedback existingFeedback = feedbackRepo.findByCaseId(contentId);
+				//Feedback existingFeedback = feedbackRepo.findByCaseId(contentId);
 				// Update or create feedback for CASE
 				response = chatService.providePostResolutionFeedback(request, caseResp.orElse(null), null,
-						existingFeedback);
+						null);
 			} else if (FeedbackCategory.valueOf(contentType) == FeedbackCategory.CHAT) {
 				chatResp = chatRepository.findById(contentId);
 				if (chatResp.isEmpty()) {
 					LOG.warn("Chat not found for contentId: {}", contentId);
 					throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Chat not found");
 				}
-				Feedback existingFeedback = feedbackRepo.findByChatId(contentId);
+				//Feedback existingFeedback = feedbackRepo.findByChatId(contentId);
 				// Update or create feedback for CHAT
 				response = chatService.providePostResolutionFeedback(request, null, chatResp.orElse(null),
-						existingFeedback);
+						null);
 			} else {
 				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid content type");
 			}
