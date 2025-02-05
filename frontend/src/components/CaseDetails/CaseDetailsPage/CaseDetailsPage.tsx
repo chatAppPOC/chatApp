@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
-
 import "../../CaseDetails/CaseDetailsPage/CaseDetailsPage.css";
 import moment from "moment-timezone";
 import MyDatePicker from "../../shared/DatePicker/MyDatePicker";
-
+import { useNavigate } from "react-router-dom";
 import "../../CaseDetails/CaseDetailsGrid/CaseDetailsTable.css";
 import Modal from "react-modal";
 //import { Modal } from "react-bootstrap";
@@ -77,11 +76,6 @@ const CaseDetailsPage: React.FC<CaseDetailsPageProps> = ({
     { label: "IN_PROGRESS", value: "IN_PROGRESS" },
     { label: "RE_OPENED", value: "RE_OPENED" },
   ];
-
-  // const navigate = useNavigate();
-  // const handelGoToChat = () => {
-  //   navigate(`/chat/${caseId}`);
-  // };
 
   const handleCaseTypeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const updatedContent = { ...caseContent, caseType: event.target.value };
@@ -242,7 +236,7 @@ const CaseDetailsPage: React.FC<CaseDetailsPageProps> = ({
         // const feedbackArray = data
         // Object.keys(data).map((key) =>
         // .map((feedback: any) => { });
-        console.error(" data:", data);
+        //console.error(" data:", data);
 
         setFeedbacks(data);
 
