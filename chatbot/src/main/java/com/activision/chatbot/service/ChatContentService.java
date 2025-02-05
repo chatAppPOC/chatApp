@@ -17,8 +17,10 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.activision.chatbot.dto.ContentResponse;
 import com.activision.chatbot.entity.Content;
+import com.activision.chatbot.entity.Player;
 import com.activision.chatbot.exception.UniqueConstraintViolationException;
 import com.activision.chatbot.repo.ContentRepository;
+import com.activision.chatbot.repo.PlayerRepository;
 
 @Service
 public class ChatContentService {
@@ -27,6 +29,9 @@ public class ChatContentService {
 
 	@Autowired
 	private ContentRepository contentRepository;
+	
+	@Autowired
+	private PlayerRepository playerRepository;
 
 	public Content getContentv2(Long id) {
 		try {
@@ -170,6 +175,16 @@ public class ChatContentService {
 			LOG.error("ChatContentService.copyContentv2({}) => error!!!", srcContentId, e);
 			throw e;
 		}
+	}
+	
+	public Optional<Content> getContentByPlayerId(Long playerId){
+		Optional<Player> player = playerRepository.findById(playerId);
+		if(player.isPresent()) {
+			List<Content> list = contentRepository.findByLanguageIdAndTitle(player.get().getPreferredLanguage(),
+					player.get().getTitle());
+			return list.isEmpty() ? Optional.empty() : Optional.of(list.get(0));
+		}
+		return Optional.empty();
 	}
     
 }

@@ -38,3 +38,8 @@ ADD CONSTRAINT unique_name UNIQUE (name);
 
 ALTER TABLE content
 ADD CONSTRAINT unique_title_language UNIQUE (language_id, title_id);
+
+--5-02-2025--
+ALTER TABLE case_audit DROP CONSTRAINT case_audit_status_check;
+ALTER TABLE case_audit ADD CONSTRAINT case_audit_status_check 
+CHECK (status IN ('OPEN', 'IN_PROGRESS', 'RESOLVED', 'RE_OPENED'));

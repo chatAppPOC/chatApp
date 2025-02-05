@@ -16,7 +16,7 @@ public class Notification {
 
     private Long playerId; // Reference to the Player table
 
-    private Instant scheduleTime; // Scheduled time for the notification
+    private Instant scheduledTime; // Scheduled time for the notification
 
     @Enumerated(EnumType.STRING)
 	private NotificationStatus notificationStatus;
@@ -69,12 +69,12 @@ public class Notification {
         this.playerId = playerId;
     }
 
-    public Instant getScheduleTime() {
-        return scheduleTime;
+    public Instant getScheduledTime() {
+        return scheduledTime;
     }
 
-    public void setScheduleTime(Instant scheduleTime) {
-        this.scheduleTime = scheduleTime;
+    public void setScheduledTime(Instant scheduledTime) {
+        this.scheduledTime = scheduledTime;
     }
 
     public Instant getExpireTime() {
