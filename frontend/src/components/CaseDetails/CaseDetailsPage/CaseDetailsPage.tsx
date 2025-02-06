@@ -13,7 +13,6 @@ import Col from "react-bootstrap/Col";
 
 import userNameMapping from "../../../../public/userNameMapping.json";
 import { LuCaseUpper } from "react-icons/lu";
-import { useNavigate } from "react-router-dom";
 // import ChatPage from "src/chat";
 interface CaseDetailsContent {
   id: number;

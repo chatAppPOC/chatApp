@@ -56,6 +56,7 @@ const ChatPage: React.FC = () => {
   const [latestChatId, setLatestChatId] = useState<number | null>(null);
   const [continueWithChat, setContinueWithChat] = useState(false);
   const [disableChatInput, setDisableChatInput] = useState(false);
+  const [playerId, setPlayerId] = useState("");
 
   const isAdmin = localStorage.getItem("role");
   const chat = Number(localStorage.getItem("chatId")) ?? 0;
@@ -67,7 +68,7 @@ const ChatPage: React.FC = () => {
   const params = useParams();
   const isParams = params?.caseId ? true : false;
 
-  console.log("isParams", isParams, params.caseId)
+  console.log("isParams", isParams, params.caseId);
 
   useEffect(() => {
     const fetchLatestCaseId = async () => {
@@ -196,6 +197,8 @@ const ChatPage: React.FC = () => {
           }
         );
         const data = await response.json();
+        console.log("player data", data);
+
         if (data?.length == 0) {
           setShowContinuePrompt(false);
           setWaitingForDescription(false);
@@ -234,15 +237,16 @@ const ChatPage: React.FC = () => {
             }
           );
           const data2 = await response.json();
-          console.log("data", data2);
+          console.log("data", data2.playerId);
+          setPlayerId(data2.playerId);
           // setLatestChatId(data.chatId); // Store the latest chat ID
           if (data2?.status === "CASE_CREATED") {
             setShowContinuePrompt(false);
+            setWaitingForDescription(false);
           } else {
             setShowContinuePrompt(true);
           }
-
-          setWaitingForDescription(true);
+          // setWaitingForDescription(false);
         }
       } catch (error) {
         console.error("Error fetching chat history:", error);
@@ -441,7 +445,7 @@ const ChatPage: React.FC = () => {
         setIsFirstMessage(true);
         chatId.current = null;
       }
-      setDisableChatInput(true);
+      // setDisableChatInput(true);
 
       // Fetch the latest chat ID
       const response1 = await fetch(
@@ -549,6 +553,7 @@ const ChatPage: React.FC = () => {
         }
       );
       const data = await response.json();
+      console.log("playerQAData", data);
       const questionnaireData = data.content.questionare;
       setQuestionnaire(questionnaireData);
       // Set the initial question if available
