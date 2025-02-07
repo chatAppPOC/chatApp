@@ -5,6 +5,7 @@ import tailwindcss from "tailwindcss";
 import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
+  define: { global:"globalThis"}, // Define an empty object for "global" },
   css: {
     postcss: {
       plugins: [tailwindcss, autoprefixer],

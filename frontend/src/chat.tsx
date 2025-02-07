@@ -6,9 +6,9 @@ import ChatInput from "./components/ChatPage/ChatInput";
 import { LANGUAGES } from "./constants/LANGUAGES";
 import { timeStamp } from "console";
 import { generateBasicAuthHeader } from "./utils/basicAuth";
-import { connectWebSocket } from "./services/webSocketservices";
 import { useLocation, useParams } from "react-router-dom";
 import { c } from "node_modules/vite/dist/node/types.d-aGj9QkWt";
+import PushNotification from "./pushNotification/PushNotification";
 
 interface Message {
   id: string;
@@ -56,6 +56,7 @@ const ChatPage: React.FC = () => {
   const [latestChatId, setLatestChatId] = useState<number | null>(null);
   const [continueWithChat, setContinueWithChat] = useState(false);
   const [disableChatInput, setDisableChatInput] = useState(false);
+  const [notification, setNotifications] = useState([]);
   const [playerId, setPlayerId] = useState("");
 
   const isAdmin = localStorage.getItem("role");
@@ -130,6 +131,7 @@ const ChatPage: React.FC = () => {
       if (isUser === "ADMIN") {
         try {
           // Fetch the latest chat ID
+          const chat = Number(localStorage.getItem("chatId")) || 0;
           const response = await fetch(
             `http://localhost:8080/api/v2/chat/${chat}`,
             {
@@ -140,6 +142,7 @@ const ChatPage: React.FC = () => {
               },
             }
           );
+          if (!response.ok) throw new Error("Failed to fetch chat");
           const data = await response.json();
 
           setLatestChatId(data.chatId); // Store the latest chat ID
@@ -197,7 +200,6 @@ const ChatPage: React.FC = () => {
           }
         );
         const data = await response.json();
-        console.log("player data", data);
 
         if (data?.length == 0) {
           setShowContinuePrompt(false);
@@ -237,7 +239,6 @@ const ChatPage: React.FC = () => {
             }
           );
           const data2 = await response.json();
-          console.log("data", data2.playerId);
           setPlayerId(data2.playerId);
           // setLatestChatId(data.chatId); // Store the latest chat ID
           if (data2?.status === "CASE_CREATED") {
@@ -418,7 +419,6 @@ const ChatPage: React.FC = () => {
       });
 
       const data = await response.json();
-      console.log("post data", data);
 
       if (data?.chatId) {
         localStorage.setItem("chatId", data?.chatId);
@@ -459,7 +459,6 @@ const ChatPage: React.FC = () => {
         }
       );
       const data2 = await response1.json();
-      console.log("data", data2);
       // setLatestChatId(data.chatId); // Store the latest chat ID
       if (data2?.status === "IN_PROGRESS") {
         setShowContinuePrompt(false);
@@ -554,7 +553,6 @@ const ChatPage: React.FC = () => {
         }
       );
       const data = await response.json();
-      console.log("playerQAData", data);
       const questionnaireData = data.content.questionare;
       setQuestionnaire(questionnaireData);
       // Set the initial question if available
@@ -782,6 +780,7 @@ const ChatPage: React.FC = () => {
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-100 via-blue-50 to-blue-200">
       <div className="w-full max-w-7xl h-[96vh] bg-white rounded-2xl shadow-2xl flex overflow-hidden relative">
         {/* Chat Area */}
+          <PushNotification/>
         <div className="w-full flex flex-col">
           {/* Chat Header with Language Selector */}
           <div className="bg-gray-100 p-4 border-b border-gray-200 flex items-center justify-between">
