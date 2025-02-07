@@ -54,6 +54,12 @@ input.childs {
   outline: none;
   box-sizing: border-box;
 }
+.reopendDate{
+  width: 230px;
+  height: 27px;
+  border: 1px solid #DDD;
+  border-radius: 4px;
+}
 
 input.childs.child {
   border: 1px solid #ddd;

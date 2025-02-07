@@ -5,14 +5,10 @@ import MyDatePicker from "../../shared/DatePicker/MyDatePicker";
 import { useNavigate } from "react-router-dom";
 import "../../CaseDetails/CaseDetailsGrid/CaseDetailsTable.css";
 import Modal from "react-modal";
-//import { Modal } from "react-bootstrap";
-import Button from "react-bootstrap/Button";
-import Container from "react-bootstrap/Container";
-import Row from "react-bootstrap/Row";
-import Col from "react-bootstrap/Col";
-
 import userNameMapping from "../../../../public/userNameMapping.json";
 import { LuCaseUpper } from "react-icons/lu";
+import { newDate } from "react-datepicker/dist/date_utils";
+import FeedbackHistoryByCaseId from "src/components/FeedbackHistoryByCaseId/FeedBackHistoryByCaseId";
 // import ChatPage from "src/chat";
 interface CaseDetailsContent {
   id: number;
@@ -21,6 +17,7 @@ interface CaseDetailsContent {
   status: string;
   completedOn: string;
   startedOn: string;
+  reopenedOn: string | null;
   userName: string;
   userId: number;
 }
@@ -45,6 +42,7 @@ const CaseDetailsPage: React.FC<CaseDetailsPageProps> = ({
     status: "",
     completedOn: "",
     startedOn: "",
+    reopenedOn: "",
     userName: "",
     userId: 0,
     // date: "",
@@ -60,6 +58,7 @@ const CaseDetailsPage: React.FC<CaseDetailsPageProps> = ({
   const [estimatedDays, setEstimatedDays] = useState<number>(0);
   const [userOptions, setUserOptions] = useState<any[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [reopenDate, setReopenDate] = useState<Date | null>(null);
   const [selectedCompltedDate, setSelectedCompletedDate] =
     useState<Date | null>(null);
   const [caseStatus, setCaseStatus] = useState<{ status: string }>({
@@ -69,6 +68,7 @@ const CaseDetailsPage: React.FC<CaseDetailsPageProps> = ({
 
   const [errorMsg, setErrorMsg] = useState<boolean>(false);
   const [SubmitButton, setSubmitButton] = useState<boolean>(false);
+  const [reopened, setReopend] = useState<boolean>(false);
 
   const statusOptions = [
     { label: "OPEN", value: "OPEN" },
@@ -98,8 +98,26 @@ const CaseDetailsPage: React.FC<CaseDetailsPageProps> = ({
   };
 
   const handleStatusChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const updatedContent = { ...caseContent, status: event.target.value };
-    setCaseContent(updatedContent);
+    if (event.target.value === "RE_OPENED") {
+      const newReopnedDate = new Date().toISOString().split("T")[0];
+      // const newReopnedDate = new Date().toLocaleDateString("en-US");
+      console.log("currnt date", new Date().toISOString().split("T")[0]);
+      setReopenDate(new Date(newReopnedDate));
+      const updatedContent = {
+        ...caseContent,
+        status: event.target.value,
+        reopenedOn: newReopnedDate ? newReopnedDate.toString() : null,
+        completedOn: null,
+      };
+
+      console.log("updatedContent, ", updatedContent);
+      setCaseContent(updatedContent);
+
+      setReopend(true);
+    } else {
+      const updatedContent = { ...caseContent, status: event.target.value };
+      setCaseContent(updatedContent);
+    }
     setSubmitButton(true);
   };
 
@@ -138,12 +156,47 @@ const CaseDetailsPage: React.FC<CaseDetailsPageProps> = ({
       "and completed date ",
       caseContent.completedOn
     );
-    if (caseContent.startedOn && caseContent.completedOn) {
+    if (
+      caseContent.startedOn &&
+      caseContent.completedOn &&
+      !caseContent.reopenedOn
+    ) {
       const numberOfDays = moment(caseContent.completedOn).diff(
         moment(caseContent.startedOn),
         "days"
       );
-      setEstimatedDays(numberOfDays);
+      if (numberOfDays >= 0) {
+        setEstimatedDays(numberOfDays);
+      } else {
+        setErrorMsg(true);
+        const updatedContent = { ...caseContent, completedOn: "" };
+        setCaseContent(updatedContent);
+      }
+    } else if (
+      caseContent.startedOn &&
+      caseContent.reopenedOn &&
+      caseContent.completedOn
+    ) {
+      const formattedReopenedOn = moment(caseContent.reopenedOn).format(
+        "MM/DD/YYYY"
+      );
+      const formattedCompletedOn = moment(caseContent.completedOn).format(
+        "MM/DD/YYYY"
+      );
+      console.log(
+        `Reopened On: ${formattedReopenedOn}, Completed On: ${formattedCompletedOn}`
+      );
+      const numberOfDays = moment(formattedCompletedOn).diff(
+        moment(formattedReopenedOn),
+        "days"
+      );
+      if (numberOfDays >= 0) {
+        setEstimatedDays(numberOfDays);
+      } else {
+        setErrorMsg(true);
+        const updatedContent = { ...caseContent, completedOn: "" };
+        setCaseContent(updatedContent);
+      }
     } else {
       setEstimatedDays(0); // or set a default message if needed
     }
@@ -177,6 +230,7 @@ const CaseDetailsPage: React.FC<CaseDetailsPageProps> = ({
       setSelectedCompletedDate(data[0].completedOn);
       // setCaseStatus((prev) => ({ ...prev, status: data[0].status }));
       setCaseStatus(data[0].status);
+      setReopenDate(data[0].reopenedOn);
     } catch (error) {
       if (error instanceof Error) {
         setError(error.message);
@@ -210,7 +264,9 @@ const CaseDetailsPage: React.FC<CaseDetailsPageProps> = ({
         firstName: user.firstName,
         lastName: user.lastName,
         userId: user.id,
+        hasUserRole: user.roles.some((role: any) => role.name === "USER"),
       }));
+      console.log("userOptionsData", userOptionsData);
       setUserOptions(userOptionsData);
     } catch (error) {
       if (error instanceof Error) {
@@ -257,6 +313,7 @@ const CaseDetailsPage: React.FC<CaseDetailsPageProps> = ({
   ): Promise<void> => {
     event.preventDefault();
     try {
+      console.log("caseContent", caseContent);
       const { chatId, ...filteredCaseContent } = caseContent;
       const response = await fetch(`http://localhost:8080/api/case/re-assign`, {
         method: "PUT",
@@ -280,15 +337,18 @@ const CaseDetailsPage: React.FC<CaseDetailsPageProps> = ({
     }
   };
 
-  // const handleFeedbackClick = () => {
-  //   // Navigate to CaseDetailsTable component
-  //   window.location.href = `feedback?caseId=${caseId}`; // Correct path to CaseDetailsTable component with caseId
-  // };
-
   const handleFeedbackClick = () => {
     // Navigate to CaseDetailsTable component
-    window.location.href = `feedbackHistory?caseId=${caseId}`; // Correct path to CaseDetailsTable component with caseId
+
+    navigate(`/feedback?caseId=${caseId}`, {
+      state: { gameName: "gameName", desc: "lagging" },
+    });
+    // window.location.href = `feedback?caseId=${caseId}`; // Correct path to CaseDetailsTable component with caseId
   };
+
+  // const handleFeedbackClick = () => {
+  //   return <FeedbackHistoryByCaseId gameName={"gameName"} caseId={caseId} />;
+  // };
   return (
     <>
       {isModalOpen && !loading && (
@@ -357,16 +417,18 @@ const CaseDetailsPage: React.FC<CaseDetailsPageProps> = ({
                       {"Select User"}
                       {/* {caseContent.userName} */}
                     </option>
-                    {userOptions.map((userName) => (
-                      <option
-                        key={userName.userId}
-                        value={userName.userId}
-                        // onClick={() => handleAssignedToChange(userName.id)}
-                      >
-                        {`${userName.firstName} ${userName.lastName}`}
-                        {/* {caseContent.userName} */}
-                      </option>
-                    ))}
+                    {userOptions
+                      .filter((userName) => userName.hasUserRole)
+                      .map((userName) => (
+                        <option
+                          key={userName.userId}
+                          value={userName.userId}
+                          // onClick={() => handleAssignedToChange(userName.id)}
+                        >
+                          {`${userName.firstName} ${userName.lastName}`}
+                          {/* {caseContent.userName} */}
+                        </option>
+                      ))}
                   </select>
                 </div>
               </div>
@@ -400,9 +462,73 @@ const CaseDetailsPage: React.FC<CaseDetailsPageProps> = ({
                         setSelectedDate(selectedDate);
                       }
                     }}
+                    reopend={reopened}
                   />
                 </div>
               </div>
+              <div className="clear" />
+
+              <div className="row rows">
+                {reopened || caseContent.reopenedOn ? (
+                  <>
+                    <div className="col-md-6 child">Reopen Date:</div>
+                    <div className="col-md-6 childc">
+                      {/* <MyDatePicker
+                        reopenDt={reopenDate}
+                        onChange={(reopenDate: Date | null) => {
+                          if (!reopenDate) {
+                            const updatedContent = {
+                              ...caseContent,
+                              reopenedOn: caseContent.reopenedOn,
+                            };
+                            setCaseContent(updatedContent);
+                          } else {
+                            const updatedContent = {
+                              ...caseContent,
+                              reopenedOn: reopenDate
+                                ? reopenDate.toISOString()
+                                : caseContent.reopenedOn,
+                            };
+                            setCaseContent(updatedContent);
+                            setReopenDate(reopenDate);
+                          }
+                        }}
+                        reopend={reopened}
+                      /> */}
+
+                      <input
+                        type="text"
+                        className="reopendDate"
+                        value={moment(caseContent.reopenedOn).format(
+                          "MM/DD/YYYY"
+                        )}
+                        onChange={(e) => {
+                          const date = e.target.value
+                            ? new Date(e.target.value)
+                            : null;
+                          if (!date) {
+                            const updatedContent = {
+                              ...caseContent,
+                              reopenedOn: caseContent.reopenedOn,
+                            };
+                            setCaseContent(updatedContent);
+                          } else {
+                            const updatedContent = {
+                              ...caseContent,
+                              reopenedOn: date.toISOString(),
+                            };
+                            setCaseContent(updatedContent);
+                            setReopenDate(date);
+                          }
+                        }}
+                      />
+                    </div>
+                  </>
+                ) : (
+                  ""
+                )}
+              </div>
+
               <div className="clear" />
 
               <div className="row rows">
@@ -431,6 +557,12 @@ const CaseDetailsPage: React.FC<CaseDetailsPageProps> = ({
                           completedOn: selectedCompltedDate.toISOString(),
                         }));
                         setSelectedCompletedDate(selectedCompltedDate);
+                        setErrorMsg(false);
+                      } else if (
+                        selectedCompltedDate >
+                        new Date(caseContent.reopenedOn?.toString() || "")
+                      ) {
+                        setErrorMsg(false);
                       } else {
                         setErrorMsg(true);
                       }
@@ -472,9 +604,6 @@ const CaseDetailsPage: React.FC<CaseDetailsPageProps> = ({
               style={{
                 textAlign: "right",
                 position: "relative",
-
-                //right: "20px",
-                //width: "calc(100% - 40px)",
               }}
             >
               {feedbacks.feedback ? (
@@ -497,7 +626,6 @@ const CaseDetailsPage: React.FC<CaseDetailsPageProps> = ({
 
               <button
                 onClick={handelGoToChat}
-               
                 style={{
                   backgroundColor: "#007bff",
                   color: "#fff",

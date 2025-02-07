@@ -6,15 +6,16 @@ interface FeedbackContent {
   description?: string;
 }
 
-const FeedbackHistoryByCaseId: React.FC = () => {
+const FeedbackHistoryByCaseId: React.FC<{}> = () => {
   const [feedbacks, setFeedbacks] = useState<FeedbackContent>({
     feedback: [],
     description: "",
   });
   const location = useLocation();
+  const { gameName, desc } = location.state || {}; // Handle undefined state
   const queryParams = new URLSearchParams(location.search);
   const caseId = queryParams.get("caseId");
-  console.log("get case id from location url ", caseId);
+  console.log("get case id from location url ", caseId, gameName, desc);
   // const [feedbackData, setFeedbackData] = useState<{ [key: string]: any }>({});
 
   useEffect(() => {
@@ -46,8 +47,7 @@ const FeedbackHistoryByCaseId: React.FC = () => {
         // const data = await response.json();
         // console.error(" feedback data:", data);
         setFeedbacks(data);
-
-        console.log(" feedbacks data:", feedbacks);
+        console.log(" feedbacks data:", data);
       } catch (error) {
         console.error("Error fetching feedback data:", error);
       }
@@ -84,6 +84,10 @@ const FeedbackHistoryByCaseId: React.FC = () => {
   // }, []);
   return (
     <>
+      <h1>
+        <b>Cased Id: 1- Lagging Issue {gameName}</b>
+      </h1>
+
       <h2>Feedback History</h2>
       {feedbacks ? (
         <>

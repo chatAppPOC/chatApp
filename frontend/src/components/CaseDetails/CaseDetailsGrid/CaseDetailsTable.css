@@ -73,6 +73,7 @@
     overflow-y: auto;
     padding-top: 1.5rem;
     padding-left: 0.8rem;
+    resize: none;
   }
 
   .desc textarea::-webkit-scrollbar {
