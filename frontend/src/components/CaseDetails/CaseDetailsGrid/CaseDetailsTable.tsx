@@ -28,6 +28,7 @@ const CaseDetailsTable = () => {
   const [error, setError] = useState<string | null>(null);
   const [fetchUsers, setFetchUsers] = useState<User[]>([]);
   const [titles, setTitles] = useState<{ id: number; name: string }[]>([]);
+  const [titleName, setTitleName] = useState<string>("");
 
   const handleRowClick = (id: number) => {
     setSelectedCaseId(id);
@@ -72,7 +73,9 @@ const CaseDetailsTable = () => {
     if (!titleId) return "N/A"; // Handle cases where titleId is null
     const title = titles.find((t) => t.id == titleId);
     // return title ? `${title.name} (${titleId})` : `Unknown (${titleId})`;
-    return title ? `${title.name}` : `Unknown (${titleId})`;
+
+    const getGameName = title ? `${title.name}` : `Unknown (${titleId})`;
+    return getGameName;
   };
 
   const getAssignedTo = (userId: number | null): string => {
@@ -223,6 +226,7 @@ const CaseDetailsTable = () => {
           isModalOpen={modalIsOpen}
           closeModal={handleCloseModal}
           status={status}
+          titles={titles}
         />
       )}
     </div>

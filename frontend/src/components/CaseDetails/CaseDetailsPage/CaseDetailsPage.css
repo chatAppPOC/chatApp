@@ -59,6 +59,7 @@ input.childs {
   height: 27px;
   border: 1px solid #DDD;
   border-radius: 4px;
+  padding:10px;
 }
 
 input.childs.child {

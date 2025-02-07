@@ -6,16 +6,24 @@ interface FeedbackContent {
   description?: string;
 }
 
-const FeedbackHistoryByCaseId: React.FC<{}> = () => {
+const FeedbackHistoryByCaseId: React.FC = () => {
   const [feedbacks, setFeedbacks] = useState<FeedbackContent>({
     feedback: [],
     description: "",
   });
   const location = useLocation();
   const { gameName, desc } = location.state || {}; // Handle undefined state
+
   const queryParams = new URLSearchParams(location.search);
   const caseId = queryParams.get("caseId");
-  console.log("get case id from location url ", caseId, gameName, desc);
+  console.log(
+    "get case id from location url ",
+    caseId,
+    gameName,
+    desc,
+    location.state
+  );
+
   // const [feedbackData, setFeedbackData] = useState<{ [key: string]: any }>({});
 
   useEffect(() => {
@@ -37,7 +45,7 @@ const FeedbackHistoryByCaseId: React.FC<{}> = () => {
         // const feedbackArray = data
         // Object.keys(data).map((key) =>
         // .map((feedback: any) => { });
-        console.error(" data:", data);
+        console.log(" data:", data);
 
         // Object.values(data).forEach((feedback: any) => {
         //   console.log(" feedback:", feedback);
@@ -84,11 +92,14 @@ const FeedbackHistoryByCaseId: React.FC<{}> = () => {
   // }, []);
   return (
     <>
+      <h2>Feedback History</h2>
+      <br></br>
       <h1>
-        <b>Cased Id: 1- Lagging Issue {gameName}</b>
+        <b>
+          Cased Id: 1- {gameName}-{desc}
+        </b>
       </h1>
 
-      <h2>Feedback History</h2>
       {feedbacks ? (
         <>
           {feedbacks.feedback?.map((desc: any, index: number) => (

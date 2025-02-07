@@ -46,7 +46,7 @@ const FeedBack: React.FC = () => {
           }
         );
         const data = await response.json();
-        console.error(" feedback data:", data);
+        console.log(" feedback data:", data);
         setFeedbackData(data);
       } catch (error) {
         console.error("Error fetching feedback data:", error);

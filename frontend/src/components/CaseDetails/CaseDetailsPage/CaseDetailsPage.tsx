@@ -20,6 +20,12 @@ interface CaseDetailsContent {
   reopenedOn: string | null;
   userName: string;
   userId: number;
+  title: number;
+}
+
+interface Title {
+  id: number;
+  name: string;
 }
 
 interface CaseDetailsPageProps {
@@ -27,6 +33,7 @@ interface CaseDetailsPageProps {
   isModalOpen: boolean;
   closeModal: () => void;
   status: string;
+  titles: Title[];
 }
 
 const CaseDetailsPage: React.FC<CaseDetailsPageProps> = ({
@@ -34,6 +41,7 @@ const CaseDetailsPage: React.FC<CaseDetailsPageProps> = ({
   isModalOpen,
   closeModal,
   status,
+  titles,
 }) => {
   const [caseContent, setCaseContent] = useState<CaseDetailsContent>({
     id: 0,
@@ -46,6 +54,7 @@ const CaseDetailsPage: React.FC<CaseDetailsPageProps> = ({
     userName: "",
     userId: 0,
     // date: "",
+    title: 0,
   });
 
   const [feedbacks, setFeedbacks] = useState<FeedbackContent>({
@@ -339,9 +348,11 @@ const CaseDetailsPage: React.FC<CaseDetailsPageProps> = ({
 
   const handleFeedbackClick = () => {
     // Navigate to CaseDetailsTable component
-
-    navigate(`/feedback?caseId=${caseId}`, {
-      state: { gameName: "gameName", desc: "lagging" },
+    console.log("getnames", caseContent.caseType, titles, caseContent.title);
+    const title = titles.find((t) => t.id == caseContent.title);
+    console.log(`whts the filtered title: ${title?.name}`);
+    navigate(`/feedbackHistory?caseId=${caseId}`, {
+      state: { gameName: `${title?.name}`, desc: caseContent.caseType },
     });
     // window.location.href = `feedback?caseId=${caseId}`; // Correct path to CaseDetailsTable component with caseId
   };
