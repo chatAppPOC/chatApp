@@ -11,10 +11,14 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
+	private String url = "http://localhost:5173";
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         // Register the WebSocket endpoint that clients will connect to
-        registry.addEndpoint("/ws").withSockJS(); // /ws is the endpoint for SockJS fallback
+        registry.addEndpoint("/ws")
+        .setAllowedOrigins(url)
+        .withSockJS(); // /ws is the endpoint for SockJS fallback
+        
     }
 
     @Override
