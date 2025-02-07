@@ -58,7 +58,7 @@ public class WebSecurityConfig {
                 String[] allowedOrigins;
                     allowedOrigins = new String[] { "http://localhost:5173"};
                 registry
-                    .addMapping("/*")
+                    .addMapping("/**")
                     .allowedOrigins(allowedOrigins)
                     .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS");
             }
