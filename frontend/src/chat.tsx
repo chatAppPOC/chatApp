@@ -241,7 +241,7 @@ const ChatPage: React.FC = () => {
           const data2 = await response.json();
           setPlayerId(data2.playerId);
           // setLatestChatId(data.chatId); // Store the latest chat ID
-          if (data2?.status === "CASE_CREATED") {
+          if (data2?.status === "CASE_CREATED" && data?.status === "COMPLETED") {
             setShowContinuePrompt(false);
             setWaitingForDescription(false);
           } else {
