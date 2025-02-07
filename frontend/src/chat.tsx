@@ -543,8 +543,9 @@ const ChatPage: React.FC = () => {
   const setQuestionsResponse = async () => {
     setIsText(null);
     try {
-      const response = await fetch(
-        `http://localhost:8080/api/v2/content?contentId=32`,
+      const response = await fetch( 
+        // `http://localhost:8080/api/v2/content?contentId=32`,
+        `http://localhost:8080/api/v2/contents/player/${playerId}`,
         {
           headers: {
             "Content-Type": "application/json",
