@@ -34,7 +34,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages }) => {
     <div className="flex-1 overflow-y-auto p-4 scroll-smooth">
       {messages.map((message, index) => (
         <div
-          key={message.id}
+          // key={message.id}
+          key={index}
           style={{
             animationDelay: `${index * 0.1}s`,
           }}
