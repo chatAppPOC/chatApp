@@ -139,22 +139,31 @@ const FeedbackHistoryByCaseId: React.FC = () => {
               </div>
             </div>
           ))}
-          <div>
+          <div className="pb-4 my-4">
             {feedbacks?.description && (
               <>
                 <h4 className="text-md font-medium mb-2">Comments</h4>
-                <textarea
+                {/* <textarea
                   className="w-full p-2 border border-gray-300 rounded"
                   rows={4}
                   name="comments"
                   value={feedbacks.description}
                   readOnly
+                ></textarea> */}
+                <textarea
+                 className={`w-full p-2 border ${
+                 feedbacks?.description ? "border-none outline-none" : "border border-gray-300"
+                 } rounded`}
+                 rows={4}
+                 name="comments"
+                 value={feedbacks.description}
+                 readOnly
                 ></textarea>
               </>
             )}
           </div>
           <button
-            className="fixed bottom-0 right-4 bg-blue-500 text-white p-2 rounded"
+            className="fixed bottom-0 right-4 bg-blue-500 text-white p-2 rounded my-2"
             style={{ width: 100 }} // Remove default blue color
             onClick={() => window.history.back()}
           >
