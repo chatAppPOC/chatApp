@@ -57,7 +57,7 @@ const ChatPage: React.FC = () => {
   const [continueWithChat, setContinueWithChat] = useState(false);
   const [disableChatInput, setDisableChatInput] = useState(false);
   const [notification, setNotifications] = useState([]);
-  const [playerId, setPlayerId] = useState("");
+  // const [playerId, setPlayerId] = useState("");
 
   const isAdmin = localStorage.getItem("role");
   const chat = Number(localStorage.getItem("chatId")) ?? 0;
@@ -184,6 +184,7 @@ const ChatPage: React.FC = () => {
   };
 
   const id = Number(localStorage.getItem("id"));
+  console.log("playerId", id);
 
   useEffect(() => {
     const fetchChatHistory = async (page: number) => {
@@ -239,9 +240,12 @@ const ChatPage: React.FC = () => {
             }
           );
           const data2 = await response.json();
-          setPlayerId(data2.playerId);
+          // setPlayerId(data2.playerId);
           // setLatestChatId(data.chatId); // Store the latest chat ID
-          if (data2?.status === "CASE_CREATED" || data?.status === "COMPLETED") {
+          if (
+            data2?.status === "CASE_CREATED" ||
+            data?.status === "COMPLETED"
+          ) {
             setShowContinuePrompt(false);
             setWaitingForDescription(false);
           } else {
@@ -459,6 +463,8 @@ const ChatPage: React.FC = () => {
         }
       );
       const data2 = await response1.json();
+      // setPlayerId(data2.playerId);
+      // console.log("playerId", playerId);
       // setLatestChatId(data.chatId); // Store the latest chat ID
       if (data2?.status === "IN_PROGRESS") {
         setShowContinuePrompt(false);
@@ -485,25 +491,27 @@ const ChatPage: React.FC = () => {
         ]);
       }
 
-      const questionMessage: Message | null = content[0]?.trim()
-        ? {
-            id: Date.now().toString(),
-            content: content[0],
-            sender: "Support Bot",
-            timestamp: formatDate(),
-            isOwn: false,
-          }
-        : null;
+      const questionMessage: Message | null =
+        content[0] && content[0]?.trim()
+          ? {
+              id: Date.now().toString(),
+              content: content[0],
+              sender: "Support Bot",
+              timestamp: formatDate(),
+              isOwn: false,
+            }
+          : null;
 
-      const answerMessage: Message | null = content[1]?.trim()
-        ? {
-            id: Date.now().toString(),
-            content: content[1],
-            sender: "Support Bot",
-            timestamp: formatDate(),
-            isOwn: false,
-          }
-        : null;
+      const answerMessage: Message | null =
+        content[1] && content[1]?.trim()
+          ? {
+              id: Date.now().toString(),
+              content: content[1],
+              sender: "Support Bot",
+              timestamp: formatDate(),
+              isOwn: false,
+            }
+          : null;
 
       const message: Message = {
         id: Date.now().toString(),
@@ -542,9 +550,9 @@ const ChatPage: React.FC = () => {
   const setQuestionsResponse = async () => {
     setIsText(null);
     try {
-      const response = await fetch( 
+      const response = await fetch(
         // `http://localhost:8080/api/v2/content?contentId=32`,
-        `http://localhost:8080/api/v2/contents/player/${playerId}`,
+        `http://localhost:8080/api/v2/contents/player/${id}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -780,7 +788,7 @@ const ChatPage: React.FC = () => {
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-100 via-blue-50 to-blue-200">
       <div className="w-full max-w-7xl h-[96vh] bg-white rounded-2xl shadow-2xl flex overflow-hidden relative">
         {/* Chat Area */}
-          <PushNotification/>
+        <PushNotification />
         <div className="w-full flex flex-col">
           {/* Chat Header with Language Selector */}
           <div className="bg-gray-100 p-4 border-b border-gray-200 flex items-center justify-between">
