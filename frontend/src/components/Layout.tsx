@@ -6,7 +6,6 @@ type Role = "ADMIN" | "USER" | "PLAYER";
 
 const roleLinks: Record<Role, { to: string; label: string }[]> = {
     ADMIN: [
-      { to: "/chat", label: "Chat Page" },
       { to: "/qa-content-grid", label: "Q/A Content Grid" },
       { to: "/case-details-grid", label: "Case Details Grid" },
     ],

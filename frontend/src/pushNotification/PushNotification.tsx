@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Stomp } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 
@@ -10,33 +10,12 @@ interface Notification {
 }
 
 const PushNotification = () => {
-
-  const addNotification = async (token: string) => {
-    try {
-      const response = await fetch('http://localhost:8080/api/notification/add', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          content: 'New notification content',
-          playerId: '300',
-          sentCount: 1
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
-      }
-
-      const data = await response.json();
-    } catch (error) {
-      console.error('Failed to add notification:', error);
-    }
-  };
-
+  const [isPlayerIdMatch,setisPlayerIdMatch] = useState (false);
   useEffect(() => {
+    const storePlayerId = localStorage.getItem("id");
+
+    if(storePlayerId === "300"){
+      setisPlayerIdMatch(true);
     let stompClient: any;
     const notificationsQueue: Notification[] = [];
 
@@ -56,13 +35,13 @@ console.log("intilizaing web socket",initializeWebSocket);
             const payload = JSON.parse(notification.body);
             const content = payload.content || "No message content";
             const sentCount = payload.sentCount || "No count";
-            const playerId = payload.playerId || "Unknown player ID";
+            const rplayerId = payload.playerId || "Unknown player ID";
 
             // Show notification only if playerId equals 300
-            if (playerId === "300") {
+            if (rplayerId === "300") {
               const notificationRow: Notification = {
                 id: payload.id,
-                playerId: playerId,
+                playerId: rplayerId,
                 content: content,
                 sentCount: sentCount,
               };
@@ -92,24 +71,21 @@ console.log("intilizaing web socket",initializeWebSocket);
           // Create a new notification div
           const notificationDiv = document.createElement("div");
           notificationDiv.className =
-            "bg-blue-500 text-white p-4 rounded-lg shadow-lg min-w-[200px] max-w-[300px] animate-slide-in break-words";
+            "bg-blue-500 text-white p-2 rounded-md shadow-md min-w-[180px] max-w-[200px] text-xs fixed top-8 right-4 animate-slide-in break-words";
 
           notificationDiv.innerHTML = `<p class="text-xl whitespace-pre-wrap break-words">${currentNotification.content}</p>`;
-
+          document.body.appendChild(notificationDiv);
           const container = document.getElementById("notifications-container");
 
-          if (container) {
-            container.appendChild(notificationDiv);
 
             setTimeout(() => {
               notificationDiv.classList.add("animate-marquee");
             }, 2000);
 
             setTimeout(() => {
-              container.removeChild(notificationDiv);
+              document.body.removeChild(notificationDiv);
               processNotifications();
             }, 5500);
-          }
         }
       }
     }
@@ -120,20 +96,20 @@ console.log("intilizaing web socket",initializeWebSocket);
           console.log("Disconnected from WebSocket");
         });
       }
-    };
+    }
+  }else{
+    setisPlayerIdMatch(false);
+      }
   }, []);
+
+  if(!isPlayerIdMatch){
+    return null;
+  }
 
   return (
     <div>
-      {/* Notification Container */}
-      <div
-        id="notifications-container"
-        className="fixed top-16 left-0 right-0 m-4 p-4 bg-gray-400 bg-opacity-50 rounded-lg border border-gray-700 shadow-lg flex flex-col space-y-2 min-h-[70px] items-end"
-      >
-        {/* Notifications will appear here */}
-      </div>
-
-      {/* Styles */}
+     
+     
       <style>{`
         @keyframes slide-in-right {
           from {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Modal from "react-modal";
 import "./FeedBack.css";
-import { useLocation } from "react-router-dom";
+import { useLocation,useNavigate } from "react-router-dom";
 import { FaSpinner } from "react-icons/fa";
 
 Modal.setAppElement("#root");
@@ -56,10 +56,17 @@ const FeedBack: React.FC = () => {
     fetchFeedbackData();
   }, []);
 
+  const Navigate =useNavigate();
   const handleSubmit = () => {
     // Simulate a successful submission
 
     setIsSubmitted(true);
+
+    const feedbackGiven = localStorage.getItem("feedbackGiven");
+    if(feedbackGiven === "true"){
+      Navigate(`/chat`);
+      return;
+    }
   };
 
   const closeModal = () => {
