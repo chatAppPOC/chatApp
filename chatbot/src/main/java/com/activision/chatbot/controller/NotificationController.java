@@ -48,7 +48,7 @@ public class NotificationController {
 
 				// Check if player exists
 				Optional<Player> playerOptional = playerRepository.findById(notificationRequest.getPlayerId());
-				if (!playerOptional.isPresent()) {
+				if (playerOptional.isEmpty()) {
 					return ResponseEntity.status(HttpStatus.NOT_FOUND)
 							.body("Player with ID " + notificationRequest.getPlayerId() + " not found.");
 				}

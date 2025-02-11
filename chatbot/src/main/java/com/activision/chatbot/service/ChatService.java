@@ -102,8 +102,8 @@ public class ChatService {
 				ChatResponsev2 chatMessages = new ChatResponsev2();
 				
 				boolean contentTypeExists = request.getMessage() != null && request.getMessage().getContentType() != null;
-	            boolean isDescription = contentTypeExists && request.getMessage().getContentType().equals("Description");
-	            boolean isSolution = contentTypeExists && request.getMessage().getContentType().equals("Solution");
+	            boolean isDescription = contentTypeExists && request.getMessage().getContentType().equalsIgnoreCase("Description");
+	            boolean isSolution = contentTypeExists && request.getMessage().getContentType().equalsIgnoreCase("Solution");
 	            
 				if (request.getChatId() == null) {
 					chat = new Chat(request.getPlayerId());
@@ -330,7 +330,7 @@ public class ChatService {
 			helper.setText(tableHtml, true);
 			LOG.info("ChatService.providePostResolutionFeedback(email with subject: {}) sent sucessfully to  => {}",
 					response.toString());
-			javaMailSender.send(mailMessage);
+			//javaMailSender.send(mailMessage);
 			LOG.debug("ChatService.providePostResolutionFeedback({}, {}, {}) => {}", request, caseReq, chatReq,
 					response);
 			return response;

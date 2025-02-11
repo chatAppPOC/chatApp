@@ -6,7 +6,7 @@ import ChatInput from "./components/ChatPage/ChatInput";
 import { LANGUAGES } from "./constants/LANGUAGES";
 import { timeStamp } from "console";
 import { generateBasicAuthHeader } from "./utils/basicAuth";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useParams, useNavigate } from "react-router-dom";
 import { c } from "node_modules/vite/dist/node/types.d-aGj9QkWt";
 import PushNotification from "./pushNotification/PushNotification";
 
@@ -24,7 +24,7 @@ type ChatRequest = {
   message: {
     content: string;
     source: "PLAYER" | "BOT";
-    contentType?: "Description";
+    contentType?: "Description" | "Solution";
   };
 };
 
@@ -59,7 +59,7 @@ const ChatPage: React.FC = () => {
   const [notification, setNotifications] = useState([]);
   // const [playerId, setPlayerId] = useState("");
 
-  const isAdmin = localStorage.getItem("role");
+  const [showFeedbackPopup, setShowFeedbackPoup] = useState(false);
   const chat = Number(localStorage.getItem("chatId")) ?? 0;
 
   const useQuery = () => new URLSearchParams(useLocation().search);
@@ -68,9 +68,100 @@ const ChatPage: React.FC = () => {
   const isUser = localStorage.getItem("role");
   const params = useParams();
   const isParams = params?.caseId ? true : false;
+  const Navigate = useNavigate();
 
-  console.log("isParams", isParams, params.caseId);
+  //checking based on chat id status id showing feedback
 
+  useEffect(() => {
+    const checkChatandCaseStatus = async () => {
+      try {
+        // Fetch chat feedback first
+        console.log("Fetching chat feedback");
+        const chatResponse = await fetch(
+          `http://localhost:8080/api/v2/chat/${chat}`,
+          {
+            method: "GET",
+            headers: {
+              ...generateBasicAuthHeader(),
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        const chatData = await chatResponse.json(); // Extract case ID from the last object in the array
+        let caseId = null;
+        if (Array.isArray(chatData?.messages)) {
+          const botMessages = chatData.messages.filter(
+            (msg) => msg.source === "BOT"
+          );
+          if (botMessages.length > 0) {
+            const lastBotMessage = botMessages[botMessages.length - 1]; // Get the last bot message
+            const match = lastBotMessage?.content?.match(/ID\s*:\s*(\d+)/); // Extract numeric case ID
+            if (match) {
+              caseId = match[1]; // Extract the ID part
+            }
+          }
+        }
+        if (caseId) {
+          // Fetch case feedback using the extracted case ID
+          if(chatData.status === "CASE_CREATED")
+          {
+           const caseResponse = await fetch(
+            `http://localhost:8080/api/CASE/feedback/${Number(caseId)}`, {
+              method: "GET",
+              headers: {
+                ...generateBasicAuthHeader(),
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          const data = await caseResponse.json(); // Check if the issue is resolved
+          if (data?.issueResolved) {
+            setShowFeedbackPoup(true);
+            return;
+          }
+          }
+          }else if(chatData.status === "COMPLETE"){ // Check feedback status in localStorage
+        const response1 = await fetch(
+          `http://localhost:8080/api/CHAT/feedback/${chat}`,
+          {
+            method: "GET",
+            headers: {
+              ...generateBasicAuthHeader(),
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        const data = await response1.json();
+           if( data?.status === "COMPLETE" && data?.issueResolved){
+            console.log("Chat is complete and issue is resolved.Showing feedback popup");
+          setShowFeedbackPoup(true);
+          return;
+        }
+      }else{
+        const feedbackGiven = JSON.parse(
+          localStorage.getItem("feedbackGiven") || "[]"
+        );
+       
+        if (feedbackGiven === "true") {
+          setShowFeedbackPoup(false);
+          return;
+        }}
+      }catch (error) {
+        console.log("Error checking chat and case:", error);
+      }
+    };
+    checkChatandCaseStatus();
+  }, []); 
+
+  
+  const handleFeedbackRedirect = () => {
+    localStorage.setItem("feedbackGiven", "true");
+    setShowFeedbackPoup(false);
+    Navigate(`/feedback`);
+  };
+
+  //checking user or admin
   useEffect(() => {
     const fetchLatestCaseId = async () => {
       if ((isUser === "USER" || isUser === "ADMIN") && isParams) {
@@ -125,48 +216,6 @@ const ChatPage: React.FC = () => {
     // setWaitingForDescription(false);
   }, []);
 
-  //  admin chat history
-  useEffect(() => {
-    const fetchLatestChatId = async () => {
-      if (isUser === "ADMIN") {
-        try {
-          // Fetch the latest chat ID
-          const chat = Number(localStorage.getItem("chatId")) || 0;
-          const response = await fetch(
-            `http://localhost:8080/api/v2/chat/${chat}`,
-            {
-              method: "GET",
-              headers: {
-                ...generateBasicAuthHeader(),
-                "Content-Type": "application/json",
-              },
-            }
-          );
-          if (!response.ok) throw new Error("Failed to fetch chat");
-          const data = await response.json();
-
-          setLatestChatId(data.chatId); // Store the latest chat ID
-          const messagesFromHistory = await data.messages?.map((msg: any) => ({
-            id: data?.id,
-            playerId: data?.playerId ?? 0,
-            content: msg?.content,
-            description: data?.description ? data?.description?.toString() : "",
-            sender: msg?.source,
-            timestamp: msg?.timestamp,
-            isOwn: msg?.source === "PLAYER",
-          }));
-          setMessages(messagesFromHistory);
-          setDisableChatInput(true);
-        } catch (error) {
-          console.error("Error fetching latest chat ID:", error);
-        }
-      }
-    };
-
-    fetchLatestChatId();
-    setWaitingForDescription(true);
-  }, [isAdmin]);
-
   const formatDate = () => {
     const date = new Date();
     const day = String(date.getDate()).padStart(2, "0");
@@ -191,7 +240,7 @@ const ChatPage: React.FC = () => {
       setIsLoading(true);
       try {
         const response = await fetch(
-          `http://localhost:8080/api/chat/history/${id}?page=0&size=300`,
+          `http://localhost:8080/api/chat/history/${id}?page=0&size=500`,
           {
             method: "GET",
             headers: {
@@ -268,7 +317,7 @@ const ChatPage: React.FC = () => {
       setContinueWithChat(shouldContinue);
       if (shouldContinue) {
         const response = await fetch(
-          `http://localhost:8080/api/chat/history/${id}?page=0&size=300`,
+          `http://localhost:8080/api/chat/history/${id}?page=0&size=500`,
           {
             headers: {
               ...generateBasicAuthHeader(),
@@ -865,6 +914,21 @@ const ChatPage: React.FC = () => {
                 onClick={() => handleContinueChat(false)}
               >
                 {t("No")}
+              </button>
+            </div>
+          )}
+
+          {/* Popup Modal for Chat Completion */}
+          {showFeedbackPopup && (
+            <div className="p-4 bg-gray-100 flex items-center justify-center">
+              <p className="text-gray-700 mr-4">
+                {t("Would you like to give feedback?")}
+              </p>
+              <button
+                className="px-4 py-2 bg-green-500 text-white rounded-md"
+                onClick={handleFeedbackRedirect}
+              >
+                {t("Give Feedback")}
               </button>
             </div>
           )}
