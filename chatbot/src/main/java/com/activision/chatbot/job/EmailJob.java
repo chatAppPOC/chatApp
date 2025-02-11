@@ -29,7 +29,6 @@ public class EmailJob extends QuartzJobBean {
 
 	@Override
 	public void executeInternal(JobExecutionContext context) throws JobExecutionException {
-		LOG.info("Executing email job.!!!!!");
 		try {
 			//
 			List<Notification> notifications = notificationRepo.findNotificationsToSend(Instant.now());		
