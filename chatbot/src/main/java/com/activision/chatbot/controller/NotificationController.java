@@ -54,15 +54,15 @@ public class NotificationController {
 				}
 
 				// Convert scheduleTime and expireTime to Instant
-				Instant scheduleTimeInstant = notificationRequest.getScheduleTime().toInstant(ZoneOffset.UTC);
-				Instant expireTimeInstant = notificationRequest.getExpireTime().toInstant(ZoneOffset.UTC);
+				Instant scheduleTimeInstant = notificationRequest.getScheduleTime() != null ? notificationRequest.getScheduleTime().toInstant(ZoneOffset.UTC) : Instant.now().plusSeconds(5);
+				Instant expireTimeInstant = notificationRequest.getExpireTime() != null ? notificationRequest.getExpireTime().toInstant(ZoneOffset.UTC) : null;
 				notification.setScheduledTime(scheduleTimeInstant);
 				notification.setExpireTime(expireTimeInstant);
 
 				// Set notification sentCount and static count
 				notification.setSentCount(
-						notificationRequest.getSentCount() != null ? notificationRequest.getSentCount() : 1); // Default to 1 if not provided																								
-				notification.setCount(notificationRequest.getCount());
+						notificationRequest.getSentCount() != null ? notificationRequest.getSentCount() : 0); // Default to 0 if not provided																								
+				notification.setCount(notificationRequest.getCount() != null ? notificationRequest.getCount() : 1);
 
 				// Save the notification
 				Notification savedNotification = notificationService.addNotification(notification);

@@ -14,10 +14,7 @@ const PushNotification = () => {
   useEffect(() => {
     const storePlayerId = localStorage.getItem("id");
 
-    console.log("storePlayerId", storePlayerId);
-
-    // if(storePlayerId === "300"){
-    if(storePlayerId){
+    if(storePlayerId != null){
       setisPlayerIdMatch(true);
     let stompClient: any;
     const notificationsQueue: Notification[] = [];
@@ -42,8 +39,6 @@ console.log("intilizaing web socket",initializeWebSocket);
             console.log("payload, rplayerId", payload, rplayerId);
 
             // Show notification only if playerId equals 300
-            // if (rplayerId === "300") {
-              if (rplayerId) {
               const notificationRow: Notification = {
                 id: payload.id,
                 playerId: rplayerId,
@@ -56,7 +51,6 @@ console.log("intilizaing web socket",initializeWebSocket);
               if (notificationsQueue.length === 1) {
                 processNotifications();
               }
-            }
           });
         }, (error: any) => {
           console.error("Error connecting to WebSocket:", error);
