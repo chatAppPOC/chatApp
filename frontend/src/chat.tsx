@@ -103,10 +103,29 @@ const ChatPage: React.FC = () => {
         }
         if (caseId) {
           // Fetch case feedback using the extracted case ID
-          if(chatData.status === "CASE_CREATED")
-          {
-           const caseResponse = await fetch(
-            `http://localhost:8080/api/CASE/feedback/${Number(caseId)}`, {
+          if (chatData.status === "CASE_CREATED") {
+            const caseResponse = await fetch(
+              `http://localhost:8080/api/CASE/feedback/${Number(caseId)}`,
+              {
+                method: "GET",
+                headers: {
+                  ...generateBasicAuthHeader(),
+                  "Content-Type": "application/json",
+                },
+              }
+            );
+
+            const data = await caseResponse.json(); // Check if the issue is resolved
+            if (data?.issueResolved) {
+              setShowFeedbackPoup(true);
+              return;
+            }
+          }
+        } else if (chatData.status === "COMPLETE") {
+          // Check feedback status in localStorage
+          const response1 = await fetch(
+            `http://localhost:8080/api/CHAT/feedback/${chat}`,
+            {
               method: "GET",
               headers: {
                 ...generateBasicAuthHeader(),
@@ -114,47 +133,31 @@ const ChatPage: React.FC = () => {
               },
             }
           );
-
-          const data = await caseResponse.json(); // Check if the issue is resolved
-          if (data?.issueResolved) {
+          const data = await response1.json();
+          if (data?.status === "COMPLETE" && data?.issueResolved) {
+            console.log(
+              "Chat is complete and issue is resolved.Showing feedback popup"
+            );
             setShowFeedbackPoup(true);
             return;
           }
+        } else {
+          const feedbackGiven = JSON.parse(
+            localStorage.getItem("feedbackGiven") || "[]"
+          );
+
+          if (feedbackGiven === "true") {
+            setShowFeedbackPoup(false);
+            return;
           }
-          }else if(chatData.status === "COMPLETE"){ // Check feedback status in localStorage
-        const response1 = await fetch(
-          `http://localhost:8080/api/CHAT/feedback/${chat}`,
-          {
-            method: "GET",
-            headers: {
-              ...generateBasicAuthHeader(),
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        const data = await response1.json();
-           if( data?.status === "COMPLETE" && data?.issueResolved){
-            console.log("Chat is complete and issue is resolved.Showing feedback popup");
-          setShowFeedbackPoup(true);
-          return;
         }
-      }else{
-        const feedbackGiven = JSON.parse(
-          localStorage.getItem("feedbackGiven") || "[]"
-        );
-       
-        if (feedbackGiven === "true") {
-          setShowFeedbackPoup(false);
-          return;
-        }}
-      }catch (error) {
+      } catch (error) {
         console.log("Error checking chat and case:", error);
       }
     };
     checkChatandCaseStatus();
-  }, []); 
+  }, []);
 
-  
   const handleFeedbackRedirect = () => {
     localStorage.setItem("feedbackGiven", "true");
     setShowFeedbackPoup(false);
@@ -540,27 +543,52 @@ const ChatPage: React.FC = () => {
         ]);
       }
 
-      const questionMessage: Message | null =
-        content[0] && content[0]?.trim()
-          ? {
-              id: Date.now().toString(),
-              content: content[0],
-              sender: "Support Bot",
-              timestamp: formatDate(),
-              isOwn: false,
-            }
-          : null;
+      // const questionMessage: Message | null =
+      //   content[0] && content[0]?.trim()
+      //     ? {
+      //         id: Date.now().toString(),
+      //         content: content[0],
+      //         sender: "Support Bot",
+      //         timestamp: formatDate(),
+      //         isOwn: false,
+      //       }
+      //     : null;
 
-      const answerMessage: Message | null =
-        content[1] && content[1]?.trim()
-          ? {
-              id: Date.now().toString(),
-              content: content[1],
-              sender: "Support Bot",
-              timestamp: formatDate(),
-              isOwn: false,
-            }
-          : null;
+      // const answerMessage: Message | null =
+      //   content[1] && content[1]?.trim()
+      //     ? {
+      //         id: Date.now().toString(),
+      //         content: content[1],
+      //         sender: "Support Bot",
+      //         timestamp: formatDate(),
+      //         isOwn: false,
+      //       }
+      //     : null;
+
+      const questionContent =
+        typeof content[0] === "string" ? content[0].trim() : "";
+      const answerContent =
+        typeof content[1] === "string" ? content[1].trim() : "";
+
+      const questionMessage: Message | null = questionContent
+        ? {
+            id: Date.now().toString(),
+            content: questionContent,
+            sender: "Support Bot",
+            timestamp: formatDate(),
+            isOwn: false,
+          }
+        : null;
+
+      const answerMessage: Message | null = answerContent
+        ? {
+            id: Date.now().toString(),
+            content: answerContent,
+            sender: "Support Bot",
+            timestamp: formatDate(),
+            isOwn: false,
+          }
+        : null;
 
       const message: Message = {
         id: Date.now().toString(),
