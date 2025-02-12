@@ -543,28 +543,6 @@ const ChatPage: React.FC = () => {
         ]);
       }
 
-      // const questionMessage: Message | null =
-      //   content[0] && content[0]?.trim()
-      //     ? {
-      //         id: Date.now().toString(),
-      //         content: content[0],
-      //         sender: "Support Bot",
-      //         timestamp: formatDate(),
-      //         isOwn: false,
-      //       }
-      //     : null;
-
-      // const answerMessage: Message | null =
-      //   content[1] && content[1]?.trim()
-      //     ? {
-      //         id: Date.now().toString(),
-      //         content: content[1],
-      //         sender: "Support Bot",
-      //         timestamp: formatDate(),
-      //         isOwn: false,
-      //       }
-      //     : null;
-
       const questionContent =
         typeof content[0] === "string" ? content[0].trim() : "";
       const answerContent =
