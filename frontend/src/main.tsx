@@ -13,9 +13,12 @@ import "./i18n"; // Import the i18n configuration
 import Layout from "./components/Layout";
 import FeedBack from "./components/FeedBack/FeedBack"; // Import the FeedBack component
 import PrivateRoute from "./components/Authentication/PrivateRoutes";
+import ChatPage1 from "./chat copy";
+import { Toaster } from "sonner";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <Router>
+    <Toaster position="top-right" richColors />
     <Routes>
       <Route path="/login" element={<LoginPage />} />
 
@@ -68,6 +71,14 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
           element={
             <PrivateRoute allowedRole="PLAYER">
               <ChatPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="chat1"
+          element={
+            <PrivateRoute allowedRole="PLAYER">
+              <ChatPage1 />
             </PrivateRoute>
           }
         />

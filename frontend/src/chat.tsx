@@ -7,8 +7,18 @@ import { LANGUAGES } from "./constants/LANGUAGES";
 import { timeStamp } from "console";
 import { generateBasicAuthHeader } from "./utils/basicAuth";
 import { useLocation, useParams, useNavigate } from "react-router-dom";
-import { c } from "node_modules/vite/dist/node/types.d-aGj9QkWt";
 import PushNotification from "./pushNotification/PushNotification";
+import {
+  getChatHistoryByChatId,
+  getFeedbackByCaseId,
+  getFeedbackByChatId,
+  getPlayerChatHistory,
+  getPlayerContent,
+  saveHistory,
+} from "./api";
+import { format } from "date-fns";
+import { toast } from "sonner";
+import { VscLoading } from "react-icons/vsc";
 
 interface Message {
   id: string;
@@ -18,15 +28,11 @@ interface Message {
   isOwn: boolean;
 }
 
-type ChatRequest = {
-  playerId: number;
-  chatId?: number;
-  message: {
-    content: string;
-    source: "PLAYER" | "BOT";
-    contentType?: "Description" | "Solution";
-  };
-};
+enum ChatStatus {
+  IN_PROGRESS = "IN_PROGRESS",
+  COMPLETE = "COMPLETE",
+  CASE_CREATED = "CASE_CREATED",
+}
 
 const ChatPage: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -40,131 +46,133 @@ const ChatPage: React.FC = () => {
   };
 
   const [messages, setMessages] = useState<Message[]>([]);
-  const [isFirstMessage, setIsFirstMessage] = useState(true);
-  const [isText, setIsText] = useState<string | null>(null);
-  const chatId = useRef<string | null>(null);
-  const [caseId, setCaseId] = useState<string | null>(null);
+  const [isNewChat, setIsNewChat] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [chatHistory, setChatHistory] = useState<Message[]>([]);
-  const [showContinuePrompt, setShowContinuePrompt] = useState(false);
-  const [createContentId, setCreateContentId] = useState(false);
-
-  const [questionnaire, setQuestionnaire] = useState<any | null>(null);
-  const [currentQuestion, setCurrentQuestion] = useState<any>(null);
+  const [currentQuestion, setCurrentQuestion] = useState<any | null>(null);
+  const [playerContent, setPlayerContent] = useState<any | null>(null);
   const [waitingForDescription, setWaitingForDescription] = useState(false);
-  const [currentPage, setCurrentPage] = useState(0);
-  const [latestChatId, setLatestChatId] = useState<number | null>(null);
-  const [continueWithChat, setContinueWithChat] = useState(false);
+  const [showContinuePrompt, setShowContinuePrompt] = useState(false);
   const [disableChatInput, setDisableChatInput] = useState(false);
-  const [notification, setNotifications] = useState([]);
-  // const [playerId, setPlayerId] = useState("");
+  const feebackDefaultData = {
+    show: false,
+    name: "",
+    id: "",
+  };
+  const [showFeedbackPopup, setShowFeedbackPopup] =
+    useState(feebackDefaultData);
+  const [isLoadingContent, setIsLoadingContent] = useState(false);
 
-  const [showFeedbackPopup, setShowFeedbackPoup] = useState(false);
-  const chat = Number(localStorage.getItem("chatId")) ?? 0;
+  const navigate = useNavigate();
+  const playerId = Number(localStorage.getItem("id"));
+  // const chatId = Number(localStorage.getItem("chatId"));
+  const [chatId, setChatId] = useState<number | null>(
+    Number(localStorage.getItem("chatId"))
+  );
+  // const allMessages = messages.concat(chatHistory);
 
-  const useQuery = () => new URLSearchParams(useLocation().search);
-  const query = useQuery();
-  const caseno = Number(localStorage.getItem("caseno"));
+  const fetPlayerContent = async () => {
+    try {
+      const response = await getPlayerContent(playerId);
+      setPlayerContent(response);
+      setCurrentQuestion(response.content.questionare.questions);
+    } catch (error) {
+      console.error("Error fetching player content:", error);
+    }
+  };
+
+  const fetchHistory = async () => {
+    try {
+      const data = await getPlayerChatHistory(playerId);
+      const his: Message[] = [];
+      data.forEach((i: any) => {
+        i?.messages.forEach((j: any) => {
+          his.push({
+            id: j?.timestamp,
+            content: j?.content,
+            sender: j?.source,
+            timestamp: j?.timestamp,
+            isOwn: j?.source === "PLAYER",
+          });
+        });
+      });
+      console.log("messagesFromHistory:", his);
+      setMessages(his);
+      const mess = data.sort((a, b) => a.id - b.id);
+      let lastChat =
+        mess.find((item: any) => item?.id == localStorage.getItem("chatId")) ||
+        mess[mess.length - 1];
+      console.log("lastChat:", lastChat);
+      if (lastChat?.status == ChatStatus.IN_PROGRESS) {
+        setChatId(lastChat?.id);
+        localStorage.setItem("chatId", lastChat?.id.toString());
+        setShowContinuePrompt(true);
+        setDisableChatInput(true);
+        return;
+      }
+
+      if (lastChat?.status == ChatStatus.COMPLETE) {
+        const feedbackByChat = await getFeedbackByChatId(lastChat.id);
+
+        if (!feedbackByChat?.issueResolved) {
+          setShowFeedbackPopup({
+            show: true,
+            name: "chatId",
+            id: feedbackByChat?.id,
+          });
+
+          return;
+        }
+      }
+
+      if (lastChat?.status == ChatStatus.CASE_CREATED) {
+        let caseId = null;
+        const botMessages = lastChat.messages.filter(
+          (msg: any) => msg.source === "BOT"
+        );
+        if (botMessages.length > 0) {
+          const lastBotMessage = botMessages[botMessages.length - 1]; // Get the last bot message
+          const match = lastBotMessage?.content?.match(/ID\s*:\s*(\d+)/); // Extract numeric case ID
+          if (match) {
+            caseId = match[1]; // Extract the ID part
+          }
+        }
+
+        const caseDetails = await getFeedbackByCaseId(caseId);
+        if (!caseDetails?.issueResolved) {
+          setShowFeedbackPopup({
+            show: true,
+            name: "caseId",
+            id: caseId,
+          });
+          return;
+        }
+      }
+
+      setShowFeedbackPopup(feebackDefaultData);
+    } catch (error) {
+      console.error("Error fetching player content:", error);
+    }
+  };
+  const saveChat = async (msg: any) => {
+    try {
+      const res = await saveHistory(msg);
+      console.log("save Chat response:", res);
+      if (res?.chatId && res?.chatId !== chatId) {
+        localStorage.setItem("chatId", res.chatId.toString());
+        setChatId(res.chatId);
+      }
+      return res;
+    } catch (error) {
+      console.error("Failed to save history:", error);
+      toast.error("Failed to save history");
+    }
+  };
+
   const isUser = localStorage.getItem("role");
   const params = useParams();
   const isParams = params?.caseId ? true : false;
-  const Navigate = useNavigate();
 
-  //checking based on chat id status id showing feedback
-
-  useEffect(() => {
-    const checkChatandCaseStatus = async () => {
-      try {
-        // Fetch chat feedback first
-        console.log("Fetching chat feedback");
-        const chatResponse = await fetch(
-          `http://localhost:8080/api/v2/chat/${chat}`,
-          {
-            method: "GET",
-            headers: {
-              ...generateBasicAuthHeader(),
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        const chatData = await chatResponse.json(); // Extract case ID from the last object in the array
-        let caseId = null;
-        if (Array.isArray(chatData?.messages)) {
-          const botMessages = chatData.messages.filter(
-            (msg) => msg.source === "BOT"
-          );
-          if (botMessages.length > 0) {
-            const lastBotMessage = botMessages[botMessages.length - 1]; // Get the last bot message
-            const match = lastBotMessage?.content?.match(/ID\s*:\s*(\d+)/); // Extract numeric case ID
-            if (match) {
-              caseId = match[1]; // Extract the ID part
-            }
-          }
-        }
-        if (caseId) {
-          // Fetch case feedback using the extracted case ID
-          if (chatData.status === "CASE_CREATED") {
-            const caseResponse = await fetch(
-              `http://localhost:8080/api/CASE/feedback/${Number(caseId)}`,
-              {
-                method: "GET",
-                headers: {
-                  ...generateBasicAuthHeader(),
-                  "Content-Type": "application/json",
-                },
-              }
-            );
-
-            const data = await caseResponse.json(); // Check if the issue is resolved
-            if (data?.issueResolved) {
-              setShowFeedbackPoup(true);
-              return;
-            }
-          }
-        } else if (chatData.status === "COMPLETE") {
-          // Check feedback status in localStorage
-          const response1 = await fetch(
-            `http://localhost:8080/api/CHAT/feedback/${chat}`,
-            {
-              method: "GET",
-              headers: {
-                ...generateBasicAuthHeader(),
-                "Content-Type": "application/json",
-              },
-            }
-          );
-          const data = await response1.json();
-          if (data?.status === "COMPLETE" && data?.issueResolved) {
-            console.log(
-              "Chat is complete and issue is resolved.Showing feedback popup"
-            );
-            setShowFeedbackPoup(true);
-            return;
-          }
-        } else {
-          const feedbackGiven = JSON.parse(
-            localStorage.getItem("feedbackGiven") || "[]"
-          );
-
-          if (feedbackGiven === "true") {
-            setShowFeedbackPoup(false);
-            return;
-          }
-        }
-      } catch (error) {
-        console.log("Error checking chat and case:", error);
-      }
-    };
-    checkChatandCaseStatus();
-  }, []);
-
-  const handleFeedbackRedirect = () => {
-    localStorage.setItem("feedbackGiven", "true");
-    setShowFeedbackPoup(false);
-    Navigate(`/feedback`);
-  };
-
-  //checking user or admin
   useEffect(() => {
     const fetchLatestCaseId = async () => {
       if ((isUser === "USER" || isUser === "ADMIN") && isParams) {
@@ -183,20 +191,7 @@ const ChatPage: React.FC = () => {
           );
 
           const data = await response.json();
-
-          const response1 = await fetch(
-            `http://localhost:8080/api/v2/chat/${data[0]?.chatId}`,
-            {
-              method: "GET",
-              headers: {
-                ...generateBasicAuthHeader(),
-                "Content-Type": "application/json",
-              },
-            }
-          );
-          setLatestChatId(data.chatId);
-          const data1 = await response1.json();
-
+          const data1 = await getChatHistoryByChatId(data[0]?.chatId);
           const messagesFromHistory = await data1.messages?.map((msg: any) => ({
             id: data?.id,
             playerId: data?.playerId ?? 0,
@@ -208,7 +203,6 @@ const ChatPage: React.FC = () => {
           }));
 
           setMessages(messagesFromHistory);
-          setLatestChatId(data.caseno); // Store the latest chat ID
           setDisableChatInput(true);
         } catch (error) {
           console.error("Error fetching latest chat ID:", error);
@@ -219,629 +213,261 @@ const ChatPage: React.FC = () => {
     // setWaitingForDescription(false);
   }, []);
 
-  const formatDate = () => {
-    const date = new Date();
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = date.getFullYear();
-
-    const hours = date.getHours();
-    const minutes = String(date.getMinutes()).padStart(2, "0");
-    const seconds = String(date.getSeconds()).padStart(2, "0");
-
-    const formattedHours = hours % 12 || 12;
-    const ampm = hours >= 12 ? "PM" : "AM";
-
-    return `${day}/${month}/${year} ${formattedHours}:${minutes}:${seconds} ${ampm}`;
-  };
-
-  const id = Number(localStorage.getItem("id"));
-  console.log("playerId", id);
-
   useEffect(() => {
-    const fetchChatHistory = async (page: number) => {
-      setIsLoading(true);
-      try {
-        const response = await fetch(
-          `http://localhost:8080/api/chat/history/${id}?page=0&size=500`,
-          {
-            method: "GET",
-            headers: {
-              ...generateBasicAuthHeader(),
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        const data = await response.json();
+    fetchHistory();
+    fetPlayerContent();
+  }, []);
 
-        if (data?.length == 0) {
-          setShowContinuePrompt(false);
-          setWaitingForDescription(false);
-        } else {
-          const latestUpdatedOn = await data.reduce(
-            (latest: any, current: any) => {
-              return latest?.id > current?.id ? latest : current;
-            }
-          );
+  const handleCancelChat = async (): Promise<void> => {
+    const res = await saveChat({
+      message: {
+        content: "User cancelled the chat",
+        source: "PLAYER",
+        contentType: "Solution",
+      },
+      playerId: Number(localStorage.getItem("id")),
+      chatId: localStorage.getItem("chatId"),
+    });
 
-          const messagesFromHistory = await latestUpdatedOn?.messages?.map(
-            (msg: any) => ({
-              id: latestUpdatedOn?.id,
-              playerId: latestUpdatedOn?.playerId ?? 0,
-              content: msg?.content,
-              description: latestUpdatedOn?.description
-                ? latestUpdatedOn?.description?.toString()
-                : "",
-              sender: msg?.source,
-              timestamp: msg?.timestamp,
-              isOwn: msg?.source === "PLAYER",
-            })
-          );
+    setMessages((prevMessages) => [
+      ...prevMessages,
+      getMessage("User cancelled the chat", false),
+      getMessage(res.message, true),
+    ]);
 
-          setMessages(messagesFromHistory);
-
-          // Fetch the latest chat ID
-          const response = await fetch(
-            `http://localhost:8080/api/v2/chat/${chat}`,
-            {
-              method: "GET",
-              headers: {
-                ...generateBasicAuthHeader(),
-                "Content-Type": "application/json",
-              },
-            }
-          );
-          const data2 = await response.json();
-          // setPlayerId(data2.playerId);
-          // setLatestChatId(data.chatId); // Store the latest chat ID
-          if (
-            data2?.status === "CASE_CREATED" ||
-            data?.status === "COMPLETED"
-          ) {
-            setShowContinuePrompt(false);
-            setWaitingForDescription(false);
-          } else {
-            setShowContinuePrompt(true);
-          }
-          // setWaitingForDescription(false);
-        }
-      } catch (error) {
-        console.error("Error fetching chat history:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchChatHistory(currentPage);
-  }, [currentPage, id, latestChatId]);
-
-  const handleContinueChat = async (shouldContinue: boolean) => {
-    setIsLoading(true);
-    try {
-      setContinueWithChat(shouldContinue);
-      if (shouldContinue) {
-        const response = await fetch(
-          `http://localhost:8080/api/chat/history/${id}?page=0&size=500`,
-          {
-            headers: {
-              ...generateBasicAuthHeader(),
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        const data = await response.json();
-        if (data?.length > 0) {
-          const latestUpdatedOn = data.reduce((latest: any, current: any) =>
-            latest?.id > current?.id ? latest : current
-          );
-
-          const messagesFromHistory = latestUpdatedOn?.messages?.map(
-            (msg: any) => ({
-              id: latestUpdatedOn?.id,
-              playerId: latestUpdatedOn?.playerId ?? 0,
-              content: msg?.content,
-              description: latestUpdatedOn?.description?.toString() || "",
-              sender: msg?.source,
-              timestamp: msg?.timestamp,
-              isOwn: msg?.source === "PLAYER",
-            })
-          );
-
-          localStorage.setItem("chatId", latestUpdatedOn?.id);
-          setWaitingForDescription(false);
-
-          const request: ChatRequest = {
-            playerId: latestUpdatedOn?.playerId ?? 0,
-            chatId: latestUpdatedOn?.id,
-            message: {
-              content:
-                "This is the description given by the player in the desc box",
-              source: "PLAYER",
-              contentType: "Description",
-            },
-          };
-        } else {
-          setMessages([]);
-          setCurrentPage(0);
-          localStorage.removeItem("chatId");
-          setWaitingForDescription(false);
-        }
-      } else {
-        setMessages([]);
-        setCurrentPage(0);
-        localStorage.removeItem("chatId");
-        setWaitingForDescription(false);
-      }
-    } catch (error) {
-      console.error("Error fetching chat history:", error);
-    } finally {
-      setShowContinuePrompt(false);
-      setIsLoading(false);
-    }
+    if (res.message) resetChat();
+    setShowContinuePrompt(false);
   };
 
-  const handleSendMessage = async (
-    message: string,
-    questionId: any,
-    answerId: any,
-    isDescription: boolean
-  ) => {
-    setIsLoading(true);
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      content: message,
-      sender: "You",
-      timestamp: formatDate(),
-      isOwn: true,
-    };
-
-    setMessages((prevMessages) => [...prevMessages, userMessage]);
-
-    const chatIdValue = Number(localStorage.getItem("chatId"));
-
-    if (isFirstMessage && !createContentId) {
-      const request: ChatRequest = {
-        playerId: Number(localStorage.getItem("id")) ?? 0,
-        message: {
-          content: message,
-          source: "PLAYER",
-          ...(createContentId === true ? { contentType: "Description" } : {}),
-        },
-        ...(continueWithChat ? { chatId: chatIdValue } : {}),
-      };
-      await getResponse(request);
-
-      await setQuestionsResponse();
-    } else if (createContentId) {
-      const request: ChatRequest = {
-        playerId: Number(localStorage.getItem("id")) ?? 0,
-        message: {
-          content: message,
-          source: "PLAYER",
-          ...(createContentId === true ? { contentType: "Description" } : {}),
-        },
-        ...(chatIdValue ? { chatId: chatIdValue } : {}),
-      };
-      await getResponse(request);
-    }
-  };
-
-  const convertData = (input: any) => {
-    const transformedData = JSON.parse(JSON.stringify(input));
-
-    const transformQuestions = (questions: any) => {
-      questions.forEach((q: any) => {
-        if (q.questions) {
-          if (q.questions.answers) {
-            q.questions.answers.forEach((ans: any) => {
-              if (ans.questions && ans.questions.answers) {
-                ans.questions.answers.forEach((subAns: any) => {
-                  if (subAns.questions && subAns.questions.answers === null) {
-                    delete subAns.answers;
-                  }
-                });
+  const getOptions = (answers: any) => {
+    return (
+      <div className="flex gap-2 flex-wrap">
+        {answers.map((ans: any) => {
+          return (
+            <div
+              className="border hover:bg-gray-50 p-1.5 rounded-md cursor-pointer"
+              onClick={() =>
+                handleSendMessage(
+                  ans.answer,
+                  ans.questions,
+                  ans.solution || null,
+                  !ans.solution && !ans.questions?.answers
+                )
               }
-            });
-          }
-
-          if (!q.questions.answers) {
-            if (q.questions.questions) {
-              q.questions = {
-                question: q.questions.question,
-                answers: q.questions.questions,
-              };
-            }
-          }
-
-          transformQuestions(q.questions.answers);
-        }
-      });
-    };
-
-    transformQuestions(transformedData.questionare.questions.answers);
-
-    return transformedData;
+            >
+              {ans.answer}
+            </div>
+          );
+        })}
+      </div>
+    );
   };
 
-  const getResponse = async (request: ChatRequest) => {
-    setIsText(null);
-    try {
-      const response = await fetch("http://localhost:8080/api/v2/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...generateBasicAuthHeader(),
-        },
-        body: JSON.stringify(request),
-      });
+  const handleContinueChat = async (): Promise<void> => {
+    const lastMessage = messages[messages.length - 1]?.content as string;
+    console.log("lastMessage:", lastMessage, currentQuestion);
 
-      const data = await response.json();
+    const findMatchingObject = (
+      questions: any,
+      targetQuestion: string
+    ): any => {
+      if (!questions) return null;
 
-      if (data?.chatId) {
-        localStorage.setItem("chatId", data?.chatId);
-        chatId.current = data.chatId;
-        setCaseId(data.chatId);
-      }
-      const text = data?.options?.length === 1 ? data.options : [];
-      if (text.length > 0) {
-        setIsText(text[0].id);
+      if (questions.question === targetQuestion) {
+        return questions;
       }
 
-      let content: any = [
-        renderQuestion(currentQuestion?.question),
-        renderOptions(currentQuestion?.answers),
-      ];
-      if (data?.options?.length === 0) {
-        content = t("thankYou");
-        chatId.current = null;
-        setIsFirstMessage(true);
-      }
-
-      if (isText) {
-        content = t("caseCreated", { caseId: caseId });
-        setIsFirstMessage(true);
-        chatId.current = null;
-      }
-      // setDisableChatInput(true);
-
-      // Fetch the latest chat ID
-      const response1 = await fetch(
-        `http://localhost:8080/api/v2/chat/${chat}`,
-        {
-          method: "GET",
-          headers: {
-            ...generateBasicAuthHeader(),
-            "Content-Type": "application/json",
-          },
+      if (questions.answers) {
+        for (const answer of questions.answers) {
+          if (answer.questions) {
+            const result = findMatchingObject(answer.questions, targetQuestion);
+            if (result) return result;
+          }
         }
-      );
-      const data2 = await response1.json();
-      // setPlayerId(data2.playerId);
-      // console.log("playerId", playerId);
-      // setLatestChatId(data.chatId); // Store the latest chat ID
-      if (data2?.status === "IN_PROGRESS") {
-        setShowContinuePrompt(false);
+      }
+      return null;
+    };
+
+    const matchedObject = findMatchingObject(currentQuestion, lastMessage);
+    console.log("matchedObject", matchedObject);
+
+    if (matchedObject) {
+      if (matchedObject.answers) {
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          getMessage(getOptions(matchedObject.answers), true),
+        ]);
+        setDisableChatInput(true);
+      } else {
         setDisableChatInput(false);
       }
-
-      const ticketMessage: any | null =
-        data?.message !== ""
-          ? {
-              id: Date.now().toString(),
-              content: data?.message,
-              playerId: request?.playerId ?? 0,
-              description: "",
-              sender: "Support Bot",
-              timestamp: formatDate(),
-              isOwn: false,
-            }
-          : null;
-
-      if (ticketMessage?.content) {
-        await setMessages((prevMessages) => [
-          ...prevMessages,
-          { ...ticketMessage },
-        ]);
-      }
-
-      const questionContent =
-        typeof content[0] === "string" ? content[0].trim() : "";
-      const answerContent =
-        typeof content[1] === "string" ? content[1].trim() : "";
-
-      const questionMessage: Message | null = questionContent
-        ? {
-            id: Date.now().toString(),
-            content: questionContent,
-            sender: "Support Bot",
-            timestamp: formatDate(),
-            isOwn: false,
-          }
-        : null;
-
-      const answerMessage: Message | null = answerContent
-        ? {
-            id: Date.now().toString(),
-            content: answerContent,
-            sender: "Support Bot",
-            timestamp: formatDate(),
-            isOwn: false,
-          }
-        : null;
-
-      const message: Message = {
-        id: Date.now().toString(),
-        content: `Support case has been created with ID :${data?.id}`,
-        sender: "Support Bot",
-        timestamp: formatDate(),
-        isOwn: false,
-      };
-
-      const newMessages: Message[] = [];
-      if (questionMessage) newMessages.push(questionMessage);
-      if (answerMessage) newMessages.push(answerMessage);
-
-      setMessages((prevMessages) => [...prevMessages, ...newMessages]);
-
-      setIsLoading(false);
-      return data;
-    } catch (error) {
-      console.error("Error fetching messages:", error);
-      setIsLoading(false);
+      setCurrentQuestion(matchedObject);
+      setIsNewChat(false);
+      setShowContinuePrompt(false);
     }
   };
 
-  const setSendQuestion = async (message: string) => {
-    const response = await fetch("http://localhost:8080/api/v2/chat", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...generateBasicAuthHeader(),
-      },
-      body: JSON.stringify(request),
-    });
+  const handleFeedbackRedirect = () => {
+    localStorage.setItem("feedbackGiven", "true");
+    navigate(`/feedback?${showFeedbackPopup.name}=${showFeedbackPopup.id}`);
   };
 
-  // questions and answers
-  const setQuestionsResponse = async () => {
-    setIsText(null);
-    try {
-      const response = await fetch(
-        // `http://localhost:8080/api/v2/content?contentId=32`,
-        `http://localhost:8080/api/v2/contents/player/${id}`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            ...generateBasicAuthHeader(),
-          },
-        }
-      );
-      const data = await response.json();
-      const questionnaireData = data.content.questionare;
-      setQuestionnaire(questionnaireData);
-      // Set the initial question if available
+  const getMessage = (message: any, isBot: boolean) => {
+    return {
+      id: Date.now().toString(),
+      content: message,
+      sender: isBot ? "BOT" : "PLAYER",
+      timestamp: format(new Date(), "dd/MMM/yyyy hh:mm:ss a"),
+      isOwn: isBot ? false : true,
+    };
+  };
 
-      if (questionnaireData.questions?.question) {
-        setCurrentQuestion(questionnaireData.questions?.question); // Start with the first question
-        await getResponse({
-          message: {
-            content: questionnaireData.questions?.question,
-            source: "BOT",
-          },
-          playerId: Number(localStorage.getItem("id")) ?? 0,
-          chatId: Number(localStorage.getItem("chatId")) ?? 0,
-        });
-      }
-      setIsLoading(false);
+  const resetChat = () => {
+    setIsNewChat(true);
+    setDisableChatInput(false);
+    setChatId(null);
+    setCurrentQuestion(playerContent.content.questionare.questions);
+    localStorage.removeItem("chatId");
+  };
 
-      let content: any = [
-        renderQuestion(questionnaireData.questions?.question),
-        renderOptions(questionnaireData.questions?.answers),
-      ];
+  async function handleSendMessage(
+    message: string,
+    nextSetOfQuestions: any = null,
+    solution: any = null,
+    isDes: boolean = false
+  ): Promise<void> {
+    console.log(
+      "params------",
+      message,
+      nextSetOfQuestions,
+      solution,
+      chatId,
+      isNewChat,
+      isDes
+    );
+    setIsLoading(true);
 
-      if (data?.options?.length === 0) {
-        content = t("thankYou");
-        chatId.current = null;
-        setIsFirstMessage(true);
-      }
+    setMessages((prevMessages) => [
+      ...prevMessages,
+      getMessage(message, false),
+    ]);
+    setIsLoading(false);
+    const res = await saveChat({
+      message: { content: message, source: "PLAYER" },
+      playerId: Number(localStorage.getItem("id")),
+      chatId: localStorage.getItem("chatId") || undefined,
+    });
 
-      if (isText) {
-        content = t("caseCreated", { caseId: caseId });
-        setIsFirstMessage(true);
-        chatId.current = null;
-      }
+    const apiChatId = res?.chatId;
 
-      // Construct the question and answer messages
-      const qestionMessage: Message = {
-        id: Date.now().toString(),
-        content: content[0],
-        sender: "Support Bot",
-        timestamp: formatDate(),
-        isOwn: false,
-      };
+    if (solution) {
+      const res = await saveChat({
+        message: { content: solution, source: "BOT", contentType: "Solution" },
+        playerId: Number(localStorage.getItem("id")),
+        chatId: apiChatId,
+      });
 
-      const answerMessage: Message = {
-        id: Date.now().toString(),
-        content: content[1],
-        sender: "Support Bot",
-        timestamp: formatDate(),
-        isOwn: false,
-      };
-      const message: Message = {
-        id: Date.now().toString(),
-        content: `Support case has been created with ID :${data?.id}`,
-        sender: "Support Bot",
-        timestamp: formatDate(),
-        isOwn: false,
-      };
-
-      // Update the messages with the question and answer
       setMessages((prevMessages) => [
         ...prevMessages,
-        qestionMessage,
-        answerMessage,
+        getMessage(solution, true),
+        getMessage(res.message, true),
       ]);
 
-      setIsLoading(false);
-
-      return data;
-    } catch (error) {
-      console.error("Error fetching messages:", error);
-      setIsLoading(false);
-    }
-  };
-
-  const renderQuestion = (question: string) => {
-    return <p>{question}</p>; // Render the question text
-  };
-
-  const renderOptions = (answers: Array<any>) => {
-    return answers?.map((answer, index) => {
-      return (
-        <button key={index} onClick={() => handleAnswerClick(answer)}>
-          {answer.answer}
-        </button>
-      );
-    });
-  };
-
-  const handleAnswerClick = async (answer: any) => {
-    if (!answer) {
+      if (res.message) {
+        setShowFeedbackPopup({ show: true, name: "chatId", id: apiChatId });
+        resetChat();
+      }
       return;
     }
 
-    const selectedMessage: Message = {
-      id: Date.now().toString(),
-      content: answer.answer,
-      sender: "You",
-      timestamp: formatDate(),
-      isOwn: true,
-    };
-
-    setMessages((prevMessages) => [...prevMessages, selectedMessage]);
-
-    // await getResponse({message:{content:answer.answer??"",source:"PLAYER"},playerId:Number(localStorage.getItem("id"))??0,chatId:Number(localStorage.getItem("chatId"))??0})
-    if (answer.answer) {
-      await getResponse({
-        message: { content: answer.answer ?? "", source: "PLAYER" },
-        playerId: Number(localStorage.getItem("id")) ?? 0,
-        chatId: Number(localStorage.getItem("chatId")) ?? 0,
+    if (!solution && !nextSetOfQuestions?.answers && !isNewChat) {
+      const res = await saveChat({
+        message: {
+          content: message,
+          source: "BOT",
+          contentType: "Description",
+        },
+        playerId: Number(localStorage.getItem("id")),
+        chatId: apiChatId,
       });
-    }
-    if (answer.solution) {
-      const solutionMessage: Message = {
-        id: Date.now().toString(),
-        content: answer.solution,
-        sender: "Support Bot",
-        timestamp: formatDate(),
-        isOwn: false,
-      };
-
-      const thankYouMessage: Message = {
-        id: Date.now().toString(),
-        content: t("thankYou"),
-        sender: "Support Bot",
-        timestamp: formatDate(),
-        isOwn: false,
-      };
 
       setMessages((prevMessages) => [
         ...prevMessages,
-        solutionMessage,
-        thankYouMessage,
+        getMessage(res.message, true),
       ]);
-      await getResponse({
-        message: { content: answer.solution, source: "BOT" },
-        playerId: Number(localStorage.getItem("id")) ?? 0,
-        chatId: Number(localStorage.getItem("chatId")) ?? 0,
-      }).then(async () => {
-        await getResponse({
-          message: { content: t("thankYou"), source: "BOT" },
-          playerId: Number(localStorage.getItem("id")) ?? 0,
-          chatId: Number(localStorage.getItem("chatId")) ?? 0,
-        });
-      });
 
-      // Disable input after showing solution
-      setWaitingForDescription(false); // Disable input // true
-      if (answer.questions.answers === null) {
-        setCreateContentId(true);
-        return setWaitingForDescription(false);
-      }
-      setWaitingForDescription(true);
-    } else if (answer.questions) {
-      const nextQuestion = answer.questions;
-      if (nextQuestion) {
-        if (nextQuestion?.question) {
-          await getResponse({
-            message: { content: nextQuestion?.question, source: "BOT" },
-            playerId: Number(localStorage.getItem("id")) ?? 0,
-            chatId: Number(localStorage.getItem("chatId")) ?? 0,
-          });
-        }
-        setCurrentQuestion(nextQuestion);
-        setSendQuestion(nextQuestion.question);
-        setMessages((prevMessages: any) => [
-          ...prevMessages,
-          {
-            id: Date.now().toString(),
-            content: renderQuestion(nextQuestion.question),
-            sender: "Support Bot",
-            timestamp: formatDate(),
-            isOwn: false,
-          },
-          ...(nextQuestion.answers?.length
-            ? [
-                {
-                  id: Date.now().toString(),
-                  content: renderOptions(nextQuestion.answers),
-                  sender: "Support Bot",
-                  timestamp: formatDate(),
-                  isOwn: false,
-                },
-              ]
-            : []),
-        ]);
-
-        // Disable input unless it requires a description
-        if (answer.questions.answers === null) {
-          setCreateContentId(true);
-          return setWaitingForDescription(false);
-        }
-        setWaitingForDescription(true); //false
-      }
-    } else if (answer.description) {
-      // Enable input for describing an issue
-      const descriptionPrompt: Message = {
-        id: Date.now().toString(),
-        content: t("Can you please describe the issue below?"),
-        sender: "Support Bot",
-        timestamp: formatDate(),
-        isOwn: false,
-      };
-
-      setMessages((prevMessages) => [...prevMessages, descriptionPrompt]);
-      setWaitingForDescription(true); // Enable input
-    } else {
-      setWaitingForDescription(false); // Default to disable input   ture
+      resetChat();
+      return;
     }
-  };
 
-  <ChatInput
-    onSendMessage={(message: string) => {
-      handleSendMessage(message, null, null, false);
-    }}
-    disabled={isLoading || !waitingForDescription} // Disable input box based on the condition
-  />;
+    const curr = nextSetOfQuestions || currentQuestion;
 
-  const allMessages = messages.concat(chatHistory);
+    await saveChat({
+      message: { content: curr.question, source: "BOT" },
+      playerId: Number(localStorage.getItem("id")),
+      chatId: apiChatId,
+    });
 
-  const navigateToQAContentGrid = () => {
-    window.location.href = "/qa-content-grid"; // or use React Router
-  };
+    setMessages((prevMessages) => [
+      ...prevMessages,
+      getMessage(curr.question, true),
+    ]);
+
+    if (curr.answers) {
+      const option = (
+        <div className="flex gap-2 flex-wrap">
+          {curr.answers.map((ans: any) => {
+            // console.log(
+            //   "options------",
+            //   ans.answer,
+            //   ans.questions,
+            //   ans.solution || null,
+            //   !ans.solution && !ans.questions?.answers
+            // );
+            return (
+              <div
+                className="border hover:bg-gray-50 p-1.5 rounded-md cursor-pointer"
+                onClick={() =>
+                  handleSendMessage(
+                    ans.answer,
+                    ans.questions,
+                    ans.solution || null,
+                    !ans.solution && !ans.questions?.answers
+                  )
+                }
+              >
+                {ans.answer}
+              </div>
+            );
+          })}
+        </div>
+      );
+
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        getMessage(option, true),
+      ]);
+    }
+    if (isDes) {
+      setDisableChatInput(false);
+    } else {
+      setDisableChatInput(true);
+    }
+    setIsNewChat(false);
+    setIsLoading(false);
+  }
+
+  if (isLoadingContent) {
+    return (
+      <div className="grid place-content-center h-screen w-screen">
+        <VscLoading className="animate-spin  text-blue-500 text-5xl" />
+      </div>
+    );
+  }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-100 via-blue-50 to-blue-200">
-      <div className="w-full max-w-7xl h-[96vh] bg-white rounded-2xl shadow-2xl flex overflow-hidden relative">
+    <div className="flex items-center justify-center h-screen bg-gradient-to-br from-gray-100 via-blue-50 to-blue-200 overflow-hidden">
+      <div className="w-full max-w-3xl h-[90vh] border bg-white rounded-2xl shadow-2xl flex overflow-hidden relative">
         {/* Chat Area */}
         <PushNotification />
         <div className="w-full flex flex-col">
@@ -899,7 +525,7 @@ const ChatPage: React.FC = () => {
 
           {/* Existing Chat Components */}
           <div className="flex-1 flex flex-col overflow-hidden">
-            <ChatWindow messages={allMessages} />
+            <ChatWindow messages={messages} />
             {/* <ChatWindow messages={messages} /> */}
           </div>
 
@@ -911,13 +537,13 @@ const ChatPage: React.FC = () => {
               </p>
               <button
                 className="px-4 py-2 bg-blue-500 text-white rounded-md mr-2"
-                onClick={() => handleContinueChat(true)}
+                onClick={handleContinueChat}
               >
                 {t("Yes")}
               </button>
               <button
                 className="px-4 py-2 bg-gray-500 text-white rounded-md"
-                onClick={() => handleContinueChat(false)}
+                onClick={handleCancelChat}
               >
                 {t("No")}
               </button>
@@ -925,7 +551,7 @@ const ChatPage: React.FC = () => {
           )}
 
           {/* Popup Modal for Chat Completion */}
-          {showFeedbackPopup && (
+          {showFeedbackPopup.show && (
             <div className="p-4 bg-gray-100 flex items-center justify-center">
               <p className="text-gray-700 mr-4">
                 {t("Would you like to give feedback?")}

@@ -1,0 +1,14 @@
+{
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Spring Boot-ChatBotApplication<SpringBootAppWithH2Database>",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "mainClass": "com.example.chatbot.ChatBotApplication",
+      "projectName": "SpringBootAppWithH2Database",
+      "args": "",
+      "envFile": "${workspaceFolder}/.env"
+    }
+  ]
+}
