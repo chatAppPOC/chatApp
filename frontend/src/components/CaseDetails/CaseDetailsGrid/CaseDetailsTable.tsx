@@ -175,51 +175,91 @@ const CaseDetailsTable = () => {
   };
 
   return (
-    <div>
-      <table className="table-auto w-full border-collapse border border-gray-200">
-        <thead>
-          <tr className="bg-gray-100">
-            <th>Case Id</th>
-            <th>Assigned To</th>
-            <th>Case Description</th>
-            <th>Game Name</th>
-            <th>Status</th>
-            <th>Created Date</th>
-          </tr>
-        </thead>
-        <tbody>
-          {caseContent.map((caseItem) => (
-            <tr
-              className="hover:bg-gray-50 cursor-pointer text-gray text-center h-12"
-              key={caseItem.id}
-              onClick={() => handleRowClick(caseItem.id)}
-            >
-              <td className="border border-gray-300 px-4 py-2">
-                {caseItem.id}
-              </td>
-              <td className="border border-gray-300 px-4 py-2">
-                {getAssignedTo(caseItem.userId)}
-              </td>
-              <td className="border border-gray-300 px-4 py-2 w-30 h-20 desc  text-center">
-                <textarea
-                  className="w-full h-full text-center"
-                  disabled
-                  value={caseItem.caseType}
-                />
-              </td>
-              <td className="border border-gray-300 px-4 py-2">
-                {getTitleName(caseItem.title)}
-              </td>
-              <td className="border border-gray-300 px-4 py-2">
-                {caseItem.status}
-              </td>
-              <td className="border border-gray-300 px-4 py-2">
-                {getFormattedDate(caseItem.createdOn)}
-              </td>
+    <div className="p-5 h-screen overflow-auto">
+      <div className="mb-4">
+        <h2 className="text-xl font-semibold text-gray-800">Cases</h2>
+        <p className="text-sm text-gray-500">
+          Manage and track all case details
+        </p>
+      </div>
+      <div className="overflow-x-auto shadow-sm sm:rounded-lg border">
+        <table className="min-w-full divide-y divide-gray-200 text-sm">
+          <thead className="bg-gray-50">
+            <tr>
+              <th
+                scope="col"
+                className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Case Id
+              </th>
+              <th
+                scope="col"
+                className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Assigned To
+              </th>
+              <th
+                scope="col"
+                className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Case Description
+              </th>
+              <th
+                scope="col"
+                className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Game Name
+              </th>
+              <th
+                scope="col"
+                className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Status
+              </th>
+              <th
+                scope="col"
+                className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Created Date
+              </th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {caseContent.map((caseItem) => (
+              <tr
+                key={caseItem.id}
+                onClick={() => handleRowClick(caseItem.id)}
+                className="hover:bg-gray-50 transition-colors duration-200 ease-in-out cursor-pointer"
+              >
+                <td className="px-3 py-1 whitespace-nowrap text-sm font-medium text-gray-900">
+                  {caseItem.id}
+                </td>
+                <td className="px-3 py-1 whitespace-nowrap text-sm text-gray-500">
+                  {getAssignedTo(caseItem.userId)}
+                </td>
+                <td className="px-3 py-1">
+                  <textarea
+                    className="w-full min-h-[40px] text-sm text-gray-500 bg-transparent border-0 resize-none focus:ring-0 focus:outline-none"
+                    disabled
+                    value={caseItem.caseType}
+                  />
+                </td>
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
+                  {getTitleName(caseItem.title)}
+                </td>
+                <td className="px-3 py-2 whitespace-nowrap">
+                  <span className="px-2 py-0.5 text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                    {caseItem.status}
+                  </span>
+                </td>
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
+                  {getFormattedDate(caseItem.createdOn)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
       {selectedCaseId && (
         <CaseDetailsPage
           caseId={selectedCaseId}

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import Modal from "react-modal";
 import "./FeedBack.css";
-import { useLocation,useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { FaSpinner } from "react-icons/fa";
+import { generateBasicAuthHeader } from "src/utils/basicAuth";
+import { toast } from "sonner";
 
 Modal.setAppElement("#root");
 
@@ -18,11 +20,10 @@ function Spinner() {
 }
 
 const FeedBack: React.FC = () => {
-  const location = useLocation();
-  const queryParams = new URLSearchParams(location.search);
-  const caseId = queryParams.get("caseId");
-  console.log("get case id from location url ", caseId);
-
+  const [searchParams] = useSearchParams();
+  console.log("get case id from location url ", searchParams.get("chatId"));
+  const chatId = searchParams.get("chatId");
+  const caseId = searchParams.get("caseId");
   const [loading, setLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [feedbackData, setFeedbackData] = useState<any[]>([]);
@@ -41,7 +42,7 @@ const FeedBack: React.FC = () => {
               "Content-Type": "application/json",
               "Access-Control-Allow-Origin": "*",
               // Authorization: "Basic " + btoa(`admin@test.com:admin123`),
-              Authorization: "Basic " + btoa(`player@test.com:player123`),
+              ...generateBasicAuthHeader(),
             },
           }
         );
@@ -56,14 +57,14 @@ const FeedBack: React.FC = () => {
     fetchFeedbackData();
   }, []);
 
-  const Navigate =useNavigate();
+  const Navigate = useNavigate();
   const handleSubmit = () => {
     // Simulate a successful submission
 
     setIsSubmitted(true);
 
     const feedbackGiven = localStorage.getItem("feedbackGiven");
-    if(feedbackGiven === "true"){
+    if (feedbackGiven === "true") {
       Navigate(`/chat`);
       return;
     }
@@ -75,8 +76,97 @@ const FeedBack: React.FC = () => {
 
   const [comments, setComments] = useState("");
 
+  const onFeedbackSubmit = async () => {
+    window.scrollTo(0, 0);
+    setLoading(true); // Show loader
+    const selectedFeedback = feedbackData.filter((_, index) =>
+      [0, 5, 7, 8, 9].includes(index)
+    );
+    const payload = {
+      //playerFeedbackComments: comments?.value || "",
+      issueResolved: true,
+      playerFeedbackComments:
+        (
+          document.querySelector(
+            `textarea[name="comments"]`
+          ) as HTMLTextAreaElement
+        )?.value || "",
+      questionAndAnswer: selectedFeedback.map((course) => {
+        const selectedAnswer = document.querySelector(
+          `input[name="question-${course.id}"]:checked`
+        ) as HTMLInputElement;
+
+        return {
+          question: course.content,
+          answer: selectedAnswer
+            ? selectedAnswer.parentElement?.textContent?.trim()
+            : null,
+          score: selectedAnswer
+            ? course.answers.find(
+                (answer: any) => answer.id == selectedAnswer.value
+              )?.score || "0"
+            : "0",
+        };
+      }),
+    };
+
+    if (chatId) {
+      console.log("chatId", chatId);
+      try {
+        const response = await fetch(
+          `http://localhost:8080/api/CHAT/feedback/${chatId}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Access-Control-Allow-Origin": "*",
+              ...generateBasicAuthHeader(),
+            },
+            body: JSON.stringify(payload),
+          }
+        );
+        if (!response.ok) {
+          throw new Error("Failed to submit feedback");
+        }
+        handleSubmit();
+      } catch (error) {
+        console.error("Error submitting feedback:", error);
+        toast.error("Error submitting feedback");
+      }
+    }
+
+    if (caseId) {
+      console.log("caseId", caseId);
+
+      try {
+        const response = await fetch(
+          `http://localhost:8080/api/CASE/feedback/${caseId}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Access-Control-Allow-Origin": "*",
+              ...generateBasicAuthHeader(),
+            },
+            body: JSON.stringify(payload),
+          }
+        );
+        if (!response.ok) {
+          throw new Error("Failed to submit feedback");
+        }
+        handleSubmit();
+      } catch (error) {
+        toast.error("Error submitting feedback");
+        console.error("Error submitting feedback:", error);
+      }
+    }
+
+    setLoading(false);
+  };
+
   return (
-    <>
+    <div className="container mx-auto  m-10">
+      <h1 className="text-4xl font-bold mb-4 text-center">Chat Feedback</h1>
       <div>
         {loading && <Spinner />}
         {feedbackData ? (
@@ -84,7 +174,7 @@ const FeedBack: React.FC = () => {
             .filter((_, index) => [0, 5, 7, 8, 9].includes(index))
             .map((course) => (
               <div
-                className="feedbackSection bg-gray-100 p-4 rounded shadow-md my-4"
+                className="feedbackSection bg-white p-4 rounded-lg shadow-sm my-4"
                 key={course.id}
               >
                 <h3 className="text-lg font-semibold mb-2">
@@ -139,69 +229,15 @@ const FeedBack: React.FC = () => {
         )}
       </div>
 
-      <div>
+      <div className="">
         <button
-          onClick={async () => {
-            window.scrollTo(0, 0);
-
-            try {
-              setLoading(true); // Show loader
-              const selectedFeedback = feedbackData.filter((_, index) =>
-                [0, 5, 7, 8, 9].includes(index)
-              );
-
-              const response = await fetch(
-                `http://localhost:8080/api/CASE/feedback/${caseId}`,
-                {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                    "Access-Control-Allow-Origin": "*",
-                    Authorization: "Basic " + btoa(`admin@test.com:admin123`),
-                  },
-                  body: JSON.stringify({
-                    //playerFeedbackComments: comments?.value || "",
-                    playerFeedbackComments:
-                      (
-                        document.querySelector(
-                          `textarea[name="comments"]`
-                        ) as HTMLTextAreaElement
-                      )?.value || "",
-                    questionAndAnswer: selectedFeedback.map((course) => {
-                      const selectedAnswer = document.querySelector(
-                        `input[name="question-${course.id}"]:checked`
-                      ) as HTMLInputElement;
-
-                      return {
-                        question: course.content,
-                        answer: selectedAnswer
-                          ? selectedAnswer.parentElement?.textContent?.trim()
-                          : null,
-                        score: selectedAnswer
-                          ? course.answers.find(
-                              (answer: any) => answer.id == selectedAnswer.value
-                            )?.score || "0"
-                          : "0",
-                      };
-                    }),
-                  }),
-                }
-              ).then((response) => {
-                console.log("Feedback submitted successfully");
-                handleSubmit();
-              });
-            } catch (error) {
-              console.error("Error submitting feedback:", error);
-            } finally {
-              setLoading(false); // Stop spinner once the call is done
-            }
-          }}
-          className="fixed bottom-0 right-4 bg-blue-500 text-white p-2 rounded"
+          onClick={onFeedbackSubmit}
+          className="bg-blue-500 fixed bottom-3 right-4  text-white p-2 rounded"
         >
           Submit Feedback
         </button>
       </div>
-    </>
+    </div>
   );
 };
 

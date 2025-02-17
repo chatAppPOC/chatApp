@@ -17,7 +17,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
 }) => {
   return (
     <div
-      className={`flex ${isOwn ? "justify-end" : "justify-end"} mb-4 px-4 ${
+      className={`flex ${isOwn ? "justify-end" : "justify-start"} mb-4 px-4 ${
         !isOwn &&
         disabled &&
         "pointer-events-none cursor-not-allowed opacity-75"
