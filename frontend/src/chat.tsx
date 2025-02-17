@@ -51,7 +51,7 @@ const ChatPage: React.FC = () => {
 
   const [questionnaire, setQuestionnaire] = useState<any | null>(null);
   const [currentQuestion, setCurrentQuestion] = useState<any>(null);
-  const [waitingForDescription, setWaitingForDescription] = useState(false);
+  const [waitingForDescription, setWaitingForDescription] = useState(true);
   const [currentPage, setCurrentPage] = useState(0);
   const [latestChatId, setLatestChatId] = useState<number | null>(null);
   const [continueWithChat, setContinueWithChat] = useState(false);
@@ -71,7 +71,6 @@ const ChatPage: React.FC = () => {
   const Navigate = useNavigate();
 
   //checking based on chat id status id showing feedback
-
   useEffect(() => {
     const checkChatandCaseStatus = async () => {
       try {
@@ -411,6 +410,7 @@ const ChatPage: React.FC = () => {
       await getResponse(request);
 
       await setQuestionsResponse();
+      setWaitingForDescription(true);
     } else if (createContentId) {
       const request: ChatRequest = {
         playerId: Number(localStorage.getItem("id")) ?? 0,
