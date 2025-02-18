@@ -175,7 +175,7 @@ const CaseDetailsTable = () => {
   };
 
   return (
-    <div className="p-5 h-screen overflow-auto">
+    <div className="p-5  overflow-auto">
       <div className="mb-4">
         <h2 className="text-xl font-semibold text-gray-800">Cases</h2>
         <p className="text-sm text-gray-500">

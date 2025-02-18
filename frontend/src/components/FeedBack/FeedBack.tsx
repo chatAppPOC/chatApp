@@ -174,7 +174,7 @@ const FeedBack: React.FC = () => {
             .filter((_, index) => [0, 5, 7, 8, 9].includes(index))
             .map((course) => (
               <div
-                className="feedbackSection bg-white p-4 rounded-lg shadow-sm my-4"
+                className="feedbackSection  p-4  border-b my-4"
                 key={course.id}
               >
                 <h3 className="text-lg font-semibold mb-2">
