@@ -466,8 +466,8 @@ const ChatPage: React.FC = () => {
   }
 
   return (
-    <div className="flex items-center justify-center h-screen bg-gradient-to-br from-gray-100 via-blue-50 to-blue-200 overflow-hidden">
-      <div className="w-full max-w-3xl h-[90vh] border bg-white rounded-2xl shadow-2xl flex overflow-hidden relative">
+    <div className="flex items-center justify-center   overflow-hidden">
+      <div className="w-full max-w-3xl h-[92vh] border bg-white  flex overflow-hidden relative">
         {/* Chat Area */}
         <PushNotification />
         <div className="w-full flex flex-col">

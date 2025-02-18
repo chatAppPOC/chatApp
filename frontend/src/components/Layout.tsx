@@ -1,80 +1,83 @@
-import React, { useEffect } from "react";
+import { AppSidebar } from "@/components/app-sidebar";
+import { Separator } from "@/components/ui/separator";
 import {
-  Link,
-  Outlet,
-  useNavigate,
-  useLocation,
-  Navigate,
-} from "react-router-dom";
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { toast } from "sonner";
 
-type Role = "ADMIN" | "USER" | "PLAYER";
-
-const roleLinks: Record<Role, { to: string; label: string }[]> = {
-  ADMIN: [
-    { to: "/qa-content-grid", label: "Q/A Content Grid" },
-    { to: "/case-details-grid", label: "Case Details Grid" },
-  ],
-  USER: [{ to: "/case-details-grid", label: "Case Details Grid" }],
-  PLAYER: [{ to: "/chat", label: "Chat Page" }],
-};
-
-const Layout: React.FC = () => {
+export default function LayoutNew() {
   const navigate = useNavigate();
   const location = useLocation();
-  const role = (sessionStorage.getItem("role") as Role) || "";
-  const links = role ? roleLinks[role] || [] : [];
-  const { t, i18n } = useTranslation();
-
+  const role = (localStorage.getItem("role") as string) || "";
+  const username = (localStorage.getItem("username") as string) || "";
   useEffect(() => {
-    if (!role) {
+    if (!role || !username) {
+      toast.error("Authentication Failed. Please Login Again");
       navigate("/login");
-    } else if (location.pathname === "/") {
-      const defaultPage =
-        role === "ADMIN" || role === "USER" ? "/case-details-grid" : "/chat";
-      navigate(defaultPage);
     }
-  }, [role, navigate, location.pathname]);
+  }, [location.pathname]);
+
+  const handleLogout = () => {
+    sessionStorage.clear();
+    localStorage.clear();
+    navigate("/login");
+  };
 
   return (
-    <div className="flex min-h-screen">
-      {/* Sidebar */}
-      {localStorage.getItem("role") !== "PLAYER" && (
-        <div className="w-1/5 bg-gradient-to-br from-blue-500 to-blue-700 text-white p-8 hidden md:flex flex-col">
-          <div className="flex flex-col items-center">
-            <img
-              src="/atvilogo-wht.png"
-              alt="Activision Logo"
-              className="h-30 w-auto opacity-80"
-            />
-            <p className="text-center text-blue-100 ">{t("welcome")}</p>
-          </div>
-          {/* Navigation Links */}
-          <nav className="mt-8">
-            <ul className="space-y-4">
-              {links.map((link, index) => (
-                <li key={index}>
-                  <Link
-                    to={link.to}
-                    className="block px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 transition font-bold"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
+    <main>
+      <header className="fixed top-0 w-full bg-white flex h-16 shrink-0 items-center justify-between gap-2 border-b">
+        <div className="flex items-center gap-2 px-3">
+          <img
+            src="/activision_logo.png"
+            alt="Activision Logo"
+            className="h-7  w-auto opacity-80"
+          />
+          <Separator orientation="vertical" className="mr-2 h-4" />
+          <h2>Chat Support</h2>
         </div>
-      )}
-
-      {/* Main Content Area */}
-      <div className="flex-1 bg-gradient-to-br from-gray-100 via-blue-50 to-blue-100">
-        {/* <div className="flex-1  bg-gray-100"> */}
-
+        <div className="px-5">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <div className="flex items-center gap-2 font-medium cursor-pointer hover:bg-slate-100 rounded-md p-2">
+                <Avatar>
+                  <AvatarFallback>
+                    {username.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="text-sm">{username}</p>
+                  <p className="text-muted-foreground text-xs">{role}</p>
+                </div>
+              </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem>Profile</DropdownMenuItem>
+              <DropdownMenuItem>Settings</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleLogout}>
+                Log out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </header>
+      <div className="min-h-[100vh] pt-16 flex-1  md:min-h-min container mx-auto">
         <Outlet />
       </div>
-    </div>
+    </main>
   );
-};
-
-export default Layout;
+}
