@@ -31,7 +31,7 @@ const FeedbackHistoryByCaseId: React.FC = () => {
     const fetchFeedbacksByCaseId = async () => {
       try {
         const response = await fetch(
-          `http://localhost:8080/api/CASE/feedback/${caseId}`,
+          `http://localhost:8080/api/CASE/feedback/${45}`,
           {
             method: "GET",
             headers: {
@@ -91,14 +91,11 @@ const FeedbackHistoryByCaseId: React.FC = () => {
   //   fetchFeedbackData();
   // }, []);
   return (
-    <>
-      <h2>Feedback History</h2>
-      <br></br>
-      <h1>
-        <b>
-          Cased Id: 1- {gameName}-{desc}
-        </b>
-      </h1>
+    <div className="p-2">
+      <h1 className="text-2xl font-bold mb-4">Feedback History</h1>
+      <h2 className="text-xl font-medium mb-4">
+        Cased Id: 1- {gameName}-{desc}
+      </h2>
 
       {feedbacks ? (
         <>
@@ -113,7 +110,7 @@ const FeedbackHistoryByCaseId: React.FC = () => {
               <p className="mb-4">{desc.question}</p>
               <h4 className="text-md font-medium mb-2">Selected Answer</h4>
               <div className="flex flex-wrap">
-                {desc.responses.map((options: any, optionIndex: number) => (
+                {desc?.responses?.map((options: any, optionIndex: number) => (
                   <label
                     key={optionIndex}
                     className="flex items-center mr-4 mb-2"
@@ -151,13 +148,15 @@ const FeedbackHistoryByCaseId: React.FC = () => {
                   readOnly
                 ></textarea> */}
                 <textarea
-                 className={`w-full p-2 border ${
-                 feedbacks?.description ? "border-none outline-none" : "border border-gray-300"
-                 } rounded`}
-                 rows={4}
-                 name="comments"
-                 value={feedbacks.description}
-                 readOnly
+                  className={`w-full p-2 border ${
+                    feedbacks?.description
+                      ? "border-none outline-none"
+                      : "border border-gray-300"
+                  } rounded`}
+                  rows={4}
+                  name="comments"
+                  value={feedbacks.description}
+                  readOnly
                 ></textarea>
               </>
             )}
@@ -173,7 +172,7 @@ const FeedbackHistoryByCaseId: React.FC = () => {
       ) : (
         <p>Loading feedback data...</p>
       )}
-    </>
+    </div>
   );
 };
 

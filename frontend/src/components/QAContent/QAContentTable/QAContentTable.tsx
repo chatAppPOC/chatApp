@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import moment from "moment-timezone";
+import { Button } from "@/components/ui/button";
+import { Loader } from "lucide-react";
 
 interface QAContent {
   id: number;
@@ -118,7 +120,11 @@ const QAContentTable: React.FC = () => {
   };
 
   if (loading) {
-    return <p>Loading...</p>;
+    return (
+      <div className="flex justify-center items-center my-24">
+        <Loader className="animate-spin" />
+      </div>
+    );
   }
 
   if (error) {
@@ -127,16 +133,10 @@ const QAContentTable: React.FC = () => {
 
   return (
     <div className="p-4">
-      <h1 className="text-xl font-semibold mb-4">Q/A Content Grid</h1>
-
       {/* Create Button */}
-      <div className="mb-4 flex justify-end">
-        <button
-          onClick={handleCreate}
-          className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600"
-        >
-          Create Q/A Content
-        </button>
+      <div className=" flex justify-between items-center my-4">
+        <h1 className="text-2xl font-semibold ">Q/A Content Grid</h1>
+        <Button onClick={handleCreate}>Create Q/A Content</Button>
       </div>
 
       {/* Table Wrapper */}
@@ -144,15 +144,33 @@ const QAContentTable: React.FC = () => {
         <table className="table-auto w-full border-collapse">
           <thead>
             <tr className="bg-gray-100 first:rounded-t-lg">
-              <th className="border border-gray-300 px-4 py-2">ID</th>
-              <th className="border border-gray-300 px-4 py-2">Language</th>
-              <th className="border border-gray-300 px-4 py-2">Content Name</th>
-              <th className="border border-gray-300 px-4 py-2">Game Title</th>
-              <th className="border border-gray-300 px-4 py-2">Created Date</th>
-              <th className="border border-gray-300 px-4 py-2">Created By</th>
-              <th className="border border-gray-300 px-4 py-2">Updated Date</th>
-              <th className="border border-gray-300 px-4 py-2">Updated By</th>
-              <th className="border border-gray-300 px-4 py-2">Action</th>
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                ID
+              </th>
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Language
+              </th>
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Content Name
+              </th>
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Game Title
+              </th>
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Created Date
+              </th>
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Created By
+              </th>
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Updated Date
+              </th>
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Updated By
+              </th>
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Action
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -164,39 +182,39 @@ const QAContentTable: React.FC = () => {
                 }`}
                 onClick={() => handleRowClick(content.id)}
               >
-                <td className="border border-gray-300 px-4 py-2">
+                <td className="px-3 py-1 whitespace-nowrap text-sm font-medium text-gray-900">
                   {content.id}
                 </td>
-                <td className="border border-gray-300 px-4 py-2">
+                <td className="px-3 py-1 whitespace-nowrap text-sm font-medium text-gray-900">
                   {content.language || "N/A"}
                 </td>
-                <td className="border border-gray-300 px-4 py-2">
+                <td className="px-3 py-1 whitespace-nowrap text-sm font-medium text-gray-900">
                   {content.name}
                 </td>
-                <td className="border border-gray-300 px-4 py-2">
+                <td className="px-3 py-1 whitespace-nowrap text-sm font-medium text-gray-900">
                   {getTitleName(content.titleId)}
                 </td>
-                <td className="border border-gray-300 px-4 py-2">
+                <td className="px-3 py-1 whitespace-nowrap text-sm font-medium text-gray-900">
                   {content.createdOn
                     ? moment(content.createdOn)
                         .tz("America/Los_Angeles")
                         .format("ddd MMMM DD YYYY hh:mm:ss A z")
                     : "N/A"}
                 </td>
-                <td className="border border-gray-300 px-4 py-2">
+                <td className="px-3 py-1 whitespace-nowrap text-sm font-medium text-gray-900">
                   {content.createdBy || "N/A"}
                 </td>
-                <td className="border border-gray-300 px-4 py-2">
+                <td className="px-3 py-1 whitespace-nowrap text-sm font-medium text-gray-900">
                   {content.updatedOn
                     ? moment(content.updatedOn)
                         .tz("America/Los_Angeles")
                         .format("ddd MMMM DD YYYY hh:mm:ss A z")
                     : "N/A"}
                 </td>
-                <td className="border border-gray-300 px-4 py-2">
+                <td className="px-3 py-1 whitespace-nowrap text-sm font-medium text-gray-900">
                   {content.updatedBy || "N/A"}
                 </td>
-                <td className="border border-gray-300 px-4 py-2">
+                <td className="px-3 py-1 whitespace-nowrap text-sm font-medium text-gray-900">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();

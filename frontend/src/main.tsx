@@ -10,20 +10,23 @@ import FeedBackHistoryByCaseId from "./components/FeedbackHistoryByCaseId/FeedBa
 import LoginPage from "./components/Authentication/LoginPage";
 import "./app.css";
 import "./i18n"; // Import the i18n configuration
-import Layout from "./components/Layout";
 import FeedBack from "./components/FeedBack/FeedBack"; // Import the FeedBack component
 import PrivateRoute from "./components/Authentication/PrivateRoutes";
 import ChatPage1 from "./chat copy";
 import { Toaster } from "sonner";
+import DesignSystem from "./features/DesignSystem";
+import LayoutNew from "./components/Layout";
+import Home from "./features/Home";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <Router>
     <Toaster position="top-right" richColors />
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/ui" element={<DesignSystem />} />
 
-      <Route path="/" element={<Layout />}>
-        <Route index element={<ChatPage />} />
+      <Route path="/" element={<LayoutNew />}>
+        <Route index element={<Home />} />
         <Route
           path="qa-content-grid"
           element={
@@ -62,6 +65,14 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
           path="chat/:caseId"
           element={
             <PrivateRoute allowedRole={"USER"}>
+              <ChatPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="chat"
+          element={
+            <PrivateRoute allowedRole="PLAYER">
               <ChatPage />
             </PrivateRoute>
           }

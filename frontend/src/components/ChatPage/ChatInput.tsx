@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Button } from "../ui/button";
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
@@ -36,12 +37,12 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, disabled }) => {
         />
         <div className="flex justify-between items-center">
           <p className="text-xs text-gray-500">{t("chatInput.enterHint")}</p>
-          <button
+          <Button
             type="submit"
             className="bg-blue-500 text-white rounded-lg px-6 py-2 hover:bg-blue-600 transition-colors text-sm font-semibold"
           >
             Send Message
-          </button>
+          </Button>
         </div>
       </form>
     </div>
