@@ -1,24 +1,16 @@
 package com.activision.chatbot.repo;
 
-import java.util.List;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
+import com.activision.chatbot.entity.Feedback;
 import com.activision.chatbot.entity.FeedbackContent;
 
 public interface FeedbackContentRepository extends JpaRepository<FeedbackContent, Long>{
 
 	@Query(value = """
-			SELECT u.id, u.content, u.content_type, u.model_id, u.parent_id, u.score FROM feedback_content u
-			WHERE ?1 = ANY(u.parent_id)
+			SELECT u.id, u.content, u.feedback_category, u.title, u.preferred_language, u.platform FROM feedback_content u
+			 WHERE u.feedback_category = :feedbackCategory AND u.title = :titleId AND u.preferred_language = :preferredLanguage limit 1
 			""", nativeQuery = true)
-	List<FeedbackContent> findAnswerByParentId(@Param("parentId") Long parentId);
-
-	@Query(value = """
-			SELECT u.id, u.content, u.content_type, u.model_id, u.parent_id, u.score FROM feedback_content u
-			 WHERE u.content_type = :contentType
-			""", nativeQuery = true)
-	List<FeedbackContent> findByContentType(String contentType);
+	FeedbackContent findByTitleIdAndLanguageId(String feedbackCategory, Long titleId, Long preferredLanguage);
 }

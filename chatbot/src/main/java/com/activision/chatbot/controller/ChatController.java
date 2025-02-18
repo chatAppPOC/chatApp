@@ -24,16 +24,17 @@ import org.springframework.web.server.ResponseStatusException;
 import com.activision.chatbot.dto.ChatMessageRequest;
 import com.activision.chatbot.dto.ChatRequestv2;
 import com.activision.chatbot.dto.ChatResponsev2;
+import com.activision.chatbot.dto.FeedbackContentRequest;
 import com.activision.chatbot.dto.FeedbackRequest;
-import com.activision.chatbot.dto.FeedbackResp;
 import com.activision.chatbot.entity.Case;
 import com.activision.chatbot.entity.Chat;
 import com.activision.chatbot.entity.ChatMessage;
 import com.activision.chatbot.entity.Feedback;
 import com.activision.chatbot.entity.Feedback.FeedbackCategory;
-import com.activision.chatbot.entity.User;
+import com.activision.chatbot.entity.FeedbackContent;
 import com.activision.chatbot.repo.CaseRepository;
 import com.activision.chatbot.repo.ChatRepository;
+import com.activision.chatbot.repo.FeedbackContentRepository;
 import com.activision.chatbot.repo.FeedbackRepository;
 import com.activision.chatbot.repo.UserRepository;
 import com.activision.chatbot.service.ChatService;
@@ -58,6 +59,9 @@ public class ChatController {
 	
 	@Autowired
 	FeedbackRepository feedbackRepo;
+	
+	@Autowired
+	FeedbackContentRepository feedbackContentRepo;
 
 	@PostMapping("v2/chat")
 	public ChatResponsev2 performChatv2(@RequestBody ChatRequestv2 request) throws Exception {
@@ -106,8 +110,7 @@ public class ChatController {
 	public Case updateTicket(@RequestBody Case input) {
 		try {
 			Optional<Case> caseResp = caseRepository.findById(input.getId());
-			Optional<User> userResp = userRepository.findById(input.getUserId());
-			if (caseResp.isPresent() && userResp.isPresent()) {
+			if (caseResp.isPresent()) {
 				Case existingCase = caseResp.get();
 
 				// Update the existing case with the new values
@@ -224,11 +227,13 @@ public class ChatController {
 		}
 	}
 
-	@GetMapping("/feedback/content")
+	@GetMapping("/{contentType}/feedback-content/{titleId}/{languageId}")
 	@PreAuthorize("hasAuthority('PLAYER')")
-	public List<FeedbackResp> getFeedbackQuestionsAndAnswers() {
+	public FeedbackContent getFeedbackQuestionsAndAnswers(
+			@PathVariable("contentType") Feedback.FeedbackCategory contentType, @PathVariable("titleId") Long titleId,
+			@PathVariable("languageId") Long languageId) {
 		try {
-			List<FeedbackResp> response = chatService.getQuestionsAndAnswers();
+			FeedbackContent response = chatService.getQAByTitleAndLanguage(contentType, titleId, languageId);
 			LOG.info("Api.getFeedbackQuestionsAndAnswers() => {}", response);
 			return response;
 		} catch (Exception e) {
@@ -284,6 +289,25 @@ public class ChatController {
 			return feedback;
 		} catch (Exception e) {
 			LOG.error("Api.getFeedbackByCategoryAndId({}, {}) => error!!!", e);
+			throw e;
+		}
+	}
+	
+	@PostMapping("/feedback")
+	@PreAuthorize("hasAuthority('ADMIN')")
+	public FeedbackContent saveFeedbackContent(@RequestBody FeedbackContentRequest request) throws Exception {
+		try {
+			
+			FeedbackContent content = new FeedbackContent();
+			content.setFeedbackCategory(request.getFeedbackCategory());
+			content.setContent(request.getQaContent());
+			content.setTitle(request.getTitleId());
+			content.setPreferredLanguage(request.getLanguageId());
+			content.setPlatform(1l);
+			return feedbackContentRepo.save(content);
+
+		} catch (Exception e) {
+			LOG.error("Api.saveFeedback({}, {}, {}) => error!!!", request, e);
 			throw e;
 		}
 	}

@@ -1,6 +1,7 @@
 package com.activision.chatbot.dto;
 
 import java.util.List;
+import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -17,6 +18,7 @@ public class FeedbackRequest {
 		private String Answer;
 		private Long score;
 		private List<String> responses;
+		private Map<String, Integer> options;
 		
 		public QuestionAndAnswerReq() {}
 
@@ -50,6 +52,14 @@ public class FeedbackRequest {
 
 		public void setResponses(List<String> responses) {
 			this.responses = responses;
+		}
+
+		public Map<String, Integer> getOptions() {
+			return options;
+		}
+
+		public void setOptions(Map<String, Integer> options) {
+			this.options = options;
 		}
 
 		@Override

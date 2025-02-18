@@ -363,27 +363,10 @@ public class ChatService {
 		}
 	}
 
-	public List<FeedbackResp> getQuestionsAndAnswers() {
+	public FeedbackContent getQAByTitleAndLanguage(Feedback.FeedbackCategory contentType, Long titleId, Long languageId ) {
 		try {
-			List<FeedbackContent> questions = feedbackContentRepo.findByContentType("Question"); // fetch all questions
-			return questions.stream().map(question -> {
-				List<FeedbackContent> answers = feedbackContentRepo.findAnswerByParentId(question.getId());
-				List<Answer> answer = answers.stream().map(x -> {
-					Answer answerResp = new Answer();
-					answerResp.setId(x.getId());
-					answerResp.setContent(x.getContent());
-					answerResp.setScore(x.getScore());
-					return answerResp;
-				}).collect(Collectors.toList());
-
-				FeedbackResp questionAndAnswers = new FeedbackResp();
-				questionAndAnswers.setId(question.getId());
-				questionAndAnswers.setContent(question.getContent());
-				questionAndAnswers.setContentType(question.getContentType());
-				questionAndAnswers.setModelId(question.getModelId());
-				questionAndAnswers.setAnswers(answer);
-				return questionAndAnswers;
-			}).collect(Collectors.toList());
+			FeedbackContent feedbackQA = feedbackContentRepo.findByTitleIdAndLanguageId(contentType.toString(), titleId, languageId); // fetch all questions
+			return feedbackQA;
 		} catch (Exception e) {
 			LOG.error("ChatService.getQuestionsAndAnswers({}) => error!!!", e);
 			throw e;

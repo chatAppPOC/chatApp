@@ -2,11 +2,20 @@ package com.activision.chatbot.entity;
 
 import java.util.List;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
+import com.activision.chatbot.dto.FeedbackContentRequest.QAContent;
+import com.activision.chatbot.entity.Feedback.FeedbackCategory;
+
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name ="feedback_content")
@@ -15,50 +24,48 @@ public class FeedbackContent {
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String content;
-    private String contentType;
-    private Long modelId;
-    private Long score;
-    private List<Long> parentId;
+	@Enumerated(EnumType.STRING)
+	private FeedbackCategory feedbackCategory;
+	@JdbcTypeCode(SqlTypes.JSON)
+	private List<QAContent> content;
+    private Long preferredLanguage;
+	private Long platform;
+	private Long title;
+	
 	public Long getId() {
 		return id;
 	}
 	public void setId(Long id) {
 		this.id = id;
 	}
-	public String getContent() {
+	public FeedbackCategory getFeedbackCategory() {
+		return feedbackCategory;
+	}
+	public void setFeedbackCategory(FeedbackCategory feedbackCategory) {
+		this.feedbackCategory = feedbackCategory;
+	}
+	public List<QAContent> getContent() {
 		return content;
 	}
-	public void setContent(String content) {
-		this.content = content;
+	public void setContent(List<QAContent> list) {
+		this.content = list;
 	}
-	public String getContentType() {
-		return contentType;
+	public Long getPreferredLanguage() {
+		return preferredLanguage;
 	}
-	public void setContentType(String contentType) {
-		this.contentType = contentType;
+	public void setPreferredLanguage(Long preferredLanguage) {
+		this.preferredLanguage = preferredLanguage;
 	}
-	public Long getModelId() {
-		return modelId;
+	public Long getPlatform() {
+		return platform;
 	}
-	public void setModelId(Long modelId) {
-		this.modelId = modelId;
+	public void setPlatform(Long platform) {
+		this.platform = platform;
 	}
-	public Long getScore() {
-		return score;
+	public Long getTitle() {
+		return title;
 	}
-	public void setScore(Long score) {
-		this.score = score;
-	}
-	public List<Long> getParentId() {
-		return parentId;
-	}
-	public void setParentId(List<Long> parentId) {
-		this.parentId = parentId;
-	}
-	@Override
-	public String toString() {
-		return "FeedbackContent [id=" + id + ", content=" + content + ", contentType=" + contentType + ", modelId="
-				+ modelId + ", score=" + score + ", parentId=" + parentId + "]";
+	public void setTitle(Long title) {
+		this.title = title;
 	}
 }
