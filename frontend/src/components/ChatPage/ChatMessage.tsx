@@ -17,7 +17,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
 }) => {
   return (
     <div
-      className={`flex ${isOwn ? "justify-end" : "justify-start"} mb-4 px-4 ${
+      className={`flex ${isOwn ? "justify-end" : "justify-end"} mb-4 px-4 ${
         !isOwn &&
         disabled &&
         "pointer-events-none cursor-not-allowed opacity-75"
@@ -47,7 +47,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
         )}
       </div>
       {!isOwn && (
-        <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center overflow-hidden ml-2 flex-shrink-0 shadow-md  ">
+        <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center overflow-hidden mx-2 flex-shrink-0 shadow-md  ">
           <img
             src="https://img.freepik.com/free-vector/cartoon-style-robot-vectorart_78370-4103.jpg"
             alt="Bot"

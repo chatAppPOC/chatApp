@@ -62,6 +62,7 @@ const ChatPage: React.FC = () => {
   const [showFeedbackPopup, setShowFeedbackPopup] =
     useState(feebackDefaultData);
   const [isLoadingContent, setIsLoadingContent] = useState(false);
+  const [isFeedbackSubmited, setIsFeedBackSubmitted] = useState(false);
 
   const navigate = useNavigate();
   const playerId = Number(localStorage.getItem("id"));
@@ -98,7 +99,7 @@ const ChatPage: React.FC = () => {
       });
       console.log("messagesFromHistory:", his);
       setMessages(his);
-      const mess = data.sort((a, b) => a.id - b.id);
+      const mess = data.sort((a:any, b:any) => a.id - b.id);
       let lastChat =
         mess.find((item: any) => item?.id == localStorage.getItem("chatId")) ||
         mess[mess.length - 1];
@@ -228,24 +229,18 @@ const ChatPage: React.FC = () => {
       playerId: Number(localStorage.getItem("id")),
       chatId: localStorage.getItem("chatId"),
     });
-
-    setMessages((prevMessages) => [
-      ...prevMessages,
-      getMessage("User cancelled the chat", false),
-      getMessage(res.message, true),
-    ]);
-
-    if (res.message) resetChat();
+    setMessages([]);
     setShowContinuePrompt(false);
+    setDisableChatInput(false);
   };
 
   const getOptions = (answers: any) => {
     return (
-      <div className="flex gap-2 flex-wrap">
+      <div className="flex gap-2 flex-col">
         {answers.map((ans: any) => {
           return (
             <div
-              className="border hover:bg-gray-50 p-1.5 rounded-md cursor-pointer"
+              className="cursor-pointer"
               onClick={() =>
                 handleSendMessage(
                   ans.answer,
@@ -309,8 +304,18 @@ const ChatPage: React.FC = () => {
 
   const handleFeedbackRedirect = () => {
     localStorage.setItem("feedbackGiven", "true");
+    setIsFeedBackSubmitted(true);
+    setShowFeedbackPopup(feebackDefaultData);
     navigate(`/feedback?${showFeedbackPopup.name}=${showFeedbackPopup.id}`);
   };
+
+  useEffect(()=>{
+    if(isFeedbackSubmited){
+      return;
+    }
+    fetchHistory();
+    fetPlayerContent();
+  },[isFeedbackSubmited]);
 
   const getMessage = (message: any, isBot: boolean) => {
     return {
@@ -367,6 +372,7 @@ const ChatPage: React.FC = () => {
         chatId: apiChatId,
       });
 
+      // Update the messages with the question and answer
       setMessages((prevMessages) => [
         ...prevMessages,
         getMessage(solution, true),
@@ -415,7 +421,7 @@ const ChatPage: React.FC = () => {
 
     if (curr.answers) {
       const option = (
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex gap-2 flex-col">
           {curr.answers.map((ans: any) => {
             // console.log(
             //   "options------",
@@ -426,7 +432,7 @@ const ChatPage: React.FC = () => {
             // );
             return (
               <div
-                className="border hover:bg-gray-50 p-1.5 rounded-md cursor-pointer"
+                className="cursor-pointer"
                 onClick={() =>
                   handleSendMessage(
                     ans.answer,
@@ -466,11 +472,10 @@ const ChatPage: React.FC = () => {
   }
 
   return (
-    <div className="flex items-center justify-center h-screen bg-gradient-to-br from-gray-100 via-blue-50 to-blue-200 overflow-hidden">
-      <div className="w-full max-w-3xl h-[90vh] border bg-white rounded-2xl shadow-2xl flex overflow-hidden relative">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-100 via-blue-50 to-blue-200 ">
+      <div className="w-full max-w-7xl h-[96vh] bg-white rounded-2xl shadow-2xl flex overflow-hidden relative">
         {/* Chat Area */}
-        <PushNotification />
-        <div className="w-full flex flex-col">
+        <div className="w-full flex flex-col relative">
           {/* Chat Header with Language Selector */}
           <div className="bg-gray-100 p-4 border-b border-gray-200 flex items-center justify-between">
             <div className="flex items-center space-x-4">
@@ -521,6 +526,9 @@ const ChatPage: React.FC = () => {
                 </div>
               )}
             </div>
+          </div>
+          <div className="absolute top-full left-0 w-full z-20 bg-white shadow-md ">
+            <PushNotification />
           </div>
 
           {/* Existing Chat Components */}

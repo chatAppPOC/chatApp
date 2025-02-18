@@ -82,7 +82,7 @@ const PushNotification = () => {
             // Create a new notification div
             const notificationDiv = document.createElement("div");
             notificationDiv.className =
-              "bg-blue-500 text-white p-2 rounded-md shadow-md min-w-[180px] max-w-[200px] text-xs fixed top-8 right-4 animate-slide-in break-words";
+              "bg-blue-500 text-white p-2 rounded-md shadow-md min-w-[180px] max-w-[200px] text-xs fixed top-12 right-4 animate-slide-in break-words";
 
             notificationDiv.innerHTML = `<p class="text-xl whitespace-pre-wrap break-words">${currentNotification.content}</p>`;
             document.body.appendChild(notificationDiv);

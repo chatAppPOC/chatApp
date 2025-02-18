@@ -55,7 +55,7 @@ export const getChatHistoryByChatId = async (chatId: number) => {
 
 export const getFeedbackByCaseId = async (caseId: number) => {
   const caseResponse = await fetch(
-    `http://localhost:8080/api/case/feedback/${Number(caseId)}`,
+    `http://localhost:8080/api/CASE/feedback/${Number(caseId)}`,
     {
       method: "GET",
       headers: {

@@ -22,8 +22,8 @@ function Spinner() {
 const FeedBack: React.FC = () => {
   const [searchParams] = useSearchParams();
   console.log("get case id from location url ", searchParams.get("chatId"));
-  const chatId = searchParams.get("chatId");
-  const caseId = searchParams.get("caseId");
+  const chatId = searchParams?.get("chatId");
+  const caseId = searchParams?.get("caseId");
   const [loading, setLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [feedbackData, setFeedbackData] = useState<any[]>([]);
@@ -85,6 +85,7 @@ const FeedBack: React.FC = () => {
     const payload = {
       //playerFeedbackComments: comments?.value || "",
       issueResolved: true,
+      contentType: "feedback",
       playerFeedbackComments:
         (
           document.querySelector(
