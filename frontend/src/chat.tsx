@@ -112,6 +112,11 @@ const ChatPage: React.FC = () => {
         return;
       }
 
+      if(lastChat?.id){
+          setChatId(lastChat.id);
+        localStorage.setItem("chatId",lastChat.id.toString());
+      }
+
       if (lastChat?.status == ChatStatus.COMPLETE) {
         const feedbackByChat = await getFeedbackByChatId(lastChat.id);
 
@@ -136,6 +141,7 @@ const ChatPage: React.FC = () => {
           const match = lastBotMessage?.content?.match(/ID\s*:\s*(\d+)/); // Extract numeric case ID
           if (match) {
             caseId = match[1]; // Extract the ID part
+            localStorage.setItem("caseId",caseId);
           }
         }
 
@@ -302,13 +308,35 @@ const ChatPage: React.FC = () => {
     }
   };
 
-  const handleFeedbackRedirect = () => {
+
+  const handleFeedbackRedirect = async () => {
+    let storedChatId = localStorage.getItem("chatId");
+    let storedCaseId = localStorage.getItem("caseId");
+  
+    if (!chatId && storedChatId) {
+      setChatId(Number(storedChatId));
+    }
+    if (!chatId && !caseId && !storedChatId && !storedCaseId) {
+      await fetchHistory(); // Re-fetch history if both are missing
+      storedChatId = localStorage.getItem("chatId");
+      storedCaseId = localStorage.getItem("caseId");
+    }
+  
+    if (!storedChatId && !storedCaseId) {
+      toast.error("Chat ID or Case ID not found. Unable to give feedback.");
+      return;
+    }
+  
     localStorage.setItem("feedbackGiven", "true");
     setIsFeedBackSubmitted(true);
-    setShowFeedbackPopup(feebackDefaultData);
-    navigate(`/feedback?${showFeedbackPopup.name}=${showFeedbackPopup.id}`);
+  
+    if (storedCaseId) {
+      navigate(`/feedback?caseId=${storedCaseId}`);
+    } else {
+      navigate(`/feedback?chatId=${storedChatId}`);
+    }
   };
-
+  
   useEffect(()=>{
     if(isFeedbackSubmited){
       return;
