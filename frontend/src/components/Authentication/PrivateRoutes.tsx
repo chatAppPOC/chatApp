@@ -10,8 +10,8 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({
   children,
   allowedRole,
 }) => {
-  const role = sessionStorage.getItem("role");
-  const isAuthenticated = !!sessionStorage.getItem("username");
+  const role = localStorage.getItem("role");
+  const isAuthenticated = !!localStorage.getItem("username");
 
   if (!isAuthenticated) {
     return <Navigate to="/login" />;

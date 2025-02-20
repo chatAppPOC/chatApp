@@ -9,6 +9,7 @@ import { generateBasicAuthHeader } from "./utils/basicAuth";
 import { useLocation, useParams, useNavigate } from "react-router-dom";
 import PushNotification from "./pushNotification/PushNotification";
 import {
+  getCaseById,
   getChatHistoryByChatId,
   getFeedbackByCaseId,
   getFeedbackByChatId,
@@ -19,6 +20,10 @@ import {
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { VscLoading } from "react-icons/vsc";
+import AlertMessage from "./components/AlertError";
+import { Button } from "./components/ui/button";
+import { CaseStatus } from "./constants/enum";
+import { Card } from "./components/ui/card";
 
 interface Message {
   id: string;
@@ -67,10 +72,11 @@ const ChatPage: React.FC = () => {
   const navigate = useNavigate();
   const playerId = Number(localStorage.getItem("id"));
   // const chatId = Number(localStorage.getItem("chatId"));
-  const [chatId, setChatId] = useState<number | null>(
-    Number(localStorage.getItem("chatId"))
-  );
+  const [chatId, setChatId] = useState<number | null>();
+
   // const allMessages = messages.concat(chatHistory);
+
+  const [globalError, setGlobalError] = useState(false);
 
   const fetPlayerContent = async () => {
     try {
@@ -78,6 +84,10 @@ const ChatPage: React.FC = () => {
       setPlayerContent(response);
       setCurrentQuestion(response.content.questionare.questions);
     } catch (error) {
+      toast.error(
+        error.response?.data?.detail || "Error fetching player content"
+      );
+      setGlobalError(true);
       console.error("Error fetching player content:", error);
     }
   };
@@ -99,7 +109,7 @@ const ChatPage: React.FC = () => {
       });
       console.log("messagesFromHistory:", his);
       setMessages(his);
-      const mess = data.sort((a:any, b:any) => a.id - b.id);
+      const mess = data.sort((a: any, b: any) => a.id - b.id);
       let lastChat =
         mess.find((item: any) => item?.id == localStorage.getItem("chatId")) ||
         mess[mess.length - 1];
@@ -112,27 +122,28 @@ const ChatPage: React.FC = () => {
         return;
       }
 
-      if(lastChat?.id){
-          setChatId(lastChat.id);
-        localStorage.setItem("chatId",lastChat.id.toString());
+      if (lastChat?.id) {
+        setChatId(lastChat.id);
       }
 
       if (lastChat?.status == ChatStatus.COMPLETE) {
-        const feedbackByChat = await getFeedbackByChatId(lastChat.id);
-
-        if (!feedbackByChat?.issueResolved) {
-          setShowFeedbackPopup({
-            show: true,
-            name: "chatId",
-            id: feedbackByChat?.id,
-          });
-
+        try {
+          const feedbackByChat = await getFeedbackByChatId(lastChat.id);
+        } catch (error: any) {
+          console.error("Error fetching case feedback:", error);
+          if (error?.response?.data?.status === 404) {
+            setShowFeedbackPopup({
+              show: true,
+              name: "chatId",
+              id: lastChat.id,
+            });
+          }
           return;
         }
       }
 
       if (lastChat?.status == ChatStatus.CASE_CREATED) {
-        let caseId = null;
+        let localCaseId = null;
         const botMessages = lastChat.messages.filter(
           (msg: any) => msg.source === "BOT"
         );
@@ -140,19 +151,34 @@ const ChatPage: React.FC = () => {
           const lastBotMessage = botMessages[botMessages.length - 1]; // Get the last bot message
           const match = lastBotMessage?.content?.match(/ID\s*:\s*(\d+)/); // Extract numeric case ID
           if (match) {
-            caseId = match[1]; // Extract the ID part
-            localStorage.setItem("caseId",caseId);
+            localCaseId = match[1]; // Extract the ID part
           }
         }
 
-        const caseDetails = await getFeedbackByCaseId(caseId);
-        if (!caseDetails?.issueResolved) {
-          setShowFeedbackPopup({
-            show: true,
-            name: "caseId",
-            id: caseId,
-          });
-          return;
+        const caseDetails = await getCaseById(localCaseId);
+
+        if (caseDetails?.status == CaseStatus.RESOLVED) {
+          try {
+            const caseFeedBackDetails = await getFeedbackByCaseId(localCaseId);
+            if (!caseFeedBackDetails?.issueResolved) {
+              setShowFeedbackPopup({
+                show: true,
+                name: "caseId",
+                id: localCaseId,
+              });
+            }
+            return;
+          } catch (error: any) {
+            console.error("Error fetching case feedback:", error);
+            if (error?.response?.data?.status === 404) {
+              setShowFeedbackPopup({
+                show: true,
+                name: "caseId",
+                id: localCaseId,
+              });
+            }
+            return;
+          }
         }
       }
 
@@ -176,53 +202,9 @@ const ChatPage: React.FC = () => {
     }
   };
 
-  const isUser = localStorage.getItem("role");
-  const params = useParams();
-  const isParams = params?.caseId ? true : false;
-
   useEffect(() => {
-    const fetchLatestCaseId = async () => {
-      if ((isUser === "USER" || isUser === "ADMIN") && isParams) {
-        // Only user need to fetch the chat based on caseid
-        try {
-          // Fetch the latest chat ID from the backend
-          const response = await fetch(
-            `http://localhost:8080/api/case?caseId=${Number(params.caseId)}`,
-            {
-              method: "GET",
-              headers: {
-                ...generateBasicAuthHeader(),
-                "Content-Type": "application/json",
-              },
-            }
-          );
-
-          const data = await response.json();
-          const data1 = await getChatHistoryByChatId(data[0]?.chatId);
-          const messagesFromHistory = await data1.messages?.map((msg: any) => ({
-            id: data?.id,
-            playerId: data?.playerId ?? 0,
-            content: msg?.content,
-            description: data?.description ? data?.description?.toString() : "",
-            sender: msg?.source,
-            timestamp: msg?.timestamp,
-            isOwn: msg?.source === "PLAYER",
-          }));
-
-          setMessages(messagesFromHistory);
-          setDisableChatInput(true);
-        } catch (error) {
-          console.error("Error fetching latest chat ID:", error);
-        }
-      }
-    };
-    fetchLatestCaseId();
-    // setWaitingForDescription(false);
-  }, []);
-
-  useEffect(() => {
-    fetchHistory();
     fetPlayerContent();
+    fetchHistory();
   }, []);
 
   const handleCancelChat = async (): Promise<void> => {
@@ -246,7 +228,7 @@ const ChatPage: React.FC = () => {
         {answers.map((ans: any) => {
           return (
             <div
-              className="cursor-pointer"
+              className="cursor-pointer border p-2 text-sm rounded-md shadow-sm hover:shadow-md hover:bg-accent "
               onClick={() =>
                 handleSendMessage(
                   ans.answer,
@@ -308,42 +290,9 @@ const ChatPage: React.FC = () => {
     }
   };
 
-
   const handleFeedbackRedirect = async () => {
-    let storedChatId = localStorage.getItem("chatId");
-    let storedCaseId = localStorage.getItem("caseId");
-  
-    if (!chatId && storedChatId) {
-      setChatId(Number(storedChatId));
-    }
-    if (!chatId && !caseId && !storedChatId && !storedCaseId) {
-      await fetchHistory(); // Re-fetch history if both are missing
-      storedChatId = localStorage.getItem("chatId");
-      storedCaseId = localStorage.getItem("caseId");
-    }
-  
-    if (!storedChatId && !storedCaseId) {
-      toast.error("Chat ID or Case ID not found. Unable to give feedback.");
-      return;
-    }
-  
-    localStorage.setItem("feedbackGiven", "true");
-    setIsFeedBackSubmitted(true);
-  
-    if (storedCaseId) {
-      navigate(`/feedback?caseId=${storedCaseId}`);
-    } else {
-      navigate(`/feedback?chatId=${storedChatId}`);
-    }
+    navigate(`/feedback?${showFeedbackPopup.name}=${showFeedbackPopup.id}`);
   };
-  
-  useEffect(()=>{
-    if(isFeedbackSubmited){
-      return;
-    }
-    fetchHistory();
-    fetPlayerContent();
-  },[isFeedbackSubmited]);
 
   const getMessage = (message: any, isBot: boolean) => {
     return {
@@ -369,22 +318,13 @@ const ChatPage: React.FC = () => {
     solution: any = null,
     isDes: boolean = false
   ): Promise<void> {
-    console.log(
-      "params------",
-      message,
-      nextSetOfQuestions,
-      solution,
-      chatId,
-      isNewChat,
-      isDes
-    );
     setIsLoading(true);
-
     setMessages((prevMessages) => [
       ...prevMessages,
       getMessage(message, false),
     ]);
     setIsLoading(false);
+    setShowFeedbackPopup(feebackDefaultData);
     const res = await saveChat({
       message: { content: message, source: "PLAYER" },
       playerId: Number(localStorage.getItem("id")),
@@ -448,38 +388,9 @@ const ChatPage: React.FC = () => {
     ]);
 
     if (curr.answers) {
-      const option = (
-        <div className="flex gap-2 flex-col">
-          {curr.answers.map((ans: any) => {
-            // console.log(
-            //   "options------",
-            //   ans.answer,
-            //   ans.questions,
-            //   ans.solution || null,
-            //   !ans.solution && !ans.questions?.answers
-            // );
-            return (
-              <div
-                className="cursor-pointer"
-                onClick={() =>
-                  handleSendMessage(
-                    ans.answer,
-                    ans.questions,
-                    ans.solution || null,
-                    !ans.solution && !ans.questions?.answers
-                  )
-                }
-              >
-                {ans.answer}
-              </div>
-            );
-          })}
-        </div>
-      );
-
       setMessages((prevMessages) => [
         ...prevMessages,
-        getMessage(option, true),
+        getMessage(getOptions(curr.answers), true),
       ]);
     }
     if (isDes) {
@@ -495,6 +406,19 @@ const ChatPage: React.FC = () => {
     return (
       <div className="grid place-content-center h-screen w-screen">
         <VscLoading className="animate-spin  text-blue-500 text-5xl" />
+      </div>
+    );
+  }
+
+  if (globalError) {
+    return (
+      <div className="h-full my-20 space-y-4">
+        <AlertMessage title="Error" type="destructive">
+          Failed to Load chat data. Please try again later.
+        </AlertMessage>
+        <Button onClick={() => window.location.reload()} variant="destructive">
+          Reload
+        </Button>
       </div>
     );
   }

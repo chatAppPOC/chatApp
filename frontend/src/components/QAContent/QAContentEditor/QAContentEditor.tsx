@@ -1,3 +1,4 @@
+import { generateBasicAuthHeader } from "@/utils/basicAuth";
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 
@@ -61,7 +62,7 @@ const QAContentEditor: React.FC = () => {
         headers: {
           "Content-Type": "application/json",
           "Access-Control-Allow-Origin": "*",
-          Authorization: "Basic " + btoa(`admin@test.com:admin123`),
+          ...generateBasicAuthHeader(),
         },
       });
       const data = await response.json();
@@ -84,7 +85,7 @@ const QAContentEditor: React.FC = () => {
         headers: {
           "Content-Type": "application/json",
           "Access-Control-Allow-Origin": "*",
-          Authorization: "Basic " + btoa(`admin@test.com:admin123`),
+          ...generateBasicAuthHeader(),
         },
       });
       const data = await response.json();
@@ -109,7 +110,7 @@ const QAContentEditor: React.FC = () => {
           headers: {
             "Content-Type": "application/json",
             "Access-Control-Allow-Origin": "*",
-            Authorization: "Basic " + btoa(`admin@test.com:admin123`),
+            ...generateBasicAuthHeader(),
           },
         }
       );

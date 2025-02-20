@@ -56,10 +56,10 @@ public class ChatController {
 
 	@Autowired
 	private ChatRepository chatRepository;
-	
+
 	@Autowired
 	FeedbackRepository feedbackRepo;
-	
+
 	@Autowired
 	FeedbackContentRepository feedbackContentRepo;
 
@@ -91,15 +91,14 @@ public class ChatController {
 			throw e;
 		}
 	}
-	
+
 	@GetMapping("v2/chat/{chatId}")
 	public Chat getChat(@PathVariable Long chatId) {
-		try{
+		try {
 			Chat chat = chatService.getChat(chatId);
 			LOG.info("Api.getChat({}) => {}", chatId, chat);
-		    return chat;
-		}
-		catch(Exception e) {
+			return chat;
+		} catch (Exception e) {
 			LOG.error("Api.getChat({}, {}) => error!!!", chatId, e);
 			throw e;
 		}
@@ -174,7 +173,7 @@ public class ChatController {
 					LOG.warn("Case not found for contentId: {}", contentId);
 					throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Case not found");
 				}
-				//Feedback existingFeedback = feedbackRepo.findByCaseId(contentId);
+				// Feedback existingFeedback = feedbackRepo.findByCaseId(contentId);
 				// Update or create feedback for CASE
 				response = chatService.providePostResolutionFeedback(request, caseResp.orElse(null), null,
 						null);
@@ -184,7 +183,7 @@ public class ChatController {
 					LOG.warn("Chat not found for contentId: {}", contentId);
 					throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Chat not found");
 				}
-				//Feedback existingFeedback = feedbackRepo.findByChatId(contentId);
+				// Feedback existingFeedback = feedbackRepo.findByChatId(contentId);
 				// Update or create feedback for CHAT
 				response = chatService.providePostResolutionFeedback(request, null, chatResp.orElse(null),
 						null);
@@ -215,12 +214,12 @@ public class ChatController {
 	}
 
 	@GetMapping("/case")
-	@PreAuthorize("hasAnyAuthority('ADMIN','USER')")
-	public List<Case> getCaseDataByCaseId(@RequestParam(required = false) Long caseId) {
+	@PreAuthorize("hasAnyAuthority('ADMIN','USER', 'PLAYER')")
+	public Case getCaseDataByCaseId(@RequestParam(required = false) Long caseId) {
 		try {
-			List<Case> response = caseRepository.findById(caseId).stream().toList();
+			Optional<Case> response = caseRepository.findById(caseId);
 			LOG.info("Api.getCaseDataByCaseId() => {}", response);
-			return response;
+			return response.get();
 		} catch (Exception e) {
 			LOG.error("Api.getCaseDataByCaseId() => error!!!", e);
 			throw e;
@@ -256,20 +255,19 @@ public class ChatController {
 			throw e;
 		}
 	}
-	
+
 	@GetMapping("v2/chat/player/{playerId}")
 	public Chat getLastChatByPlayerId(@PathVariable Long playerId) {
-		try{
+		try {
 			Chat chat = chatRepository.getLastChatByPlayerId(playerId);
 			LOG.info("Api.getLastChatByPlayerId({}) => {}", playerId, chat);
-		    return chat;
-		}
-		catch(Exception e) {
+			return chat;
+		} catch (Exception e) {
 			LOG.error("Api.getLastChatByPlayerId({}, {}) => error!!!", playerId, e);
 			throw e;
 		}
 	}
-	
+
 	@GetMapping("/{contentType}/feedback/{id}")
 	public Feedback getFeedbackByCategoryAndId(@PathVariable("contentType") Feedback.FeedbackCategory contentType,
 			@PathVariable("id") Long id) {
@@ -292,12 +290,12 @@ public class ChatController {
 			throw e;
 		}
 	}
-	
+
 	@PostMapping("/feedback")
 	@PreAuthorize("hasAuthority('ADMIN')")
 	public FeedbackContent saveFeedbackContent(@RequestBody FeedbackContentRequest request) throws Exception {
 		try {
-			
+
 			FeedbackContent content = new FeedbackContent();
 			content.setFeedbackCategory(request.getFeedbackCategory());
 			content.setContent(request.getQaContent());

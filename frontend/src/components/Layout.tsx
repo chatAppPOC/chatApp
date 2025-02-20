@@ -21,7 +21,6 @@ import { toast } from "sonner";
 
 export default function LayoutNew() {
   const navigate = useNavigate();
-  const location = useLocation();
   const role = (localStorage.getItem("role") as string) || "";
   const username = (localStorage.getItem("username") as string) || "";
   useEffect(() => {
@@ -29,22 +28,22 @@ export default function LayoutNew() {
       toast.error("Authentication Failed. Please Login Again");
       navigate("/login");
     }
-  }, [location.pathname]);
+  }, []);
 
   const handleLogout = () => {
-    sessionStorage.clear();
     localStorage.clear();
     navigate("/login");
   };
 
   return (
     <main>
-      <header className="fixed top-0 w-full bg-white flex h-16 shrink-0 items-center justify-between gap-2 border-b">
+      <header className="fixed top-0 w-full bg-white flex h-16 shrink-0 items-center justify-between gap-2 border-b z-10">
         <div className="flex items-center gap-2 px-3">
           <img
             src="/activision_logo.png"
             alt="Activision Logo"
-            className="h-7  w-auto opacity-80"
+            className="h-7  w-auto cursor-pointer drop-shadow-xl"
+            onClick={() => navigate("/")}
           />
           <Separator orientation="vertical" className="mr-2 h-4" />
           <h2>Chat Support</h2>
@@ -65,9 +64,6 @@ export default function LayoutNew() {
               </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuItem>Profile</DropdownMenuItem>
-              <DropdownMenuItem>Settings</DropdownMenuItem>
-              <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout}>
                 Log out
               </DropdownMenuItem>

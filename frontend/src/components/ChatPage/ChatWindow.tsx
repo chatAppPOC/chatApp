@@ -11,19 +11,25 @@ interface Message {
 
 interface ChatWindowProps {
   messages: Message[];
+  isHistory?: boolean;
 }
 
-const ChatWindow: React.FC<ChatWindowProps> = ({ messages = [] }) => {
+const ChatWindow: React.FC<ChatWindowProps> = ({
+  messages = [],
+  isHistory = false,
+}) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  console.log("messages", messages);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    if (!isHistory) scrollToBottom();
+  }, [messages, isHistory]);
 
   useEffect(() => {
     // Show loading when last message is from user

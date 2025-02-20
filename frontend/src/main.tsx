@@ -1,26 +1,32 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import ChatPage from "./chat";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import QAContentTable from "./components/QAContent/QAContentTable/QAContentTable";
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  Outlet,
+} from "react-router-dom";
+import QAContentTable from "./features/QuestionnaireFlow/QAContentTable";
 import QAContentEditor from "./components/QAContent/QAContentEditor/QAContentEditor";
-import CaseDetailsTable from "./components/CaseDetails/CaseDetailsGrid/CaseDetailsTable";
-import CaseDetailsPage from "./components/CaseDetails/CaseDetailsPage/CaseDetailsPage";
-import FeedBackHistoryByCaseId from "./components/FeedbackHistoryByCaseId/FeedBackHistoryByCaseId";
+import CaseDetailsTable from "./features/CaseDetails/CaseDetailsGrid/CaseDetailsTable";
+import CaseDetailsPage from "./features/CaseDetails/CaseDetailsPage/CaseDetailsPage";
 import LoginPage from "./components/Authentication/LoginPage";
 import "./app.css";
 import "./i18n"; // Import the i18n configuration
-import FeedBack from "./components/FeedBack/FeedBack"; // Import the FeedBack component
+import FeedBack from "./features/FeedBack/FeedBack"; // Import the FeedBack component
 import PrivateRoute from "./components/Authentication/PrivateRoutes";
 import ChatPage1 from "./chat copy";
 import { Toaster } from "sonner";
 import DesignSystem from "./features/DesignSystem";
 import LayoutNew from "./components/Layout";
 import Home from "./features/Home";
+import { ROUTE_CASES, ROUTE_QA_CONTENT } from "./constants/routes";
+import QuestionnaireFlow from "./features/QuestionnaireFlow";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <Router>
-    <Toaster position="top-right" richColors />
+    <Toaster position="top-center" richColors />
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/ui" element={<DesignSystem />} />
@@ -28,29 +34,28 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
       <Route path="/" element={<LayoutNew />}>
         <Route index element={<Home />} />
         <Route
-          path="qa-content-grid"
+          path={ROUTE_QA_CONTENT}
           element={
             <PrivateRoute allowedRole="ADMIN">
-              <QAContentTable />
+              <Outlet />
             </PrivateRoute>
           }
-        />
+        >
+          <Route index element={<QAContentTable />} />
+          <Route path=":id?" element={<QuestionnaireFlow />} />
+        </Route>
+
         <Route
-          path="qa-content/:id?"
-          element={
-            <PrivateRoute allowedRole="ADMIN">
-              <QAContentEditor />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="case-details-grid"
+          path={ROUTE_CASES}
           element={
             <PrivateRoute allowedRole="USER">
-              <CaseDetailsTable />
+              <Outlet />
             </PrivateRoute>
           }
-        />
+        >
+          <Route index element={<CaseDetailsTable />} />
+          <Route path=":caseId" element={<CaseDetailsPage />} />
+        </Route>
         <Route
           path="feedback"
           element={
@@ -60,15 +65,15 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
           }
         />
 
-        <Route path="feedbackHistory" element={<FeedBackHistoryByCaseId />} />
-        <Route
+        {/* <Route path="feedbackHistory" element={<FeedBackHistoryByCaseId />} /> */}
+        {/* <Route
           path="chat/:caseId"
           element={
             <PrivateRoute allowedRole={"USER"}>
               <ChatPage />
             </PrivateRoute>
           }
-        />
+        /> */}
         <Route
           path="chat"
           element={
@@ -77,7 +82,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
             </PrivateRoute>
           }
         />
-        <Route
+        {/* <Route
           path="chat"
           element={
             <PrivateRoute allowedRole="PLAYER">
@@ -92,7 +97,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
               <ChatPage1 />
             </PrivateRoute>
           }
-        />
+        /> */}
       </Route>
     </Routes>
   </Router>

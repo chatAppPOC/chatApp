@@ -43,6 +43,8 @@ const MyDatePicker: React.FC<MyDatePickerProps> = ({
           //     ? selectedCompltedDate && selectedDate
           //     : null
           // }
+
+          className="p"
           onChange={handleDateChange}
           showYearDropdown
           yearDropdownItemNumber={100}
