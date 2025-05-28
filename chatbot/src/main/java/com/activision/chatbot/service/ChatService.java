@@ -5,7 +5,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,8 +25,6 @@ import com.activision.chatbot.dto.ChatMessageRequest;
 import com.activision.chatbot.dto.ChatRequestv2;
 import com.activision.chatbot.dto.ChatResponsev2;
 import com.activision.chatbot.dto.FeedbackRequest;
-import com.activision.chatbot.dto.FeedbackResp;
-import com.activision.chatbot.dto.FeedbackResp.Answer;
 import com.activision.chatbot.dto.PlayerUserResponse;
 import com.activision.chatbot.entity.Case;
 import com.activision.chatbot.entity.Chat;
@@ -85,104 +82,94 @@ public class ChatService {
 	@Autowired
 	private JavaMailSender javaMailSender;
 
-	@Value("$(spring.mail.username)")
-	private String fromMailId;	
+	@Value("${spring.mail.username}")
+	private String fromMailId;
+
+	@Autowired
+	private AIService aiService;
 
 	@Transactional
 	public ChatResponsev2 performChatv2(ChatRequestv2 request) throws Exception {
 		try {
-			
 			Optional<Player> player = playerRepository.findById(request.getPlayerId());
-			if(!player.isPresent()) {
-				throw new PlayerNotFoundException("The player with id : "+ request.getPlayerId() +" is not found");
+			if (!player.isPresent()) {
+				throw new PlayerNotFoundException("The player with id : " + request.getPlayerId() + " is not found");
 			}
-			else {
-				Chat chat = null;
-				Case newCase = null;
-				ChatResponsev2 chatMessages = new ChatResponsev2();
-				
-				boolean contentTypeExists = request.getMessage() != null && request.getMessage().getContentType() != null;
-	            boolean isDescription = contentTypeExists && request.getMessage().getContentType().equalsIgnoreCase("Description");
-	            boolean isSolution = contentTypeExists && request.getMessage().getContentType().equalsIgnoreCase("Solution");
-	            
-				if (request.getChatId() == null) {
-					chat = new Chat(request.getPlayerId());
-				} else {
-					chat = chatRepository.getExistingChatInProgress(request.getPlayerId(), request.getChatId());
-					if(contentTypeExists) {
-						if (isDescription) {
-							chat.setDescription(request.getMessage().getContent());
-							newCase = createSupportCaseByChatId(request.getChatId(), request.getMessage().getContent());
-							if (newCase != null) {
-								chatMessages.setMessage(CASE_MESSAGE + newCase.getId());
-							}
-							chat.setStatus(ChatStatus.CASE_CREATED);
+			Chat chat;
+			Case newCase = null;
+			ChatResponsev2 chatMessages = new ChatResponsev2();
+			boolean contentTypeExists = request.getMessage() != null && request.getMessage().getContentType() != null;
+			boolean isDescription = contentTypeExists
+					&& request.getMessage().getContentType().equalsIgnoreCase("Description");
+			boolean isSolution = contentTypeExists
+					&& request.getMessage().getContentType().equalsIgnoreCase("Solution");
+			if (request.getChatId() == null) {
+				chat = new Chat(request.getPlayerId());
+			} else {
+				chat = chatRepository.getExistingChatInProgress(request.getPlayerId(), request.getChatId());
+				if (contentTypeExists) {
+					if (isDescription) {
+						String predictedCaseType = classifyWithRetry(request.getMessage().getContent());
+						chat.setDescription(predictedCaseType);
+						newCase = createSupportCaseByChatId(request.getChatId(), predictedCaseType);
+						if (newCase != null) {
+							chatMessages.setMessage(CASE_MESSAGE + newCase.getId());
 						}
-
-						if (isSolution) {
-							chat.setStatus(ChatStatus.COMPLETE);
-							chatMessages.setMessage(GREETINGS);
-						}
+						chat.setStatus(ChatStatus.CASE_CREATED);
 					}
-					chat.setUpdatedOn(Instant.now());
+					if (isSolution) {
+						chat.setStatus(ChatStatus.COMPLETE);
+						chatMessages.setMessage(GREETINGS);
+					}
 				}
-				
-				Message msg = request.getMessage();
-				msg.setTimestamp(Instant.now());
-				chat.getMessages().add(msg);
-				
-				if(contentTypeExists) {
-					Message lastMsg = new Message();
-					if(isDescription)
-						lastMsg.setContent(CASE_MESSAGE + newCase.getId());
-					if(isSolution)
-						lastMsg.setContent(GREETINGS);
-					lastMsg.setTimestamp(Instant.now());
-					lastMsg.setSource(Source.BOT);
-					chat.getMessages().add(lastMsg);
-				}
-				
-				Chat savedChat = chatRepository.save(chat);
-				chatMessages.setChatId(savedChat.getId());
-				LOG.debug("ChatService.performChatv2({}) => {}", request, chatMessages);
-				return chatMessages;
+				chat.setUpdatedOn(Instant.now());
 			}
-			
+			Message msg = request.getMessage();
+			msg.setTimestamp(Instant.now());
+			chat.getMessages().add(msg);
+			if (contentTypeExists) {
+				Message lastMsg = new Message();
+				if (isDescription)
+					lastMsg.setContent(CASE_MESSAGE + newCase.getId());
+				if (isSolution)
+					lastMsg.setContent(GREETINGS);
+				lastMsg.setTimestamp(Instant.now());
+				lastMsg.setSource(Source.BOT);
+				chat.getMessages().add(lastMsg);
+			}
+			Chat savedChat = chatRepository.save(chat);
+			chatMessages.setChatId(savedChat.getId());
+			LOG.debug("ChatService.performChatv2({}) => {}", request, chatMessages);
+			return chatMessages;
 		} catch (Exception e) {
 			LOG.error("ChatService.performChatv2({}) => error!!!", request);
 			throw e;
 		}
-
 	}
 
-	
 	public Page<Chat> getChatHistory(Long playerId, int page, int size) {
 		try {
 			Pageable pageable = PageRequest.of(page, size);
 			Page<Chat> result = chatRepository.findAllByPlayerId(playerId, pageable);
 			LOG.debug("ChatService.getChatHistory({}, {}, {}) => {}", playerId, page, size, result);
 			return result;
-		}
-		catch(Exception e) {
+		} catch (Exception e) {
 			LOG.error("ChatService.getChatHistory({}, {}, {}) => error!!!", playerId, page, size);
 			throw e;
 		}
 	}
-	
-	
+
 	public Chat getChat(Long chatId) {
 		try {
 			Optional<Chat> result = chatRepository.findById(chatId);
-			if(result.isPresent()) {
+			if (result.isPresent()) {
 				LOG.debug("ChatService.getChat({}) => {}", chatId, result.get());
 				return result.get();
-			}
-			else{
+			} else {
 				LOG.warn("ChatService.getChat({}) => ChatId does not exist", chatId);
 				return (new Chat());
 			}
-		}
-		catch(Exception e) {
+		} catch (Exception e) {
 			LOG.error("ChatService.getChat({}, {}, {}) => error!!!", chatId, e);
 			throw e;
 		}
@@ -197,10 +184,8 @@ public class ChatService {
 				PlayerUserResponse assignedUser = playerRepository
 						.fetchUserByLanguageAndPlatformAndTitle(chat.get().getPlayerId());
 				if (assignedUser != null) {
-					newCase = new Case(assignedUser.getUserId(), chat.get().getId(), caseType,
-							assignedUser.getTitle());
-				}
-				else {
+					newCase = new Case(assignedUser.getUserId(), chat.get().getId(), caseType, assignedUser.getTitle());
+				} else {
 					Optional<Player> player = playerRepository.findById(chat.get().getPlayerId());
 					newCase = new Case(chat.get().getId(), caseType, player.get().getTitle());
 				}
@@ -215,7 +200,7 @@ public class ChatService {
 			throw e;
 		}
 	}
-    
+
 	@Transactional
 	public ChatMessage addChatMessage(Long chatId, ChatMessageRequest messageRequest) {
 		try {
@@ -270,7 +255,8 @@ public class ChatService {
 		try {
 			Long averageScore = (long) (request.getQuestionAndAnswer().stream()
 					.mapToLong(FeedbackRequest.QuestionAndAnswerReq::getScore).average()).orElse(0);
-			Feedback feedback = (existingFeedback != null) ? existingFeedback : saveFeedback(request, caseReq, chatReq, Math.round(averageScore));
+			Feedback feedback = (existingFeedback != null) ? existingFeedback
+					: saveFeedback(request, caseReq, chatReq, Math.round(averageScore));
 			if (caseReq != null && caseReq.getId() != null) {
 				feedback.setCaseId(caseReq.getId());
 				feedback.setFeedbackCategory(FeedbackCategory.CASE);
@@ -284,8 +270,8 @@ public class ChatService {
 
 			// Update feedback fields
 			feedback.setFeedback(request.getQuestionAndAnswer());
-			if(request.getIssueResolved())
-			feedback.setIssueResolved(request.getIssueResolved());
+			if (request.getIssueResolved())
+				feedback.setIssueResolved(request.getIssueResolved());
 			else {
 				Optional<Case> caseResp = caseRepository.findById(caseReq.getId());
 				Case existingCase = caseResp.get();
@@ -330,7 +316,7 @@ public class ChatService {
 			helper.setText(tableHtml, true);
 			LOG.info("ChatService.providePostResolutionFeedback(email with subject: {}) sent sucessfully to  => {}",
 					response.toString());
-			//javaMailSender.send(mailMessage);
+			// javaMailSender.send(mailMessage);
 			LOG.debug("ChatService.providePostResolutionFeedback({}, {}, {}) => {}", request, caseReq, chatReq,
 					response);
 			return response;
@@ -341,7 +327,7 @@ public class ChatService {
 			throw e;
 		}
 	}
-	
+
 	private Feedback saveFeedback(FeedbackRequest request, Case caseReq, Chat chatReq, int averageScore) {
 		try {
 			Feedback feedback = null;
@@ -363,13 +349,32 @@ public class ChatService {
 		}
 	}
 
-	public FeedbackContent getQAByTitleAndLanguage(Feedback.FeedbackCategory contentType, Long titleId, Long languageId ) {
+	public FeedbackContent getQAByTitleAndLanguage(Feedback.FeedbackCategory contentType, Long titleId,
+			Long languageId) {
 		try {
-			FeedbackContent feedbackQA = feedbackContentRepo.findByTitleIdAndLanguageId(contentType.toString(), titleId, languageId); // fetch all questions
+			FeedbackContent feedbackQA = feedbackContentRepo.findByTitleIdAndLanguageId(contentType.toString(), titleId,
+					languageId); // fetch all questions
 			return feedbackQA;
 		} catch (Exception e) {
 			LOG.error("ChatService.getQuestionsAndAnswers({}) => error!!!", e);
 			throw e;
 		}
+	}
+
+	private String classifyWithRetry(String content) throws Exception {
+		int attempts = 0;
+		int maxAttempts = 3;
+		while (attempts < maxAttempts) {
+			try {
+				return aiService.classifyIssue(content);
+			} catch (Exception e) {
+				attempts++;
+				LOG.warn("Retry attempt {} for classifyIssue failed", attempts, e);
+				if (attempts >= maxAttempts)
+					throw e;
+				Thread.sleep(300);
+			}
+		}
+		return null;
 	}
 }
